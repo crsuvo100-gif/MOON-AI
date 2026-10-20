@@ -48,7 +48,6 @@ plugins/generated/
 .moon_logs/
 .moon_sessions.json
 .moon_terminal_history.json
-moon/
 .ori/
 
 # Tool/IDE state (local development artifacts, not part of project source)
