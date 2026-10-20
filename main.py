@@ -11,6 +11,8 @@ import os
 import sys
 
 from pathlib import Path
+import moon.build as build_mod
+
 from app.brain.orchestrator import Orchestrator
 from app.config.logging import get_logger
 from app.config.settings import get_settings
@@ -439,6 +441,33 @@ def _cmd_update() -> int:
     return _cmd_doctor()
 
 
+def _cmd_build(args) -> int:
+    # Scaffold a complete project: VS Code config + Makefile + Dockerfile + hermes-acp wiring
+    from pathlib import Path
+
+    project_dir = Path(args.project_dir).resolve()
+    if project_dir.exists() and not project_dir.is_dir():
+        print(f"[MOON-AI] not a directory: {project_dir}", file=sys.stderr)
+        return 2
+    if not project_dir.exists():
+        project_dir.mkdir(parents=True, exist_ok=True)
+
+    out_dir = Path(args.out).resolve() if args.out else project_dir
+    lang = args.lang or build_mod.detect_language(str(project_dir))
+
+    result = build_mod.scaffold(
+        project_dir=project_dir,
+        lang=lang or None,
+    )
+    print(f"[MOON-AI] built '{result.language}' project in {result.project}")
+    print(f"[MOON-AI] generated {result.num_files} file(s)")
+    if result.notes:
+        print("NOTES:")
+        for n in result.notes:
+            print(f"    - {n}")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(prog="moon", description="Standalone AI Agent")
     sub = ap.add_subparsers(dest="cmd")
@@ -462,6 +491,11 @@ def main() -> int:
     sub.add_parser("uninstall", help="Remove MOON-AI auto-start wiring (launcher, services, desktop)")
     sub.add_parser("update", help="Safe update: git pull --ff-only + pip install -e . --upgrade")
     sub.add_parser("version", help="Print MOON-AI version")
+    build_p = sub.add_parser("build", help="Scaffold a complete project (VS Code + Makefile + Dockerfile + hermes-acp)")
+    build_p.add_argument("project_dir", nargs="?", default=".", help="Project directory to scaffold (default: current dir)")
+    build_p.add_argument("--lang", default=None, help="Override language detection (python|node|rust|go|cpp|java)")
+    build_p.add_argument("--out", default=None, help="Output directory (default: project dir)")
+    build_p.add_argument("--force", action="store_true", help="Overwrite existing generated files")
 
     args, remaining = ap.parse_known_args()
     _ensure_default_peer()
@@ -512,6 +546,10 @@ def main() -> int:
     elif args.cmd == "version":
         _cmd_version()
         return 0
+
+    elif args.cmd == "build":
+        return _cmd_build(args)
+
     else:
         # No subcommand -> show help
         ap.print_help()

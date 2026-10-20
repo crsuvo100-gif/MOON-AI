@@ -1,117 +1,173 @@
-# MOON Terminal Architecture
+# MOON — Architecture
 
 ## Overview
-The terminal subsystem sits between the **MOON AI Brain** (the orchestrator) and the user/operator.  It consists of a set of well‑defined components that are wired together via an **event bus**.
+
+MOON is a self-hosted autonomous AI agent with a modular, layered architecture. The system is organized around a central agent engine that routes requests through persona-based intent detection, a pluggable tool registry, and per-agent memory, all backed by a local Ollama LLM.
 
 ```
-                         ┌─────────────────────┐
-                         │   MOON AI BRAIN    │
-                         │ (Orchestrator)     │
-                         └───────┬───────────┘
-                                 │
-                TOOL ROUTER →   │
-                                 ▼
-                      Execution Orchestrator
-                                 │
-        ┌───────────────────────┼─────────────────────┐
-        │                       │                     │
-        ▼                       ▼                     ▼
- Terminal Engine          Python Executor       Process Manager
-        │                       │                     │
-        ▼                       ▼                     ▼
-   Backend Manager            │                     │
-  ┌─────┼──────┐               │           ┌─────────┼─────────┐
-  │     │      │               │           │         │         │
-  ▼     ▼      ▼               ▼           ▼         ▼         ▼
-Local  Docker  SSH          PTY Manager  RiskEngine  PermissionEngine
-Backend Backend Backend      (interactive) (risk calc) (policy enforcement)
+                    USER
+                     │
+                     ▼
+              INTERFACE LAYER
+          ┌──────────┼──────────┐
+          │          │          │
+         CLI        API        UI
+          │          │          │
+          └──────────┼──────────┘
+                     ▼
+               AI ASSISTANT
+                     │
+             ┌───────┴───────┐
+             │               │
+          PLANNER         MEMORY
+             │               │
+             ▼               ▼
+       TASK EXECUTOR    RETRIEVAL
+             │
+       ┌─────┼─────┐
+       ▼     ▼     ▼
+     TOOLS SERVICES AGENTS
+       │     │     │
+       └─────┼─────┘
+             ▼
+        MODEL ROUTER
+             │
+      ┌──────┼──────┐
+      ▼      ▼      ▼
+    LOCAL   REMOTE  CUSTOM
+    MODELS  MODELS  PROVIDERS
 ```
-
-## Core Interfaces
-### ExecutionRequest (app/terminal/models.py)
-```python
-class ExecutionRequest(BaseModel):
-    command: str                       # raw command string
-    cwd: Optional[Path] = None
-    env: Optional[Mapping[str, str]] = None
-    backend: Literal["local", "docker", "ssh"] = "local"
-    shell: bool = False               # run via /bin/sh – allows pipelines
-    timeout: Optional[int] = 60
-    background: bool = False
-    interactive: bool = False         # requires PTY
-    permission_mode: Literal["auto", "ask", "deny"] = "ask"
-    verification: Optional[Dict] = None
-```
-
-### ExecutionResult
-```python
-class ExecutionResult(BaseModel):
-    execution_id: str
-    command: str
-    backend: str
-    cwd: Path
-    status: Literal["success", "failed", "cancelled", "timed_out", "denied"]
-    exit_code: Optional[int] = None
-    stdout: Optional[str] = None
-    stderr: Optional[str] = None
-    pid: Optional[int] = None
-    duration: float
-    verified: bool = False
-    verification_result: Optional[Dict] = None
-    error: Optional[str] = None
-```
-
-## Modules
-| Module | Responsibility |
-|--------|----------------|
-| `backend_manager.py` | Resolve backend name → concrete backend class and forward `execute`. |
-| `backends/local.py` | Wraps `hermes_tools.terminal` for local execution; supports PTY, background, streaming. |
-| `backends/docker.py` | Optional wrapper around `hermes_tools.docker`. |
-| `backends/ssh.py` | Optional wrapper around `hermes_tools.ssh`. |
-| `session_manager.py` | Create/list/attach/detach sessions; persists cwd, env, PTY fds. |
-| `pty_manager.py` | Provides a PTY file descriptor using Hermes PTY support. |
-| `process_manager.py` | Tracks background processes (PID, start‑time, status). |
-| `risk_engine.py` | Loads `risk_policy.yaml`, computes a risk level for a request. |
-| `permission_engine.py` | Enforces `auto/ask/deny` based on risk level and user policy. |
-| `verification_engine.py` | Runs post‑execution checks (file exists, port open, HTTP health). |
-| `recovery_engine.py` | Policy‑driven retries, fallback backend selection, dependency install. |
-| `event_bus.py` | Simple pub/sub used by all components and the UI. |
-| `ui_state.py` | Finite‑state machine representing UI states (idle, listening, planning, …). |
-| `ui.py` | Textual UI built on the `agent-terminal-tui` skill; consumes events and renders panels. |
-| `api.py` | FastAPI router exposing session/execute/process endpoints and a WebSocket for UI streaming. |
-| `history.py` | Persists `ExecutionResult` rows to SQLite (`history.db`). |
-
-## Data Flow Example
-1. **User types** `!git status` in the UI.
-2. UI sends a raw request to **Orchestrator** → **IntentDetector** identifies a *direct‑shell* intent.
-3. Planner creates an **ExecutionRequest** with `backend="local"`, `shell=True`, `permission_mode="ask"`.
-4. **RiskEngine** scores the command as *LOW*.
-5. **PermissionEngine** auto‑approves (policy `auto_low`).
-6. **BackendManager → LocalBackend** runs the command via Hermes `terminal` (background=False).
-7. **VerificationEngine** runs a `git status`‑specific check (ensures repo is clean).
-8. **Result** is stored in **ExecutionHistory** and emitted as `execution.completed`.
-9. UI receives the event, updates its state to **SUCCESS**, and displays the formatted output.
 
 ---
 
-## Extensibility
-* Adding a new backend only requires implementing the same `Backend` interface (`execute(request)`).
-* New risk categories can be added to `risk_policy.yaml` without code changes – the engine loads the YAML at start‑up.
-* UI panels are decoupled via the event bus; adding a new panel just subscribes to relevant events.
+## Component Diagram
+
+```
+MOON/
+├── main.py                  # Entry point — CLI, service bootstrap
+├── engine.py                # Core agent engine (4,352 lines)
+│   ├── Persona detection (13 personas)
+│   ├── Intent routing (13 rules)
+│   ├── Tool-calling loop
+│   └── Response generation
+├── app/                     # Core application package
+│   ├── voice.py             # Female voice TTS (espeak + SoX)
+│   ├── memory.py            # SQLite + semantic memory
+│   └── ...
+├── src/agents/              # 50+ specialist agents
+│   ├── cyber/               # Red-team / offensive security
+│   ├── research/            # Web research, OSINT
+│   ├── coding/              # Code generation, review
+│   ├── security/            # Defensive security
+│   ├── voice/               # Voice interaction
+│   ├── admin/               # System administration
+│   ├── creative/            # ASCII art, image gen
+│   ├── monitor/             # Health, watchdog
+│   └── ...
+├── src/tools/               # Tool registry + tool definitions
+│   ├── tools_core.py        # 14 core tools
+│   ├── tools_pro.py         # 52 professional tools (task_queue, workflow, etc.)
+│   ├── tools_advanced.py    # Advanced tools (web, API, search)
+│   └── ...
+├── tests/                   # 130 tests (unit, integration, agent, tool, e2e)
+├── deploy/                  # systemd service files
+├── install.sh               # One-command installer
+├── install_moon.py          # Python-stage bootstrap + verification
+├── install_moon_full.py     # Full installer (deps, models, voice, smoke test)
+├── setup_wizard.py          # Interactive configuration wizard
+└── Makefile                 # Common targets: test, voice, models, install
+```
 
 ---
 
-## Compatibility with Hermes
-* All actual command execution uses **Hermes tools** (`hermes_tools.terminal`, `hermes_tools.docker`, `hermes_tools.ssh`).
-* The event bus forwards Hermes logs (`hermes_logging`) so no duplicate instrumentation is needed.
-* The design mirrors Hermes’ capability matrix, extending it with explicit **risk/permission** and a **stateful UI**.
+## Agent Engine (`engine.py`)
+
+The engine is the heart of MOON. On each request:
+
+1. **Input Validation** — sanitize and validate the request
+2. **Context Collection** — gather conversation history, memory, relevant tools
+3. **Intent Understanding** — 13 personas, 13 intent routing rules
+4. **Task Decomposition** — break complex requests into subtasks
+5. **Planning** — create an execution plan
+6. **Tool Selection** — choose appropriate tools from the registry
+7. **Permission/Safety Check** — RUNLEVEL-based gating (SAFE → BLOCKED)
+8. **Tool Execution** — execute selected tools
+9. **Observation** — capture tool outputs
+10. **Error Recovery** — retry, fallback, or escalate
+11. **Result Verification** — confirm the result meets the request
+12. **Memory Update** — store facts, lessons, outcomes
+13. **Final Response** — return structured result to user
 
 ---
 
-## Next Implementation Steps
-1. Add `app/terminal/models.py` with the two Pydantic classes above.
-2. Implement `backend_manager.py` and the `LocalBackend` stub.
-3. Write unit tests for a simple foreground command (`echo hello`).
-4. Build the event bus and verify that a publish/subscribe round‑trip works.
-5. Progressively add PTY, background, risk, permission, verification, UI, and API.
-"
+## Tool Registry
+
+MOON has a three-tier tool architecture:
+
+| Tier | File | Count | Description |
+|------|------|-------|-------------|
+| Core | `tools_core.py` | 14 | File ops, shell, git, HTTP, memory, search, eval |
+| Professional | `tools_pro.py` | 52 | Task queue, workflow DAG, resources, chain, parallel, structured output, report, decision matrix |
+| Advanced | `tools_advanced.py` | 22+ | Hermes bridge, web research, OSINT, code tools |
+
+Each tool has: name, description, input schema, output schema, validation, permission level, timeout, error handling, logging.
+
+---
+
+## Memory System
+
+Three layers:
+
+1. **Conversation Memory** — in-memory, current session only
+2. **Workspace Memory** — SQLite (`moon_memory.db`), persists across restarts
+3. **Semantic Memory** — TF-IDF based retrieval over stored knowledge
+
+Auto-learning is configurable: every interaction's facts, tool outcomes, and lessons can be consolidated into durable memory.
+
+---
+
+## Agent Architecture
+
+MOON uses a main-agent + specialist-agents model:
+
+- **Main Agent** — routes requests, chooses tools, coordinates
+- **Planner** — decomposes complex tasks
+- **Research Agent** — web research, OSINT
+- **Coding Agent** — code generation, review, debugging
+- **File Agent** — file operations, inspection
+- **Automation Agent** — workflow execution, task queues
+- **System Agent** — system info, service control
+- **Web/API Agent** — HTTP, API interaction
+- **Specialized Agents** — cyber, voice, creative, monitor, etc.
+
+Specialist agents communicate through well-defined interfaces. The main agent coordinates rather than duplicating logic.
+
+---
+
+## Model Provider System
+
+MOON uses Ollama as the primary local LLM provider:
+
+- **OllamaClient** — speaks the Ollama REST API
+- **Model selection** — per-agent model configuration
+- **Fallback** — OpenAI-compatible API as secondary
+- **No hard-coded keys** — all credentials via environment variables
+
+---
+
+## Interface Layer
+
+| Interface | Entry Point | Description |
+|-----------|-------------|-------------|
+| CLI | `moon` or `python main.py` | Terminal-based interaction |
+| REST API | `http://127.0.0.1:8777/api/...` | HTTP endpoints for integration |
+| Web HUD | Browser → `http://127.0.0.1:8777` | Neural Brain Command Center (Three.js) |
+| Voice | `make voice` | Typed/talked input → female voice output |
+
+---
+
+## Deployment
+
+- **systemd user service** — auto-start, self-heal, deep monitoring every 15 min
+- **Installer** — `install.sh` (bash) + `install_moon_full.py` (Python) handle everything
+- **Port** — default `8777` (configurable via `MOON_PORT`)

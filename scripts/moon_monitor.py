@@ -145,15 +145,18 @@ def ensure_backend():
 
 def git_sync():
     local = run(["git", "rev-parse", "HEAD"]).stdout.strip()
-    rem = run(["git", "ls-remote", "--heads", "origin", "master"]).stdout.strip()
+    # Compare against the current local branch, not a hardcoded "master".
+    current = run(["git", "symbolic-ref", "--short", "HEAD"]).stdout.strip()
+    branch = current if current else "master"
+    rem = run(["git", "ls-remote", "--heads", "origin", branch]).stdout.strip()
     remote_sha = rem.split()[0] if rem else ""
     if not remote_sha:
         log("WARN: cannot reach origin -- skipping git check")
         return True
     if local == remote_sha:
-        log("OK: git synced with origin/master")
+        log("OK: git synced with origin/%s" % branch)
         return True
-    log(f"WARN: local ({local[:8]}) != origin/master ({remote_sha[:8]}) -- "
+    log(f"WARN: local ({local[:8]}) != origin/{branch} ({remote_sha[:8]}) -- "
         f"run `python -m MOON-AI update` (NOT auto-pushed)")
     return True  # report only; never force-push
 
