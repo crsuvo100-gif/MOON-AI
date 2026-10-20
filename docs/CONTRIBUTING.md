@@ -4,7 +4,7 @@ Thank you for contributing to MOON, the neural brain command center.
 
 ## Getting Started
 - Clone the repo: `git clone git@github.com:crsuvo100-gif/MOON.git`
-- Install: `./install.sh` or `pip install -e .`
+- Install: `./scripts/install.sh` or `pip install -e .`
 - Verify: `moon doctor`
 
 ## Development

@@ -11,8 +11,8 @@ of install / runtime / persistence, then a release-readiness verdict.
    root cause: scripts/install_ollama.py is MISSING (file does not exist).
    Consequence: the `make install` convenience target fails in a clean checkout.
    Verdict: GENUINE GAP — requires a fix (create scripts/install_ollama.py), OR
-   the supported path `./install.sh` is authoritative (verified working):
-       ./install.sh                     -> creates venv, installs deps, editable pkg,
+   the supported path `./scripts/install.sh` is authoritative (verified working):
+       ./scripts/install.sh                     -> creates venv, installs deps, editable pkg,
        -> fixes editable .pth, symlinks MOON-AI CLI, runs first-run wizard, post-install
        -> health check. VERIFIED PASS in a clean venv.
 
@@ -52,7 +52,7 @@ of install / runtime / persistence, then a release-readiness verdict.
 ## VERDICT — FINAL
 
 OVERALL: VERIFIED / BETA-READY (production-capable in the supported install path
-./install.sh; Ollama backend + model are opt-in/environment-provided).
+./scripts/install.sh; Ollama backend + model are opt-in/environment-provided).
 
 Genuine open gaps (all BLOCKED on external infra / auth, cannot be faked):
   1. scripts/install_ollama.py missing -> `make install` exits 2 (docured in

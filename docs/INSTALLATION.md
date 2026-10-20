@@ -22,7 +22,7 @@ A self-hosted autonomous AI agent with its own "brain", connected per-agent brai
 ```bash
 git clone https://github.com/crsuvo100-gif/MOON.git
 cd MOON
-./install.sh --yes
+./scripts/install.sh --yes
 ```
 
 This does everything: venv, dependencies, models, voice assets, launcher, systemd service, and a post-install health check.
