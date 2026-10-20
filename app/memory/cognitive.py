@@ -31,7 +31,9 @@ from app.memory.record import (
 )
 from app.memory.retrieval import HybridRetriever, RetrievalCache, rewrite_query
 from app.memory.security import detect_secret
-from app.memory.store import LocalMemoryStore, MemoryStore, default_db_path
+from app.memory.store import MemoryStore, default_db_path
+from .factory import memory_store_factory
+from .store import LocalMemoryStore
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +42,10 @@ class CognitiveMemoryManager:
     """The cognitive memory facade (spec 28/61/62)."""
 
     def __init__(self, *, store: MemoryStore | None = None,
-                 device_id: str = "", project_id: str = "MOON",
+                 device_id: str = "", project_id: str = "MOON-AI",
                  embed_fn: Any = None, vector_store: Any = None,
                  agent_id: str = "") -> None:
-        self._store: MemoryStore = store or LocalMemoryStore()
+        self._store: MemoryStore = store or memory_store_factory()
         self._pipeline = CandidatePipeline()
         self._policy = MemoryPolicyEngine()
         self._retriever = HybridRetriever(embed_fn=embed_fn, vector_store=vector_store)
@@ -407,7 +409,7 @@ class CognitiveMemoryManager:
                 "project_id": self._project_id, "stats": self._stats}
 
     def _emit(self, event: str, rec: MemoryRecord, extra: dict | None = None) -> None:
-        """spec 60: memory events on the existing MOON event bus."""
+        """spec 60: memory events on the existing MOON-AI event bus."""
         try:
             from app.runtime.event_bus import bus
             bus().publish(event, detail=rec.memory_id,

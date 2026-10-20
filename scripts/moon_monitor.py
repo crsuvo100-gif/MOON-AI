@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-MOON System Monitor + Self-Heal
-Runs periodic health checks on the MOON install and auto-fixes common issues.
+MOON-AI System Monitor + Self-Heal
+Runs periodic health checks on the MOON-AI install and auto-fixes common issues.
 Pure-Python, no external deps. Designed to be invoked by cron (see bottom).
 
 Checks:
   1. Ollama reachable + required models physically present (pulls missing ones)
-  2. MOON backend (FastAPI :8777) reachable; restarts if down
+  2. MOON-AI backend (FastAPI :8777) reachable; restarts if down
   3. Git repo synced with origin (warns if diverged)
   4. Disk / RAM headroom (warns if critically low)
   5. Logged errors in recent backend output (scans make-terminal log)
@@ -114,7 +114,7 @@ def ensure_backend():
             break
         time.sleep(2)
     # If the port is already served, SOMETHING is answering -- do not touch it.
-    # This guarantees we never pkill the healthy moon.service backend (whose
+    # This guarantees we never pkill the healthy MOON-AI.service backend (whose
     # command line contains 'terminal_interface') and cause a HUD reconnect blip.
     if _port_in_use(BACKEND_PORT):
         log("OK: backend healthy (port :%d already served)" % BACKEND_PORT)
@@ -145,16 +145,19 @@ def ensure_backend():
 
 def git_sync():
     local = run(["git", "rev-parse", "HEAD"]).stdout.strip()
-    rem = run(["git", "ls-remote", "--heads", "origin", "master"]).stdout.strip()
+    # Compare against the current local branch, not a hardcoded "master".
+    current = run(["git", "symbolic-ref", "--short", "HEAD"]).stdout.strip()
+    branch = current if current else "master"
+    rem = run(["git", "ls-remote", "--heads", "origin", branch]).stdout.strip()
     remote_sha = rem.split()[0] if rem else ""
     if not remote_sha:
         log("WARN: cannot reach origin -- skipping git check")
         return True
     if local == remote_sha:
-        log("OK: git synced with origin/master")
+        log("OK: git synced with origin/%s" % branch)
         return True
-    log(f"WARN: local ({local[:8]}) != origin/master ({remote_sha[:8]}) -- "
-        f"run `python -m moon update` (NOT auto-pushed)")
+    log(f"WARN: local ({local[:8]}) != origin/{branch} ({remote_sha[:8]}) -- "
+        f"run `python -m MOON-AI update` (NOT auto-pushed)")
     return True  # report only; never force-push
 
 
@@ -179,7 +182,7 @@ def resource_check():
 
 
 def main():
-    log("=== MOON monitor run ===")
+    log("=== MOON-AI monitor run ===")
     ensure_models()
     ensure_backend()
     git_sync()

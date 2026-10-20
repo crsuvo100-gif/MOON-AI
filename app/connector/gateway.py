@@ -1,6 +1,6 @@
-"""ConnectionGateway -- MOON's persistent, permission-gated connection registry.
+"""ConnectionGateway -- MOON-AI's persistent, permission-gated connection registry.
 
-Lets MOON remember and reuse connections to external services, other AI agents,
+Lets MOON-AI remember and reuse connections to external services, other AI agents,
 MCP servers, and webhooks. Each connection is stored under connections/registry.json
 (survives restarts, like the capability registry) and every OPEN/CALL is
 permission-checked via ConnectorPermissionManager + the active-op auth gate.
@@ -28,7 +28,12 @@ class ConnectionRecord:
     name: str
     kind: str                       # service | agent | mcp | webhook | websocket
     url: str
-    model: str = ""
+    model: str = ""                 # only for agent kind
+    transport: str = "http"         # stdio | sse | streamable
+    command: str = ""               # only for transport == stdio
+    args: tuple[str, ...] = field(default_factory=tuple)
+    cwd: str | None = None
+    env: dict[str, str] | None = None
     scope: str = "network.egress"
     permissions: tuple[str, ...] = field(default_factory=tuple)
     credential_ref: str = ""        # logical name; value NEVER stored on disk
@@ -126,7 +131,7 @@ class ConnectionGateway:
         if rec.kind == "websocket":
             return WebSocketConnector(rec.url)
         if rec.kind == "mcp":
-            return MCPConnector(rec.url)
+            return MCPConnector(rec)
         return HTTPConnector(rec.url, timeout=30.0)
 
     # -- federation ---------------------------------------------------------
@@ -135,7 +140,7 @@ class ConnectionGateway:
                          timeout: float | None = 90.0) -> dict[str, Any]:
         """Delegate a prompt to a registered peer AI agent and return its answer.
 
-        This is MOON's two-way federation: she not only reaches OUT to the world
+        This is MOON-AI's two-way federation: she not only reaches OUT to the world
         but can also ask another AI agent to do a subtask and fold the answer back
         into her own reasoning. Permission-gated by the connection's scope.
 

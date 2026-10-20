@@ -1,4 +1,4 @@
-"""MOON CLI entrypoint."""
+"""MOON-AI CLI entrypoint."""
 
 from __future__ import annotations
 
@@ -11,6 +11,8 @@ import os
 import sys
 
 from pathlib import Path
+import moon.build as build_mod
+
 from app.brain.orchestrator import Orchestrator
 from app.config.logging import get_logger
 from app.config.settings import get_settings
@@ -22,7 +24,7 @@ logger = get_logger(__name__)
 
 
 def _ensure_default_peer() -> None:
-    """Idempotently register MOON's own loopback peer so the global connector
+    """Idempotently register MOON-AI's own loopback peer so the global connector
     always shows a LIVE connection (verified via 'connect health'/'federate').
 
     This is additive: it only registers the peer if absent, and never clobbers a
@@ -44,7 +46,7 @@ def _ensure_default_peer() -> None:
                 url=s.model_base_url.rstrip("/"), model=s.model_name,
                 scope="network.agent", permissions=("network.agent",),
                 credential_ref="", enabled=True,
-                metadata={"note": "Loopback peer: MOON's own Ollama-compatible endpoint (default live connection)."},
+                metadata={"note": "Loopback peer: MOON-AI's own Ollama-compatible endpoint (default live connection)."},
             ))
             print("🌙 Registered default loopback peer 'moon_local' (global connector)")
     except Exception as exc:  # noqa: BLE001
@@ -52,12 +54,12 @@ def _ensure_default_peer() -> None:
 
 
 def _ensure_ollama() -> None:
-    """Best-effort: make sure MOON's local model backend (Ollama) is reachable
+    """Best-effort: make sure MOON-AI's local model backend (Ollama) is reachable
     before the terminal/API starts, so the Orchestrator's setup() has a model to
     bind to (Phase 26 startup readiness).
 
     Additive + non-destructive: if Ollama is already up it is a no-op; if it
-    cannot be started we still launch MOON (it degrades to the cloud fallbacks /
+    cannot be started we still launch MOON-AI (it degrades to the cloud fallbacks /
     reports the backend as unavailable rather than crashing). Mirrors the
     long-standing logic in scripts/moon_launcher.py.
     """
@@ -121,7 +123,7 @@ async def _run(task, agent):
     try:
         await orchestrator.setup()
     except Exception as exc:
-        print(f"[MOON: orchestrator setup failed: {exc}]")
+        print(f"[MOON-AI: orchestrator setup failed: {exc}]")
         return
 
     # Create a task model
@@ -135,7 +137,7 @@ async def _run(task, agent):
         agent_card = list(orchestrator._agents.values())[0]
 
     if agent_card is None:
-        print("[MOON: no agents available]")
+        print("[MOON-AI: no agents available]")
         return
 
     # Run the task through the full cognition loop
@@ -147,9 +149,9 @@ async def _run(task, agent):
         else:
             print("(no response from model)")
     except _asyncio.TimeoutError:
-        print("[MOON: task timed out]")
+        print("[MOON-AI: task timed out]")
     except Exception as exc:
-        print(f"[MOON: task failed: {exc}]")
+        print(f"[MOON-AI: task failed: {exc}]")
     finally:
         try:
             await orchestrator.teardown()
@@ -161,7 +163,7 @@ async def _run(task, agent):
 # `moon terminal` -- launch the Hermes-style CLI terminal (REPL, voice, shell).
 # This is the single user-facing surface: a readline-driven interactive session
 # with integrated voice (espeak-ng + Kokoro/F5-TTS), shell commands, and the
-# full MOON brain behind it. No browser or web UI involved.
+# full MOON-AI brain behind it. No browser or web UI involved.
 # ---------------------------------------------------------------------------
 
 
@@ -195,12 +197,12 @@ def _cmd_status() -> int:
     try:
         with urllib.request.urlopen("http://" + host + "/api/health", timeout=5) as r:
             body = r.read().decode("utf-8", "replace")
-        print(f"MOON backend at {host}: HEALTHY")
+        print(f"MOON-AI backend at {host}: HEALTHY")
         print(body)
         return 0
     except Exception as exc:  # noqa: BLE001
-        print(f"MOON backend at {host}: UNREACHABLE ({exc})")
-        print("Start it with:  python -m moon  (or: python -m moon terminal)")
+        print(f"MOON-AI backend at {host}: UNREACHABLE ({exc})")
+        print("Start it with:  python -m MOON-AI  (or: python -m MOON-AI terminal)")
         return 1
 
 
@@ -336,7 +338,7 @@ def _cmd_restore() -> int:
         print(f"restore unavailable: {exc}")
         return 1
     if len(_sys.argv) < 2:
-        print("usage: python -m moon restore <snapshot-dir>")
+        print("usage: python -m MOON-AI restore <snapshot-dir>")
         return 2
     snap = Path(_sys.argv[-1])
     if not snap.is_dir():
@@ -380,7 +382,7 @@ def _cmd_setup() -> int:
 
 
 def _cmd_uninstall() -> int:
-    """Native MOON uninstaller (safe by default -- removes auto-start wiring)."""
+    """Native MOON-AI uninstaller (safe by default -- removes auto-start wiring)."""
     import importlib.util
     import os
 
@@ -424,7 +426,7 @@ def _cmd_install() -> int:
 def _cmd_update() -> int:
     """Safe update: pull latest source + update deps. Never destructive git."""
     import subprocess as _sp
-    print("==> MOON update (safe: git pull + pip install -e .)")
+    print("==> MOON-AI update (safe: git pull + pip install -e .)")
     try:
         r = _sp.run(["git", "pull", "--ff-only"], check=False)
         if r.returncode != 0:
@@ -439,28 +441,61 @@ def _cmd_update() -> int:
     return _cmd_doctor()
 
 
-def main() -> None:
+def _cmd_build(args) -> int:
+    # Scaffold a complete project: VS Code config + Makefile + Dockerfile + hermes-acp wiring
+    from pathlib import Path
+
+    project_dir = Path(args.project_dir).resolve()
+    if project_dir.exists() and not project_dir.is_dir():
+        print(f"[MOON-AI] not a directory: {project_dir}", file=sys.stderr)
+        return 2
+    if not project_dir.exists():
+        project_dir.mkdir(parents=True, exist_ok=True)
+
+    out_dir = Path(args.out).resolve() if args.out else project_dir
+    lang = args.lang or build_mod.detect_language(str(project_dir))
+
+    result = build_mod.scaffold(
+        project_dir=project_dir,
+        lang=lang or None,
+    )
+    print(f"[MOON-AI] built '{result.language}' project in {result.project}")
+    print(f"[MOON-AI] generated {result.num_files} file(s)")
+    if result.notes:
+        print("NOTES:")
+        for n in result.notes:
+            print(f"    - {n}")
+    return 0
+
+
+def main() -> int:
     ap = argparse.ArgumentParser(prog="moon", description="Standalone AI Agent")
     sub = ap.add_subparsers(dest="cmd")
-    run_p = sub.add_parser("run", help="Run a single task via LLM, or launch moonscope TUI if no task given")
-    run_p.add_argument("task", nargs="?", default=None, help="Task to run (omit to launch moonscope TUI)")
+    run_p = sub.add_parser("run", help="Run a single task via LLM, or launch MOON-AIscope TUI if no task given")
+    run_p.add_argument("task", nargs="?", default=None, help="Task to run (omit to launch MOON-AIscope TUI)")
     run_p.add_argument("--task", dest="task_flag", default=None, help="Task to run (omit to launch the terminal)")
     run_p.add_argument("--agent", default=None, help="Agent name to run the task with")
     sub.add_parser("models", help="Pre-pull all per-agent preferred models so agents are ready")
     # Single terminal interface: Hermes-style Textual TUI (moonscope).
-    #   moon / moon terminal / moon run  ->  Hermes-style TUI (moonscope)
-    #   moon cli  ->  readline REPL (fallback, Hermes-feature-rich)
-    #   moon terminal-moon  ->  standalone MOON Terminal (terminal_moon/ sub-project)
-    sub.add_parser("telegram", help="Launch MOON's Telegram bot listener (polling)")
+    #   MOON-AI / MOON-AI terminal / MOON-AI run  ->  Hermes-style TUI (moonscope)
+    #   MOON-AI cli  ->  readline REPL (fallback, Hermes-feature-rich)
+    #   MOON-AI terminal-moon  ->  standalone MOON-AI Terminal (terminal_moon/ sub-project)
+    sub.add_parser("terminal", help="Interactive MOON-AI Terminal REPL (brain-connected)")
+    sub.add_parser("telegram", help="Launch MOON-AI's Telegram bot listener (polling)")
     sub.add_parser("doctor", help="Health check: Python/deps/config/DB/agents/tools/model/git")
-    sub.add_parser("status", help="Check the running MOON backend health endpoint")
+    sub.add_parser("status", help="Check the running MOON-AI backend health endpoint")
     sub.add_parser("backup", help="Snapshot runtime data into backups/ (cross-platform)")
     sub.add_parser("restore", help="Restore a backups/moon_<timestamp> snapshot")
     sub.add_parser("install", help="Run the Python bootstrap installer (venv + deps + models)")
     sub.add_parser("setup", help="First-run setup wizard (configure .env, then install)")
-    sub.add_parser("uninstall", help="Remove MOON auto-start wiring (launcher, services, desktop)")
+    sub.add_parser("uninstall", help="Remove MOON-AI auto-start wiring (launcher, services, desktop)")
     sub.add_parser("update", help="Safe update: git pull --ff-only + pip install -e . --upgrade")
-    sub.add_parser("version", help="Print MOON version")
+    sub.add_parser("version", help="Print MOON-AI version")
+    build_p = sub.add_parser("build", help="Scaffold a complete project (VS Code + Makefile + Dockerfile + hermes-acp)")
+    build_p.add_argument("project_dir", nargs="?", default=".", help="Project directory to scaffold (default: current dir)")
+    build_p.add_argument("--lang", default=None, help="Override language detection (python|node|rust|go|cpp|java)")
+    build_p.add_argument("--out", default=None, help="Output directory (default: project dir)")
+    build_p.add_argument("--force", action="store_true", help="Overwrite existing generated files")
 
     args, remaining = ap.parse_known_args()
     _ensure_default_peer()
@@ -469,15 +504,16 @@ def main() -> None:
         if task:
             asyncio.run(_run(task, args.agent))
         else:
-            print("No task given. Use: moon run \"<task>\" or moon <subcommand>")
-            return
+            print("No task given. Use: MOON-AI run \"<task>\" or MOON-AI <subcommand>")
+            return 1
     elif args.cmd == "models":
         asyncio.run(_prefetch_models())
     elif args.cmd == "terminal":
-        print("Terminal UI removed. Use: moon run \"<task>\" or moon api", file=sys.stderr)
-        return 1
+        from app.terminal.repl import main as _repl_main
+        _repl_main()
+        return 0
     elif args.cmd == "cli":
-        print("CLI removed. Use: moon run \"<task>\" or moon api", file=sys.stderr)
+        print("CLI removed. Use: MOON-AI run \"<task>\" or MOON-AI api", file=sys.stderr)
         return 1
     elif args.cmd == "status":
         raise SystemExit(_cmd_status())
@@ -502,16 +538,22 @@ def main() -> None:
         print("[terminal-moon] terminal_moon/ sub-project has been removed. Use 'moon terminal' instead.", file=sys.stderr)
         raise SystemExit(1)
     elif args.cmd == "telegram":
-        # Launch MOON's Telegram bot listener (polling mode).
+        # Launch MOON-AI's Telegram bot listener (polling mode).
         # Token is read from TELEGRAM_BOT_TOKEN env var (set via .env or
         # passed explicitly). Runs in-process as a foreground blocking service.
         from app.services.telegram_bot import main as _tg_main
         raise SystemExit(_tg_main())
     elif args.cmd == "version":
         _cmd_version()
+        return 0
+
+    elif args.cmd == "build":
+        return _cmd_build(args)
+
     else:
         # No subcommand -> show help
         ap.print_help()
+        return 0
 
 
 if __name__ == "__main__":

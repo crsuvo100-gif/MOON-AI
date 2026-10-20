@@ -45,3 +45,20 @@ env/
 
 # Capability manager runtime output (auto-acquired plugins)
 plugins/generated/
+.moon_logs/
+.moon_sessions.json
+.moon_terminal_history.json
+moon/
+.ori/
+
+# Tool/IDE state (local development artifacts, not part of project source)
+.claude/
+.claude-plugin/
+.gitnexus/
+.hermes/
+.moon/
+.moon_logs/
+.pre_commit_checkpoint/
+.pytest_cache/
+.ori/
+.vscode/
