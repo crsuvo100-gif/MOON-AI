@@ -45,6 +45,8 @@ env/
 
 # Capability manager runtime output (auto-acquired plugins)
 plugins/generated/
+.moon_workflow_logs/
+.moon_workflow_complete
 .moon_logs/
 .moon_sessions.json
 .moon_terminal_history.json

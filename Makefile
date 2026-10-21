@@ -47,6 +47,17 @@ models:
 voice-install:
 	$(PY) install_moon.py
 
+# ---- MOON workflow runner: save-first source folder + auto-build + GitHub-complete
+workflow:
+	$(PY) scripts/moon_workflow.py run $(TASK)
+
+auto-work:
+	$(PY) scripts/moon_workflow.py run $(TASK)
+
+# ---- Save the current build/work product into the MOON source folder
+save:
+	$(PY) scripts/moon_workflow.py run cp -r . $(MOON_SRC)/
+
 clean:
 	find . -name '__pycache__' -type d -prune -exec rm -rf {} +
 	rm -rf .pytest_cache .ruff_cache .mypy_cache
