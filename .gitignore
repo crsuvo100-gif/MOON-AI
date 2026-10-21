@@ -1,27 +1,29 @@
 # Git ignore patterns for MOON project
 # Runtime data that should never be committed
 
-# moonscope runtime state
+# Runtime data
 app/data/
 app/memory/episodes.json
 logs/
-
-# terminal_moon runtime state
 terminal_moon/data/
 terminal_moon/memory/
 terminal_moon/logs/
-
-# Capabilities runtime data
 capabilities/
 connections/
-
-# Agent runtime data
 data/
 data/agents/
 data/executions.db
+plugins/generated/
 
 # MOON runtime state
 .moon/
+.moon_logs/
+.moon_sessions.json
+.moon_terminal_history.json
+.moon_workflow_logs/
+.moon_workflow_complete
+.ori/
+.pre_commit_checkpoint/
 
 # Python
 __pycache__/
@@ -31,35 +33,19 @@ __pycache__/
 build/
 dist/
 
-# Virtual envs
+# Virtual environments
 .venv/
 venv/
 env/
 
-# Secrets
+# Secrets (never commit credentials)
 .env
 .env.*
-
-# MOON runtime state
-.moon/
-
-# Capability manager runtime output (auto-acquired plugins)
-plugins/generated/
-.moon_workflow_logs/
-.moon_workflow_complete
-.moon_logs/
-.moon_sessions.json
-.moon_terminal_history.json
-.ori/
 
 # Tool/IDE state (local development artifacts, not part of project source)
 .claude/
 .claude-plugin/
 .gitnexus/
 .hermes/
-.moon/
-.moon_logs/
-.pre_commit_checkpoint/
 .pytest_cache/
-.ori/
 .vscode/
