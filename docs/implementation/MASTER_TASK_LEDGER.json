@@ -7,8 +7,8 @@
     "remote_https": "https://github.com/crsuvo100-gif/MOON-AI.git",
     "branch": "main",
     "local_head": "cd47e88e8d9b71d654a4fb5904446b14e47d8bc4",
-    "source_archive": "/home/meow/Projects/MOON/CYCLONE_TERMINAL_AI_V10/",
-    "in_project": "/home/meow/Projects/MOON/CYCLONE_TERMINAL_AI_V10/",
+    "source_archive": "/home/meow/Projects/MOON/apps/cyclone/",
+    "in_project": "/home/meow/Projects/MOON/apps/cyclone/",
     "frontend": "CYCLONE v10.0 (Node.js server :8765 + browser UI)",
     "backend_interface": "MOON FastAPI Application Interface (:8777)",
     "core": "MOON Core (Orchestrator, agents, tools, skills, memory, models)",
@@ -19,7 +19,7 @@
     "date": "2026-10-21",
     "findings": [
       "MOON is a self-hosted autonomous AI agent (python package moon-ai-agent; main.py, app/, moon/; FastAPI at app/terminal_interface.py on :8777; 41 built-in agents, 40+ tools, advanced memory, 4 model backends).",
-      "CYCLONE v10.0 is a Node.js terminal (server.js, app.js, index.html, styles.css, test.js, config.js, package.json, README.md) at CYCLONE_TERMINAL_AI_V10/, server on 127.0.0.1:8765, browser UI at :8765.",
+      "CYCLONE v10.0 is a Node.js terminal (server.js, app.js, index.html, styles.css, test.js, config.js, package.json, README.md) at apps/cyclone/, server on 127.0.0.1:8765, browser UI at :8765.",
       "Existing MOON bridge in app/cyclone.py (real HTTP bridge) proxies CYCLONE /api/* to the real Node.js server on :8765; MOON App Interface (app/api/interface.py) exposes /api/{health,settings,capabilities,agents,tools,events,factory,agents/{id}/run,memory,knowledge/search,tasks,executions,metrics,supervision,brains,brain-stats,logs,voice}.",
       "CYCLONE browser UI (app.js) routes commands via the bridge; terminal commands reach real MOON functionality.",
       "pyproject.toml fixed: heavy optional packages (torch, torchaudio, asyncpg, scipy, kokoro-onnx, langdetect) moved to [project.optional-dependencies] runtime extra; added hf and telegram extras.",
@@ -63,7 +63,7 @@
     },
     {
       "id": "CYCLONE.bridge",
-      "src": "app/cyclone.py + CYCLONE_TERMINAL_AI_V10/",
+      "src": "app/cyclone.py + apps/cyclone/",
       "status": "operational",
       "verify": "CYCLONE server.js :8765 proxies /api/* to MOON App Interface"
     },
@@ -75,13 +75,13 @@
     },
     {
       "id": "MOON.CYCLONE_MOON",
-      "src": "CYCLONE_TERMINAL_AI_V10/app.js; CYCLONE_TERMINAL_AI_V10/server.js; app/cyclone.py",
+      "src": "apps/cyclone/app.js; apps/cyclone/server.js; app/cyclone.py",
       "status": "operational",
       "verify": "moon command (app.js + server.js /api/moon/*) returns real MOON runtime data: 41 brains, 241 agents, 40 tools"
     },
     {
       "id": "MOON.CYCLONE_PRIMARY",
-      "src": "app/cyclone.py; app/terminal_interface.py; CYCLONE_TERMINAL_AI_V10/server.js",
+      "src": "app/cyclone.py; app/terminal_interface.py; apps/cyclone/server.js",
       "status": "operational",
       "verify": "browser UI served at /cyclone reaches MOON via /api/moon/* forwarder on port 8765"
     }
@@ -103,7 +103,7 @@
     {
       "id": "A2",
       "req": "Inventory CYCLONE terminal files and entry points",
-      "source": "ls CYCLONE_TERMINAL_AI_V10/; read package.json, server.js, app.js",
+      "source": "ls apps/cyclone/; read package.json, server.js, app.js",
       "deps": null,
       "planned": "inspect",
       "acceptance": "complete inventory list recorded",
@@ -207,7 +207,7 @@
     {
       "id": "C1",
       "req": "CYCLONE routes MOON commands through a bridge to MOON Application Interface",
-      "source": "app/cyclone.py, CYCLONE_TERMINAL_AI_V10/server.js, app/api/interface.py",
+      "source": "app/cyclone.py, apps/cyclone/server.js, app/api/interface.py",
       "deps": null,
       "planned": "implement",
       "acceptance": "CYCLONE browser UI reaches MOON runtime via HTTP bridge",
@@ -220,7 +220,7 @@
     {
       "id": "C2",
       "req": "CYCLONE preserves all existing capabilities (local skills, file edit, workflows, diff/rollback, providers)",
-      "source": "CYCLONE_TERMINAL_AI_V10/app.js, CYCLONE_TERMINAL_AI_V10/server.js",
+      "source": "apps/cyclone/app.js, apps/cyclone/server.js",
       "deps": null,
       "planned": "preserve",
       "acceptance": "all CYCLONE features work unchanged",
@@ -246,7 +246,7 @@
     {
       "id": "C4",
       "req": "CYCLONE server.js implements /api/moon/* and /api/bridge/* forwarder to MOON",
-      "source": "CYCLONE_TERMINAL_AI_V10/server.js",
+      "source": "apps/cyclone/server.js",
       "deps": null,
       "planned": "implement",
       "acceptance": "server.js forwards /api/moon/* to MOON App Interface",
@@ -259,7 +259,7 @@
     {
       "id": "C5",
       "req": "CYCLONE browser UI (app.js) routes MOON commands via the bridge",
-      "source": "CYCLONE_TERMINAL_AI_V10/app.js",
+      "source": "apps/cyclone/app.js",
       "deps": null,
       "planned": "implement",
       "acceptance": "app.js sends MOON commands via HTTP bridge",
@@ -363,7 +363,7 @@
     {
       "id": "T1",
       "req": "Terminal startup and shutdown for MOON API + CYCLONE",
-      "source": "main.py; CYCLONE_TERMINAL_AI_V10/server.js",
+      "source": "main.py; apps/cyclone/server.js",
       "deps": null,
       "planned": "test",
       "acceptance": "both start and shut down cleanly",
@@ -376,7 +376,7 @@
     {
       "id": "T2",
       "req": "CYCLONE to MOON command routing verified with real payloads",
-      "source": "app/cyclone.py; app/api/interface.py; CYCLONE_TERMINAL_AI_V10/app.js",
+      "source": "app/cyclone.py; app/api/interface.py; apps/cyclone/app.js",
       "deps": null,
       "planned": "test",
       "acceptance": "real payloads reach MOON runtime",

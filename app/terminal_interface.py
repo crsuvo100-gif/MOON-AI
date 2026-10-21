@@ -65,7 +65,7 @@ app.add_middleware(
 )
 
 # Serve the interactive HUD (single-file HTML, no server-side routes beyond static serve).
-_HUD_PATH = Path(__file__).resolve().parent.parent / "moon_ui" / "hud.html"
+_HUD_PATH = Path(__file__).resolve().parent.parent / "apps/moon_ui" / "hud.html"
 
 # --- Cognitive memory API (spec 29/30) -------------------------------------
 # Mounted on the EXISTING app rather than starting a second server (spec 1).

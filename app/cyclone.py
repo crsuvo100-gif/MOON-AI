@@ -1,6 +1,6 @@
 """Real Cyclone bridge for MOON-AI.
 
-Reuse the existing CYCLONE_TERMINAL_AI_V10/ source tree instead of shipping a
+Reuse the existing apps/cyclone/ source tree instead of shipping a
 fabricated ``cyclone`` package.  MOON-AI serves CYCLONE's browser UI and
 proxies CYCLONE's own HTTP API (/api/*) through MOON-AI's FastAPI app, so the
 CYCLONE terminal is fully reachable through MOON-AI's browser and command
@@ -57,16 +57,16 @@ def _resolve_cyclone_dir() -> Path:
         return _CYCLONE_DIR
     here = Path(__file__).resolve().parent.parent  # <MOON>/
     candidates = (
-        here / "CYCLONE_TERMINAL_AI_V10",
+        here / "apps" / "cyclone",
         here / "MOON-AI" / "CYCLONE_TERMINAL_AI_V10",
-        Path.cwd() / "CYCLONE_TERMINAL_AI_V10",
+        Path.cwd() / "apps" / "cyclone",
     )
     for candidate in candidates:
         if candidate.is_dir():
             _CYCLONE_DIR = candidate
             return _CYCLONE_DIR
     raise RuntimeError(
-        "CYCLONE_TERMINAL_AI_V10 source tree not found next to the MOON project"
+        "apps/cyclone source tree not found next to the MOON project"
     )
 
 
