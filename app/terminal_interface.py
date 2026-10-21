@@ -2548,14 +2548,17 @@ try:
         _resolve_cyclone_dir,
         get_cyclone_router,
         get_cyclone_static_files,
+        get_moon_router,
     )
 
     _CYCLONE_OK = True
     _CYCLONE_DIR = str(_resolve_cyclone_dir())
     app.include_router(get_cyclone_router(), prefix="/cyclone")
     app.mount("/cyclone", get_cyclone_static_files())
-    # Expose Cyclone endpoints through MOON-AI's public-path gate so the browser
-    # UI (which does not carry MOON-AI's terminal token) can reach them.
+    # Route CYCLONE's /api/moon/* surface into MOON's own FastAPI runtime, so
+    # the browser UI (served at /cyclone) reaches MOON through CYCLONE's Node
+    # server via: browser -> MOON /api/moon/* -> CYCLONE Node server -> MOON.
+    app.include_router(get_moon_router(), prefix="/api")
     _PUBLIC_PATHS.update(
         {
             "/cyclone/api",

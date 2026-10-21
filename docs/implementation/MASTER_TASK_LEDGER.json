@@ -2,18 +2,18 @@
   "schema": "MOON x CYCLONE TERMINAL AI v10.0 master integration task ledger",
   "version": "2.0",
   "project": {
-    "root": "/home/meow/projects/MOON",
+    "root": "/home/meow/Projects/MOON",
     "remote_ssh": "git@github.com:crsuvo100-gif/MOON-AI.git",
     "remote_https": "https://github.com/crsuvo100-gif/MOON-AI.git",
     "branch": "main",
-    "local_head": "8755d0b",
-    "source_archive": "/home/meow/Downloads/Telegram Desktop/CYCLONE_TERMINAL_AI_v10.0/",
-    "in_project": "/home/meow/projects/MOON/CYCLONE_TERMINAL_AI_V10/",
+    "local_head": "cd47e88e8d9b71d654a4fb5904446b14e47d8bc4",
+    "source_archive": "/home/meow/Projects/MOON/CYCLONE_TERMINAL_AI_V10/",
+    "in_project": "/home/meow/Projects/MOON/CYCLONE_TERMINAL_AI_V10/",
     "frontend": "CYCLONE v10.0 (Node.js server :8765 + browser UI)",
     "backend_interface": "MOON FastAPI Application Interface (:8777)",
     "core": "MOON Core (Orchestrator, agents, tools, skills, memory, models)",
     "verifier_env": "execute_code fresh Python context (symlink chain to hermes base python)",
-    "project_venv": "/home/meow/projects/MOON/.venv"
+    "project_venv": "/home/meow/Projects/MOON/.venv"
   },
   "audit": {
     "date": "2026-10-21",
@@ -27,7 +27,7 @@
       "moon CLI entry point in fresh venv fails with 'No module named pydantic' because shebang resolves to /usr/bin/python3.14 (system python) instead of the venv interpreter; project .venv moon CLI works correctly.",
       "Project .venv moon --help exit 0 (works). Project .venv moon terminal enters REPL (blocks until Ctrl+C).",
       "Git remote: SSH git@github.com:crsuvo100-gif/MOON-AI.git (same repo as HTTPS https://github.com/crsuvo100-gif/MOON-AI.git).",
-      "Git history: main branch with latest commit 8755d0b 'feat: integrate CyCLONE TERMINAL AI v10.0 as primary MOON terminal'."
+      "Git history: main branch with latest commit cd47e88e8d9b71d654a4fb5904446b14e47d8bc4 build(quality): informational gates + remove throwaway probe."
     ]
   },
   "capabilities": [
@@ -72,6 +72,18 @@
       "src": "app/terminal/*.py",
       "status": "operational",
       "verify": "moon terminal REPL works; moon --help exit 0"
+    },
+    {
+      "id": "MOON.CYCLONE_MOON",
+      "src": "CYCLONE_TERMINAL_AI_V10/app.js; CYCLONE_TERMINAL_AI_V10/server.js; app/cyclone.py",
+      "status": "operational",
+      "verify": "moon command (app.js + server.js /api/moon/*) returns real MOON runtime data: 41 brains, 241 agents, 40 tools"
+    },
+    {
+      "id": "MOON.CYCLONE_PRIMARY",
+      "src": "app/cyclone.py; app/terminal_interface.py; CYCLONE_TERMINAL_AI_V10/server.js",
+      "status": "operational",
+      "verify": "browser UI served at /cyclone reaches MOON via /api/moon/* forwarder on port 8765"
     }
   ],
   "tasks": [

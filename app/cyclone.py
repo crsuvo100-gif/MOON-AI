@@ -124,3 +124,59 @@ def get_cyclone_router() -> APIRouter:
         )
 
     return router
+
+
+def get_moon_router() -> APIRouter:
+    """Return a router bridging CYCLONE's /api/moon/* surface to MOON's FastAPI.
+
+    Closed integration loop used by the integrated primary terminal:
+      * The browser UI (served by MOON-AI at /cyclone) calls fetch('/api/moon/*')
+        and lands here; MOON-AI mounts this router at the /api prefix.
+      * This router forwards /api/moon/* to the real CYCLONE Node.js server on
+        127.0.0.1:8765, because CYCLONE owns the command surface and its
+        /api/moon/* routes forward into MOON's own FastAPI runtime.
+      * CYCLONE's /api/moon/* handlers then contact MOON's FastAPI directly
+        (see the /api/moon/* forwarder added to server.js), reaching the real
+        MOON Core: agents, tools, skills, memory, models.
+    """
+    router = APIRouter()
+
+    @router.api_route("/moon/{full_path:path}", methods=_ALLOWED_METHODS)
+    async def _moon_api(request: Request, full_path: str):
+        url = f"{_CYCLONE_BASE}/api/moon/{full_path}" if full_path else f"{_CYCLONE_BASE}/api/moon"
+
+        body = None
+        if request.method in {"POST", "PUT", "DELETE", "PATCH"}:
+            body = await request.body()
+
+        headers = {}
+        for key, value in request.headers.items():
+            lowered = key.lower()
+            if lowered in _DROP_HEADERS:
+                continue
+            # Keep the request identifiable to MOON's rate limiter.
+            if lowered in {"user-agent", "x-forwarded-for", "x-real-ip"}:
+                headers[key] = value
+            else:
+                headers[key] = value
+
+        # A fresh transport per request is used so the bridge is independent of
+        # any module-level client lifecycle.
+        async with httpx.AsyncClient(timeout=90.0) as client:
+            response = await client.request(
+                method=request.method,
+                url=url,
+                content=body,
+                headers=headers,
+                follow_redirects=False,
+            )
+
+        # Return the real MOON payload; do not fabricate HTTP status codes.
+        return Response(
+            content=response.content,
+            status_code=response.status_code,
+            headers=response.headers,
+            media_type=response.headers.get("content-type", "application/json"),
+        )
+
+    return router

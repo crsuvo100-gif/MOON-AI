@@ -100,6 +100,52 @@ const server=http.createServer(async(req,res)=>{
   if(req.method==='POST'&&url.pathname==='/api/rollback'){try{const b=await body(req);const entry=editBackups.get(String(b.backupId||''));if(!entry)return fail(res,404,'Backup not found in this server session');const target=getEditableFile(entry.path);const current=fs.readFileSync(target,'utf8');if(hashText(current)!==entry.afterHash)return fail(res,409,'File changed after backup; refusing to overwrite newer edits');fs.writeFileSync(target,entry.before,{encoding:'utf8',flag:'w'});editBackups.delete(String(b.backupId));saveDurableState();return send(res,200,{ok:true,path:entry.path,rolledBack:true});}catch(e){return fail(res,400,e.message)}}
   if(req.method==='POST'&&url.pathname==='/api/ai'){try{const b=await body(req);if(typeof b.message!=='string'||b.message.length>12000)return fail(res,400,'Message must be a string up to 12000 characters');return send(res,200,await ai(b.message,b.memory));}catch(e){return fail(res,e.name==='AbortError'?504:400,e.message||'AI request failed');}}
   if(req.method==='POST'&&url.pathname==='/api/write'){try{const b=await body(req);if(typeof b.token!=='string')return fail(res,428,'Preview and approve changes first via /api/diff');const approval=editApprovals.get(b.token);if(!approval||approval.expires<Date.now())return fail(res,409,'Approval token missing or expired; create a new diff');const target=getEditableFile(approval.path),current=fs.readFileSync(target,'utf8');if(hashText(current)!==approval.beforeHash)return fail(res,409,'File changed since preview; refresh diff before saving');if(typeof b.approved!=='boolean'||!b.approved)return fail(res,403,'Explicit approval is required');const backupId=crypto.randomUUID();editBackups.set(backupId,{path:approval.path,before:current,afterHash:approval.afterHash,createdAt:new Date().toISOString()});while(editBackups.size>50)editBackups.delete(editBackups.keys().next().value);saveDurableState();fs.writeFileSync(target,approval.content,{encoding:'utf8',flag:'w'});editApprovals.delete(b.token);return send(res,200,{ok:true,path:rel(target),bytes:Buffer.byteLength(approval.content,'utf8'),backupId,hash:approval.afterHash});}catch(e){return fail(res,400,e.message||'Write failed');}}
+  // MOON-AI forwarder: /api/moon/* -> MOON's own FastAPI runtime (port 8777).
+  // CYCLONE's 'moon' command and the browser UI (served via MOON-AI's /cyclone
+  // mount) reach the real MOON Core through this surface. MOON's bearer token
+  // (MOON_AI_TERMINAL_TOKEN, when set) is forwarded; no secrets are logged.
+  const MOON_API_URL = 'http://127.0.0.1:8777/api';
+  const MOON_BEARER = process.env.MOON_AI_TERMINAL_TOKEN || '';
+  let _postBody = null;
+  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'DELETE' || req.method === 'PATCH') {
+    try { _postBody = await body(req); } catch (e) { return fail(res, 400, 'Invalid request body'); }
+  }
+  async function moonForward(res, urlPath, method = 'GET', payload = null) {
+    try {
+      const opts = { method: method, headers: {} };
+      if (payload !== null) {
+        opts.headers['Content-Type'] = 'application/json';
+        opts.body = JSON.stringify(payload);
+      }
+      if (MOON_BEARER) { opts.headers['Authorization'] = 'Bearer ' + MOON_BEARER; }
+      const r = await fetch(MOON_API_URL + urlPath, opts);
+      const ct = r.headers.get('content-type') || '';
+      let raw = await r.text();
+      let parsed = null;
+      try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+      if (!ct.startsWith('application/json')) {
+        const mime = { 'text/plain': 'text/plain; charset=utf-8', 'text/html': 'text/html; charset=utf-8' }[ct.split(';')[0]] || ct || 'text/plain';
+        return send(res, r.status, raw, mime);
+      }
+      return send(res, r.status, parsed === null ? raw : parsed);
+    } catch (e) {
+      fail(res, 502, 'MOON backend unreachable: ' + (e && e.message ? e.message : e));
+    }
+  }
+  // MOON-AI: public command/health surface of the integrated terminal.
+  if (req.method === 'GET' && url.pathname === '/api/moon') return send(res, 200, 'MOON-AI integrated terminal. Use /api/moon/<cmd>: agents tools skills models memory status diagnostics version help commands run.', 'text/plain; charset=utf-8');
+  if (req.method === 'GET' && url.pathname === '/api/moon/health') return moonForward(res, '/health');
+  if (req.method === 'GET' && url.pathname === '/api/moon/version') return moonForward(res, '/interface/version');
+  if (req.method === 'GET' && url.pathname === '/api/moon/status') return moonForward(res, '/interface/diagnostics');
+  if (req.method === 'GET' && url.pathname === '/api/moon/agents') return moonForward(res, '/terminal/agents');
+  if (req.method === 'GET' && url.pathname === '/api/moon/tools') return moonForward(res, '/terminal/tools');
+  if (req.method === 'GET' && url.pathname === '/api/moon/skills') return moonForward(res, '/interface/capabilities');
+  if (req.method === 'GET' && url.pathname === '/api/moon/models') return moonForward(res, '/interface/models');
+  if (req.method === 'GET' && url.pathname === '/api/moon/memory') return moonForward(res, '/interface/memory-status');
+  if (req.method === 'GET' && url.pathname === '/api/moon/diagnostics') return moonForward(res, '/interface/diagnostics');
+  if (req.method === 'GET' && url.pathname === '/api/moon/help') return moonForward(res, '/terminal/help');
+  if (req.method === 'GET' && url.pathname === '/api/moon/commands') return moonForward(res, '/terminal/commands');
+  if (req.method === 'POST' && url.pathname === '/api/moon/run') return moonForward(res, '/interface/run', 'POST', _postBody);
   if(req.method!=='GET'&&req.method!=='HEAD')return fail(res,405,'Method not allowed');
   let pathname;try{pathname=decodeURIComponent(url.pathname);}catch{return fail(res,400,'Malformed URL');}
   let file;try{file=safePath(pathname==='/'?'index.html':pathname.slice(1));}catch{return fail(res,403,'Path denied');}
