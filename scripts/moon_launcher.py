@@ -173,7 +173,18 @@ def main(argv: list[str]) -> int:
 
     if mode in ("terminal", "serve", "start"):
         log("MOON-AI Terminal starting at http://127.0.0.1:8777")
-        return subprocess.call([venv_python, "main.py", "start"])
+        # The Terminal UI that 8777 serves is the FastAPI app in
+        # app/terminal_interface.py (an interactive `main.py terminal` REPL is NOT
+        # that web UI). Boot it through uvicorn so the editor's Run-Terminal-HUD
+        # task starts the same server that is verified healthy.
+        return subprocess.call(
+            [
+                venv_python, "-m", "uvicorn",
+                "app.terminal_interface:app",
+                "--host", "0.0.0.0",
+                "--port", "8777",
+            ]
+        )
     if mode == "dashboard":
         log("MOON-AI Dashboard starting at http://127.0.0.1:5000")
         return subprocess.call([venv_python, "main.py", "dashboard"])

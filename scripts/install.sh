@@ -19,6 +19,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$SCRIPT_DIR"
 
 YES=0
@@ -82,8 +83,8 @@ fi
 echo ""
 echo "[3/7] Installing dependencies..."
 .venv/bin/pip install --quiet --upgrade pip 2>/dev/null || true
-.venv/bin/pip install --quiet -r requirements.txt
-.venv/bin/pip install --quiet -r requirements-optional.txt 2>/dev/null || true
+.venv/bin/pip install --quiet -r "$REPO_ROOT/requirements.txt"
+.venv/bin/pip install --quiet -r "$REPO_ROOT/requirements-optional.txt" 2>/dev/null || true
 
 # --- Install the package (editable, so entry points persist) ---
 echo ""
