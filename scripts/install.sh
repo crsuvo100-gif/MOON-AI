@@ -20,7 +20,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
-cd "$SCRIPT_DIR"
+cd "$REPO_ROOT"
 
 YES=0
 NO_VENV=0
@@ -114,8 +114,8 @@ fi
 # Symlink the console scripts into ~/.local/bin (already on PATH on most systems)
 if [ "$NO_SYMLINK" -eq 0 ]; then
     mkdir -p "$HOME/.local/bin"
-    ln -sfn "$SCRIPT_DIR/.venv/bin/moon" "$HOME/.local/bin/moon"
-    ln -sfn "$SCRIPT_DIR/.venv/bin/moon-terminal" "$HOME/.local/bin/moon-terminal"
+    ln -sfn "$REPO_ROOT/.venv/bin/moon" "$HOME/.local/bin/moon"
+    ln -sfn "$REPO_ROOT/.venv/bin/moon-terminal" "$HOME/.local/bin/moon-terminal"
     echo "  Symlinks created: ~/.local/bin/moon      -> .venv/bin/moon"
     echo "  Symlinks created: ~/.local/bin/moon-terminal -> .venv/bin/moon-terminal"
     if ! echo "$PATH" | tr ':' '\n' | grep -qx "$HOME/.local/bin"; then
@@ -141,7 +141,7 @@ echo ""
 echo "[7/7] Post-install health check..."
 if [ "$NO_LAUNCH" -eq 0 ]; then
     echo "  Starting MOON backend in background..."
-    nohup "$SCRIPT_DIR/.venv/bin/moon" status >/dev/null 2>&1 &
+    nohup "$REPO_ROOT/.venv/bin/moon" status >/dev/null 2>&1 &
     sleep 4
     moon status 2>&1 | head -8
 fi
