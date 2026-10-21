@@ -81,6 +81,31 @@ except Exception as _mem_exc:  # noqa: BLE001
     _logging.getLogger(__name__).warning(
         "memory API not mounted (memory subsystem unavailable): %s", _mem_exc)
 
+# --- Application Interface (MOON Application Runtime Interface) ----------------
+# MOON Application Interface between the terminal layer (CYCLONE, HTTP) and the
+# MOON Core runtime. Mounted on the EXISTING app so nothing is duplicated.
+try:
+    from app.api.interface import get_interface_router as _get_interface_router
+    app.include_router(_get_interface_router(), prefix="/api/interface")
+except Exception as _iface_exc:  # noqa: BLE001
+    import logging as _logging
+
+    _logging.getLogger(__name__).warning(
+        "application interface not mounted (interface subsystem unavailable): %s", _iface_exc)
+
+# --- Terminal control surface (CYCLONE primary-terminal command surface) -----
+# Exposes the real MOON runtime as a stable terminal command surface that
+# CYCLONE's bridge.js forwards into MOON. Fully functional.
+try:
+    from app.api.terminal import get_terminal_router as _get_terminal_router
+    app.include_router(_get_terminal_router(), prefix="/api/terminal")
+except Exception as _term_exc:  # noqa: BLE001
+    import logging as _logging
+
+    _logging.getLogger(__name__).warning(
+        "terminal control surface not mounted (terminal subsystem unavailable): %s", _term_exc)
+
+# --- HUD (single-file interactive UI) ----------------------------------------
 @app.get("/ui", response_class=HTMLResponse)
 async def ui_hud():
     """MOON-AI Neural Core interactive HUD — single-page app, live health + WS feed + API explorer."""
@@ -2510,28 +2535,23 @@ async def ws_events(ws: WebSocket):
             pass
 
 # ---------------------------------------------------------------------------
-# MOON-AI bridge (additive) --- MOON-AI + Cyclone share the same
-# FastAPI app. MOON-AI UI is served under /cyclone and its sockets are
-# exempted from MOON-AI's token gate so the browser UI works out of the box.
+# MOON-AI bridge (additive) --- MOON-AI + Cyclone share the same FastAPI app.
+# MOON-AI serves CYCLONE's browser UI at /cyclone and proxies Cyclone's own
+# HTTP API (/api/*) to the real Node.js CYCLONE server, so CYCLONE is a
+# first-class primary terminal reachable through MOON-AI.  No fabricated
+# Python cyclone package is used.
 # ---------------------------------------------------------------------------
 _LOGBOOK = logging.getLogger(__name__)
 
 try:
-    import os as _cyclone_os
-
-    import sys as _cyclone_sys
-
-    _cyclone_root = _cyclone_os.path.dirname(
-        _cyclone_os.path.dirname(_cyclone_os.path.abspath(__file__))
+    from app.cyclone import (
+        _resolve_cyclone_dir,
+        get_cyclone_router,
+        get_cyclone_static_files,
     )
-    _cyclone_dir = _cyclone_os.path.join(_cyclone_root, "MOON-AI")
-    if _cyclone_dir not in _cyclone_sys.path:
-        _cyclone_sys.path.insert(0, _cyclone_dir)
-
-    from cyclone import get_cyclone_router, get_cyclone_static_files  # noqa: E402
 
     _CYCLONE_OK = True
-    _CYCLONE_DIR = _cyclone_dir
+    _CYCLONE_DIR = str(_resolve_cyclone_dir())
     app.include_router(get_cyclone_router(), prefix="/cyclone")
     app.mount("/cyclone", get_cyclone_static_files())
     # Expose Cyclone endpoints through MOON-AI's public-path gate so the browser
@@ -2544,18 +2564,12 @@ try:
             "/cyclone/api/read",
             "/cyclone/api/search",
             "/cyclone/api/providers",
-            "/cyclone/api/workflows",
-            "/cyclone/api/agents",
-            "/cyclone/api/roles",
             "/cyclone/api/agent-bindings",
+            "/cyclone/api/workflows",
             "/cyclone/api/persistence",
             "/cyclone/api/rollback",
             "/cyclone/api/diff",
-            "/cyclone/api/metrics",
-            "/cyclone/api/brains",
-            "/cyclone/api/supervision",
-            "/cyclone/v1/chat/completions",
-            "/cyclone/v1/chat",
+            "/cyclone/api/write",
         }
     )
 except Exception as _cyclone_exc:  # pragma: no cover

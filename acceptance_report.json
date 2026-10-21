@@ -1,0 +1,10 @@
+{
+  "scan": "Scanning project at /home/meow/Projects/MOON",
+  "first_run": {
+    "returncode": 0,
+    "stdout": "..........                                                               [100%]\n",
+    "stderr": ""
+  },
+  "installed": false,
+  "final_returncode": 0
+}
