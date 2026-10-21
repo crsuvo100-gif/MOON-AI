@@ -26,21 +26,28 @@ dependencies = [
     "flask-socketio",
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
-    # Runtime extras (kept in sync with requirements.txt)
-    "asyncpg>=0.29",
-    "scipy>=1.11",
-    "kokoro-onnx>=0.2.1",
-    "torch",
-    "torchaudio",
-    "langdetect>=1.0.0",
 ]
 
 [project.optional-dependencies]
-# Hugging Face hosted inference (chat completions + text-to-image via InferenceClient).
+# Hugging Face hosted inference (chat + text-to-image via InferenceClient).
 # MOON works without it; install with: pip install "moon-ai-agent[hf]"
 hf = ["huggingface_hub>=0.22"]
-# Telegram channel (MOON as a Telegram bot). Token/chat id stay in .env.
+# Telegram channel (MOON as a Telegram bot).
 telegram = ["python-telegram-bot>=20.0"]
+# Runtime extras (optional; MOON degrades gracefully when absent):
+#   asyncpg   -> PostgreSQL cloud memory store
+#   scipy     -> audio DSP utilities
+#   kokoro-onnx -> offline female voice engine
+#   langdetect -> multilingual TTS language auto-detect
+#   torch/torchaudio -> F5-TTS voice cloning (optional)
+runtime = [
+    "asyncpg>=0.29",
+    "scipy>=1.11",
+    "kokoro-onnx>=0.2.1",
+    "langdetect>=1.0.0",
+    "torch",
+    "torchaudio",
+]
 
 [project.scripts]
 moon = "main:main"
