@@ -47,6 +47,13 @@
             "detail": "Run voice test (make voice-test)"
         },
         {
+            "label": "MOON: Auto Task & Save",
+            "type": "shell",
+            "command": "python3 scripts/moon_workflow.py run \"make run\"",
+            "group": "build",
+            "detail": "Save-first workflow: build, save to source folder, then ask about GitHub push"
+        },
+        {
             "label": "MOON: Install / Sync Deps",
             "type": "shell",
             "command": "make models",
