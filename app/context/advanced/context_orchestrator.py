@@ -176,7 +176,11 @@ class ContextOrchestrator:
 
     def get_snapshot(self) -> ContextSnapshot:
         """Get a complete snapshot of context state."""
-        awareness_state = self.assess()
+        awareness_state = self.assess() or ContextAwarenessState(
+            health=ContextHealth.HEALTHY, utilization=0.0, total_items=0,
+            total_tokens=0, available_tokens=0, sources={}, oldest_item_age=0.0,
+            newest_item_age=0.0, avg_relevance=0.0, avg_importance=0.0,
+        )
         lifecycle_stats = self._lifecycle.get_stats() if self._lifecycle else {}
         trend = self._awareness.get_trend() if self._awareness else {}
 

@@ -475,10 +475,11 @@ class Orchestrator:
             if _s:
                 specs["strong"] = _s
             # Per-agent brains as distinct roles (spec 16/47).
-            if getattr(self, "_agent_models", None) is not None:
+            agent_models = getattr(self, "_agent_models", None)
+            if agent_models is not None:
                 for role in ("coding", "math", "research", "writing", "security"):
                     try:
-                        m = self._agent_models._preferred(role)
+                        m = agent_models._preferred(role)
                     except Exception:  # noqa: BLE001
                         m = None
                     sp = _mk(m or "", role=role)
@@ -669,8 +670,9 @@ class Orchestrator:
                     await svc.teardown()
                 except Exception:  # noqa: BLE001
                     pass
-        if getattr(self, "_agent_models", None) is not None:
-            await self._agent_models.teardown()
+        agent_models = getattr(self, "_agent_models", None)
+        if agent_models is not None:
+            await agent_models.teardown()
         # --- Cognitive memory shutdown (spec 56) ---
         if self._cognitive_memory is not None:
             try:
@@ -873,19 +875,22 @@ class Orchestrator:
                     "browser automation", "image", "ocr", "pdf", "data", "csv",
                     "plot", "chart", "speech", "translate api", "excel", "yaml", "qr"):
             if cap in prompt:
-                name = acquire_by_catalog(cap, self._tools._registry)
-                if name:
-                    logger.info("auto-acquired catalog tool '%s'", name)
+                tools = getattr(self, "_tools", None)
+                if tools is not None:
+                    name = acquire_by_catalog(cap, tools._registry)
+                    if name:
+                        logger.info("auto-acquired catalog tool '%s'", name)
                 break
         # Always-connected GitHub tool-feed: if a needed capability is not local,
         # pull it from YOUR repo; if not there, search the public GitHub
         # ecosystem, pull the best match, and install it as a plugin. Then
         # continue the task with the new tool. All best-effort / non-destructive.
         repo = getattr(self._settings, "github_repo", "")
-        if repo and not self._tools._registry.tool_names.__contains__("tool_" + cap.replace(" ", "_")):
+        tools = getattr(self, "_tools", None)
+        if repo and tools is not None and not tools._registry.tool_names.__contains__("tool_" + cap.replace(" ", "_")):
             try:
                 from app.tools.github_feed import feed_for_capability
-                installed = await feed_for_capability(cap, self._tools._registry, repo_url=repo)
+                installed = await feed_for_capability(cap, tools._registry, repo_url=repo)
                 if installed:
                     logger.info("github tool-feed installed '%s' for capability '%s'", installed, cap)
             except Exception as exc:  # noqa: BLE001
@@ -914,8 +919,8 @@ class Orchestrator:
                         cap = obj["need"]
                         if not _auto_allowed:
                             logger.info("autonomy gate: skipping plugin generation for '%s'", cap)
-                        elif not acquire_by_catalog(cap, self._tools._registry):
-                            generate_plugin(obj.get("name", "custom"), obj.get("purpose", ""), obj.get("code", ""), self._tools._registry)
+                        elif tools is not None and not acquire_by_catalog(cap, tools._registry):
+                            generate_plugin(obj.get("name", "custom"), obj.get("purpose", ""), obj.get("code", ""), tools._registry)
         except Exception as exc:  # noqa: BLE001
             logger.info("LLM tool-plan skipped: %s", exc)
 

@@ -272,7 +272,7 @@ class AgentPool:
         completed_tasks = await asyncio.gather(*coros, return_exceptions=True)
 
         for task in completed_tasks:
-            if isinstance(task, Exception):
+            if isinstance(task, BaseException):
                 execution.errors["unknown"] = str(task)
             else:
                 execution.results[task.task_id] = task.result

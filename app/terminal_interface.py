@@ -20,7 +20,7 @@ import re
 import sys
 import logging
 import time
-from typing import Iterable
+from typing import Iterable, Any, Optional
 
 import json
 import subprocess
@@ -1391,7 +1391,7 @@ async def api_moon_agent(request: Request):
 
 
 @app.get("/api/memory", response_model=None)
-async def api_memory_search(q: str = "", request: Request | None = None):
+async def api_memory_search(q: str = "", request: Request = None) -> Any:  # type: ignore[assignment]
     """Search MOON-AI memory (spec 35 GET /memory/search)."""
     if TERMINAL_TOKEN and request is not None and not _token_ok(dict(request.headers)):
         from fastapi import Response
@@ -1406,7 +1406,7 @@ async def api_memory_search(q: str = "", request: Request | None = None):
 
 
 @app.get("/api/knowledge/search", response_model=None)
-async def api_knowledge_search(q: str = "", request: Request | None = None):
+async def api_knowledge_search(q: str = "", request: Request = None) -> Any:  # type: ignore[assignment]
     """Search MOON-AI knowledge base (spec 35 GET /knowledge/search)."""
     if TERMINAL_TOKEN and request is not None and not _token_ok(dict(request.headers)):
         from fastapi import Response
