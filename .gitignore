@@ -25,6 +25,11 @@ plugins/generated/
 .ori/
 .pre_commit_checkpoint/
 
+# Local debug / runtime artifacts not intended for source control
+.probe_system_info.py
+app/laboratory/
+home/
+
 # Python
 __pycache__/
 *.py[cod]
