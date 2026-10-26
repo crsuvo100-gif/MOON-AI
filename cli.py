@@ -45,13 +45,20 @@ def _cmd_build_all(args: argparse.Namespace) -> int:
 
     saved_argv = sys.argv
     try:
-        sys.argv = ["moon", "build_all", args.goal]
+        # Build sys.argv for build_all_main.
+        # The build_all.py parser uses parse_args() with argv=None, which
+        # consumes sys.argv[1:]. So we must NOT include the "build_all"
+        # subcommand name (cli.py's subparser already consumed it).
+        new_argv = ["moon"]  # prog name placeholder
+        if args.goal:
+            new_argv.append(args.goal)
         if args.status:
-            sys.argv.append("--status")
+            new_argv.append("--status")
         if args.json:
-            sys.argv.extend(["--json", args.json])
+            new_argv.extend(["--json", args.json])
         if args.force:
-            sys.argv.append("--force")
+            new_argv.append("--force")
+        sys.argv = new_argv
         return asyncio.run(build_all_main())
     finally:
         sys.argv = saved_argv
@@ -80,10 +87,17 @@ def _make_parser() -> argparse.ArgumentParser:
     u.add_argument("--enabled/--disabled", default=True,
                    help="connection enabled state")
 
-    build_all_p = _make_build_all_parser()
-    bap = sub.add_parser("build_all", parents=[build_all_p],
-                         help="build and verify all MOON subsystems")
+    # Build all sub-parser (no parents to avoid positional-arg conflicts on py3.14)
+    bap = sub.add_parser("build_all", help="build and verify all MOON subsystems")
     bap.set_defaults(func=_cmd_build_all)
+    bap.add_argument("goal", nargs="?", default="assemble all MOON subsystems",
+                     help="human-readable goal for the build")
+    bap.add_argument("--status", action="store_true",
+                     help="only report current status (skip acquisition)")
+    bap.add_argument("--json", metavar="FILE", default=None,
+                     help="write build report as JSON to FILE")
+    bap.add_argument("--force", action="store_true",
+                     help="re-verify all subsystems (skip discovery skip)")
 
     return parser
 
