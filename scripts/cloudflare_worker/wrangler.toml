@@ -13,5 +13,5 @@ compatibility_date = "2025-06-01"
 
 # Route configuration
 routes = [
-  { pattern = "api.moon.twin.ai/*", entrypoint = "src/moon_worker.js" },
+  { pattern = "api.moon.twin.ai/*", entrypoint = "src/index.js" },
 ]
