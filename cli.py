@@ -23,6 +23,40 @@ from app.connector.gateway import ConnectionGateway, ConnectionRecord
 from app.connector.permission import ConnectorPermissionManager
 
 
+def _make_build_all_parser() -> argparse.ArgumentParser:
+    """Sub-parser for the moon build_all command."""
+    p = argparse.ArgumentParser(prog="moon build_all",
+                                description="Build and verify all MOON subsystems",
+                                add_help=False)
+    p.add_argument("goal", nargs="?", default="assemble all MOON subsystems",
+                   help="human-readable goal for the build")
+    p.add_argument("--status", action="store_true",
+                   help="only report current status (skip acquisition)")
+    p.add_argument("--json", metavar="FILE", default=None,
+                   help="write build report as JSON to FILE")
+    p.add_argument("--force", action="store_true",
+                   help="re-verify all subsystems (skip discovery skip)")
+    return p
+
+
+def _cmd_build_all(args: argparse.Namespace) -> int:
+    """Handler for the moon build_all command."""
+    from app.brain.build_all import main as build_all_main
+
+    saved_argv = sys.argv
+    try:
+        sys.argv = ["moon", "build_all", args.goal]
+        if args.status:
+            sys.argv.append("--status")
+        if args.json:
+            sys.argv.extend(["--json", args.json])
+        if args.force:
+            sys.argv.append("--force")
+        return asyncio.run(build_all_main())
+    finally:
+        sys.argv = saved_argv
+
+
 def _make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cli.py",
@@ -37,31 +71,21 @@ def _make_parser() -> argparse.ArgumentParser:
 
     u = sub.add_parser("register", help="register a new connection")
     u.add_argument("--name", required=True, help="connection name")
-    u.add_argument("--kind", required=True, help="service | agent | mcp | webhook | websocket")
+    u.add_argument("--kind", required=True,
+                   help="service | agent | mcp | webhook | websocket")
     u.add_argument("--url", required=True, help="connection URL")
     u.add_argument("--model", default="", help="model name (agent connections)")
     u.add_argument("--scope", default="network.egress", help="permission scope")
     u.add_argument("--perm", action="append", default=[], help="permission scope")
-    u.add_argument("--enabled/--disabled", default=True, help="connection enabled state")
+    u.add_argument("--enabled/--disabled", default=True,
+                   help="connection enabled state")
+
+    build_all_p = _make_build_all_parser()
+    bap = sub.add_parser("build_all", parents=[build_all_p],
+                         help="build and verify all MOON subsystems")
+    bap.set_defaults(func=_cmd_build_all)
+
     return parser
-
-
-def _atomic_save(registry_path: Path, data: dict) -> None:
-    """Write registry.json atomically: write to .tmp then rename."""
-    tmp = registry_path.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
-    tmp.replace(registry_path)
-
-
-def _handle_sigint(sig, frame, gw: ConnectionGateway) -> None:
-    """On Ctrl+C: save the registry atomically, then re-raise KeyboardInterrupt."""
-    print("\n\n[gateway] cleaning up registry on interrupt...")
-    try:
-        gw._save()
-        print(f"[gateway] registry saved to {gw._file}")
-    except Exception as exc:  # noqa: BLE001
-        print(f"[gateway] save error during shutdown: {exc}")
-    raise KeyboardInterrupt
 
 
 def cmd_gateway() -> None:
@@ -162,6 +186,24 @@ def cmd_gateway() -> None:
             print(f"  error: {exc}")
 
 
+def _atomic_save(registry_path: Path, data: dict) -> None:
+    """Write registry.json atomically: write to .tmp then rename."""
+    tmp = registry_path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    tmp.replace(registry_path)
+
+
+def _handle_sigint(sig, frame, gw: ConnectionGateway) -> None:
+    """On Ctrl+C: save the registry atomically, then re-raise KeyboardInterrupt."""
+    print("\n\n[gateway] cleaning up registry on interrupt...")
+    try:
+        gw._save()
+        print(f"[gateway] registry saved to {gw._file}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[gateway] save error during shutdown: {exc}")
+    raise KeyboardInterrupt
+
+
 def main() -> None:
     parser = _make_parser()
     args = parser.parse_args()
@@ -171,6 +213,9 @@ def main() -> None:
         return
 
     # Default: run MOON's normal CLI (same entry point as `moon` / `moon-terminal`).
+    if hasattr(args, "func"):
+        return args.func(args)
+
     from main import main as _run_moon
 
     _run_moon()
