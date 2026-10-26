@@ -1390,7 +1390,7 @@ async def api_moon_agent(request: Request):
         }, status_code=500)
 
 
-@app.get("/api/memory")
+@app.get("/api/memory", response_model=None)
 async def api_memory_search(q: str = "", request: Request | None = None):
     """Search MOON-AI memory (spec 35 GET /memory/search)."""
     if TERMINAL_TOKEN and request is not None and not _token_ok(dict(request.headers)):
@@ -1405,7 +1405,7 @@ async def api_memory_search(q: str = "", request: Request | None = None):
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
-@app.get("/api/knowledge/search")
+@app.get("/api/knowledge/search", response_model=None)
 async def api_knowledge_search(q: str = "", request: Request | None = None):
     """Search MOON-AI knowledge base (spec 35 GET /knowledge/search)."""
     if TERMINAL_TOKEN and request is not None and not _token_ok(dict(request.headers)):
