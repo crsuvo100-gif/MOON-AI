@@ -14,20 +14,20 @@ throughout the process.
 from __future__ import annotations
 
 import os
-from typing import Final
+from typing import Final, Optional, TYPE_CHECKING
 
-from .store import LocalMemoryStore
-from .cloud_store import CloudMemoryStore
+if TYPE_CHECKING:
+    from .store import MemoryStore
 
 
 _BACKEND_ENV_VAR: Final = "MOON-AI_MEMORY_BACKEND"
 _DEFAULT_BACKEND: Final = "local"
 
 # Cache the singleton after first creation.
-_instance: LocalMemoryStore | CloudMemoryStore | None = None
+_instance: Optional[MemoryStore] = None
 
 
-def memory_store_factory() -> LocalMemoryStore | CloudMemoryStore:
+def memory_store_factory() -> MemoryStore:
     """Return the configured memory store.
 
     The result is cached; subsequent calls return the same object.
@@ -38,9 +38,13 @@ def memory_store_factory() -> LocalMemoryStore | CloudMemoryStore:
 
     backend = os.getenv(_BACKEND_ENV_VAR, _DEFAULT_BACKEND).lower()
     if backend == "cloud":
+        from .cloud_store import CloudMemoryStore
+
         _instance = CloudMemoryStore()  # uses MOON-AI_DATABASE_URL
     else:
         # Fallback to local SQLite regardless of typo or unknown value.
+        from .store import LocalMemoryStore
+
         _instance = LocalMemoryStore()
     return _instance
 

@@ -17,7 +17,8 @@ import time
 from pathlib import Path
 from typing import Any
 
-from app.memory.record import MemoryRecord, Scope, SyncStatus, MemoryType
+from app.memory.record import MemoryRecord, Scope, SyncStatus, MemoryType, SourceType, Importance
+from app.memory.task_record import TaskRecord, TaskStatus
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,24 @@ class MemoryStore:
         raise NotImplementedError
 
     def delete(self, memory_id: str, *, hard: bool = False) -> bool:  # pragma: no cover
+        raise NotImplementedError
+
+    # ------------------------------------------------------------------
+    # Task records (spec 61/62) -- interface
+    # ------------------------------------------------------------------
+    def record_task(self, task: TaskRecord) -> TaskRecord:  # pragma: no cover
+        raise NotImplementedError
+
+    def get_task(self, task_id: str, *, project_id: str = "MOON", include_deleted: bool = False) -> "TaskRecord | None":  # pragma: no cover
+        raise NotImplementedError
+
+    def list_tasks(self, *, project_id: str = "MOON", status: str | None = None, limit: int = 50, offset: int = 0) -> list["TaskRecord"]:  # pragma: no cover
+        raise NotImplementedError
+
+    def update_task(self, task: TaskRecord) -> TaskRecord:  # pragma: no cover
+        raise NotImplementedError
+
+    def delete_task(self, task_id: str, *, project_id: str = "MOON", hard: bool = False) -> bool:  # pragma: no cover
         raise NotImplementedError
 
     def query(
@@ -304,6 +323,53 @@ class LocalMemoryStore(MemoryStore):
             conn.commit()
         return rec
 
+    # ------------------------------------------------------------------
+    # Task records (spec 61/62) -- local implementation
+    # ------------------------------------------------------------------
+    def record_task(self, task: TaskRecord) -> TaskRecord:
+        """Insert or update a task record. Idempotent upsert."""
+        self.upsert(self._task_to_memory(task))
+        return task
+
+    def get_task(self, task_id: str, *, project_id: str = "MOON", include_deleted: bool = False) -> "TaskRecord | None":
+        """Rehydrate a single task by id."""
+        rec = self.get(f"{project_id}:{task_id}", include_deleted=include_deleted)
+        return self._task_from_memory(rec) if rec is not None else None
+
+    def get_many(self, task_ids: list[str], *, project_id: str = "MOON") -> dict[str, TaskRecord]:
+        """Rehydrate several tasks by id in one pass."""
+        out: dict[str, TaskRecord] = {}
+        for tid in task_ids:
+            rec = self.get(f"{project_id}:{tid}", include_deleted=True)
+            if rec is not None:
+                out[tid] = self._task_from_memory(rec)
+        return out
+
+    def list_tasks(self, *, project_id: str = "MOON", status: "TaskStatus | None" = None, limit: int = 50, offset: int = 0) -> list["TaskRecord"]:
+        """List task records for a project, optionally filtered by status."""
+        records = self.query(scope=Scope.TASK, project_id=project_id, include_deleted=True, limit=limit, offset=offset)
+        out: list[TaskRecord] = []
+        for rec in records:
+            t = self._task_from_memory(rec)
+            if status is None or t.task_status == status:
+                out.append(t)
+        return out
+
+    def update_task(self, task: TaskRecord) -> TaskRecord:
+        """Idempotent overwrite of an existing task record."""
+        self.upsert(self._task_to_memory(task))
+        return task
+
+    def delete_task(self, task_id: str, *, project_id: str = "MOON", hard: bool = False) -> bool:
+        """Soft-delete a task record."""
+        return self.delete(f"{project_id}:{task_id}", hard=hard)
+
+    def _task_to_memory(self, task: TaskRecord) -> MemoryRecord:
+        return task_to_memory(task)
+
+    def _task_from_memory(self, rec: MemoryRecord) -> TaskRecord:
+        return task_from_memory(rec)
+
     def mark_synced(self, memory_ids: list[str], status: SyncStatus) -> None:
         """Update sync_status for given memory_ids.
 
@@ -503,5 +569,98 @@ class LocalMemoryStore(MemoryStore):
             if count:
                 removed_counts[mtype.value] = count
         return removed_counts
+
+
+def _as_source_type(value: Any) -> SourceType:
+    if isinstance(value, SourceType):
+        return value
+    return SourceType(value) if isinstance(value, str) else SourceType.AGENT
+
+
+def _as_importance(value: Any) -> Importance:
+    if isinstance(value, Importance):
+        return value
+    try:
+        return Importance(value)
+    except Exception:  # noqa: BLE001
+        return Importance.MEDIUM
+
+
+def task_to_memory(task: TaskRecord) -> MemoryRecord:
+    """Serialise a TaskRecord into a durable MemoryRecord."""
+    from app.memory.record import MemoryRecord  # lazy to avoid cycle
+
+    provenance = dict(task.provenance or {})
+    runtime = provenance.setdefault("task", {})
+    runtime.update({
+        "task_status": task.task_status.value,
+        "result": task.result,
+        "exit_code": task.exit_code,
+        "start_time": task.start_time,
+        "end_time": task.end_time,
+    })
+    return MemoryRecord(
+        content=task.content,
+        memory_id=f"{task.project_id or 'MOON'}:{task.task_id}",
+        scope=Scope.TASK,
+        type=MemoryType.TASK,
+        owner_id=task.owner_id or "moon",
+        agent_id=task.agent_id or task.source_type,
+        project_id=task.project_id or "MOON",
+        task_id=task.task_id,
+        session_id=task.session_id or "",
+        summary=task.summary,
+        tags=list(task.tags or []),
+        confidence=float(task.confidence or 0.6),
+        importance=_as_importance(task.importance),
+        source_type=_as_source_type(task.source_type),
+        source="AGENT",
+        provenance=provenance,
+        created_at=task.created_at or time.time(),
+        updated_at=task.updated_at or time.time(),
+        deleted=bool(task.deleted),
+        archived=bool(task.deleted),
+        trusted=True,
+        canonical=True,
+    )
+
+
+def task_from_memory(rec: MemoryRecord, *, parent: TaskRecord | None = None) -> TaskRecord:
+    """Rehydrate a TaskRecord from a stored MemoryRecord."""
+    from app.memory.record import MemoryRecord  # noqa: F401
+    from app.memory.task_record import TaskStatus  # deferred import
+
+    runtime = (rec.provenance or {}).get("task") or {}
+    status_value = runtime.get("task_status", TaskStatus.PENDING.value)
+    try:
+        status = TaskStatus(status_value)
+    except Exception:  # noqa: BLE001
+        status = TaskStatus.PENDING
+
+    return TaskRecord(
+        task_id=rec.task_id or (parent.task_id if parent else ""),
+        content=rec.content or "",
+        summary=rec.summary or "",
+        owner_id=rec.owner_id or "moon",
+        agent_id=rec.agent_id or "",
+        project_id=rec.project_id or "MOON",
+        scope=Scope.TASK,
+        task_status=status,
+        result=runtime.get("result", ""),
+        exit_code=runtime.get("exit_code"),
+        start_time=runtime.get("start_time"),
+        end_time=runtime.get("end_time"),
+        created_at=rec.created_at or time.time(),
+        updated_at=rec.updated_at or time.time(),
+        tags=list(rec.tags or []),
+        metadata=dict(rec.provenance or {}),
+        source_type=getattr(rec.source_type, "value", str(rec.source_type) if rec.source_type else "AGENT"),
+        provenance=dict(rec.provenance or {}),
+        confidence=float(rec.confidence or 0.6),
+        importance=_as_importance(rec.importance),
+        session_id=rec.session_id or "",
+        deleted=bool(rec.deleted),
+    )
+
 
 __all__ = ["MemoryStore", "LocalMemoryStore", "default_db_path", "DEFAULT_MEMORY_DIR", "SCHEMA_VERSION"]

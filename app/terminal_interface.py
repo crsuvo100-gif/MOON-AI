@@ -16,9 +16,11 @@ from __future__ import annotations
 import asyncio
 import base64
 import os
+import re
 import sys
 import logging
 import time
+from typing import Iterable
 
 import json
 import subprocess
@@ -219,6 +221,19 @@ def _push_telemetry(orch):
                        "ram": round(ram, 1), "net": round(net, 2)})
     except Exception:
         pass
+
+def _stream_text(out: str, yield_every: int = 1) -> Iterable[str]:
+    """Yield `out` as chunks of at most `yield_every` characters.
+
+    Turns a finished answer into an iterable stream the CLI/HUD can iterate over
+    (to render progressively or paginate).
+    """
+    if yield_every <= 0:
+        yield out
+        return
+    for i in range(0, len(out), yield_every):
+        yield out[i:i + yield_every]
+
 
 # Live log subscribers (set when a HUD client requests action:"log_stream").
 # Each entry is an asyncio coroutine `send(**msg)` from a ws_endpoint connection.

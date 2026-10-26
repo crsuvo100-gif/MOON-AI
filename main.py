@@ -583,6 +583,9 @@ def main() -> int:
         print("[MOON-AI] work executed through the integration hub (MOON owns the runtime path).")
         return 0
 
+    elif args.cmd == "build":
+        raise SystemExit(_cmd_build(args))
+
     else:
         # No subcommand -> show help
         ap.print_help()

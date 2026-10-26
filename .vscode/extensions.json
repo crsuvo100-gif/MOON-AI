@@ -1,26 +1,15 @@
 {
-    "recommendations": [
-        "formulahendry.acp-client",
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "ms-python.black-formatter",
-        "github.vscode-pull-request-github",
-        "redhat.vscode-yaml",
-        "rangav.vscode-thunder-client",
-        "tomv5070.vscode-gitmoji",
-        "aaron-bond.better-comments",
-        "mhutchie.git-graph",
-        "eamodio.gitlens",
-        "ms-vscode.cpptools",
-        "ms-vscode.cpptools-themes",
-        "ms-vscode.cmake-tools",
-        "ms-vscode.vscode-dev-containers",
-        "honza.apktools",
-        "twxs.cmake",
-        "apzlc.cmake-ide",
-        "vahidhere.vscode-c-cpp-cli",
-        "bitinerantstudios.vscode-arm-embedded",
-        "yoavbls.pretty-ts-errors",
-        "ms-vscode.vscode-typescript-next"
-    ]
+  "recommendations": [
+    "formulahendry.acp-client",
+    "github.vscode-pull-request-github",
+    "rangav.vscode-thunder-client",
+    "eamodio.gitlens",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.black-formatter",
+    "ms-python.debugpy"
+  ],
+  "languages": [
+    "Python"
+  ]
 }
