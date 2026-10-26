@@ -46,6 +46,12 @@ env/
 # Secrets (never commit credentials)
 .env
 .env.*
+node_modules/
+moon_ai_agent.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.husky/
 
 # Tool/IDE state (local development artifacts, not part of project source)
 .claude/

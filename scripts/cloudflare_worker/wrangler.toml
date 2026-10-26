@@ -1,0 +1,17 @@
+name = "moon-online"
+
+main = "src/index.js"
+assets = "public"
+
+compatibility_date = "2025-06-01"
+
+# Environment variables (set via wrangler secret put)
+# CLOUDFLARE_ACCOUNT_ID = Cloudflare account ID
+# CLOUDFLARE_BUCKET = R2 bucket name
+# CLOUDFLARE_ACCESS_KEY = R2 API token access key
+# CLOUDFLARE_SECRET_KEY = R2 API token secret key
+
+# Route configuration
+routes = [
+  { pattern = "api.moon.twin.ai/*", entrypoint = "src/moon_worker.js" },
+]
