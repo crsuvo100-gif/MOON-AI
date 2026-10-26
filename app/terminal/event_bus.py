@@ -73,12 +73,12 @@ class _EventBus:
         ev = self._resolve_event(event)
         # Notify new‑style subscribers
         if isinstance(ev, Event):
-        for cb in self._subscribers.get(ev, [])  # type: ignore[no-matching-overload]:
-            cb(ev)
-            try:
-                cb(payload)
-            except Exception as exc:  # noqa: BLE001
-                sys.stderr.write(f"EventBus subscriber error for {ev}: {exc}\n")
+            for cb in self._subscribers.get(ev, []):  # type: ignore[no-matching-overload]
+                cb(ev)
+                try:
+                    cb(payload)
+                except Exception as exc:  # noqa: BLE001
+                    sys.stderr.write(f"EventBus subscriber error for {ev}: {exc}\n")
         # Notify legacy string‑based subscribers
         if not isinstance(ev, Event):
             for cb in self._legacy_subscribers.get(ev, []):
