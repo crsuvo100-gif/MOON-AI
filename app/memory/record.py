@@ -47,6 +47,7 @@ class MemoryType(str, Enum):
     PROJECT = "project"
     AGENT = "agent"
     SHARED = "shared"
+    TASK = "task"
 
 
 # spec 8: provenance

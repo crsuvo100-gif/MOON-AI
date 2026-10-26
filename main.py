@@ -519,7 +519,14 @@ def main() -> int:
         _repl_main()
         return 0
     elif args.cmd == "cli":
-        print("CLI removed. Use: MOON-AI run \"<task>\" or MOON-AI api", file=sys.stderr)
+        # CLI entry point moved to ./cli.py (gateways, register, call, status, quit).
+        # Gateway:  python ./cli.py --gateway
+        # Registers:  python ./cli.py register --name X --kind kind --url U [--model M] [--scope S]
+        print(
+            "MOON-AI CLI: run `python cli.py --gateway` to start the connection gateway, "
+            "or `python cli.py register --name X --kind kind --url U` to register a peer.",
+            file=sys.stderr,
+        )
         return 1
     elif args.cmd == "status":
         raise SystemExit(_cmd_status())

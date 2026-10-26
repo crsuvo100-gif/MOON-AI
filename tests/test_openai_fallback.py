@@ -33,8 +33,8 @@ def _fake_llm(returns=None, raises=False):
 async def test_fallback_triggers_when_primary_fails():
     """When the local model raises, the result should come from the fallback."""
     o = Orchestrator(get_settings())
-    o._llm = _fake_llm(raises=True)
-    o._llm_fallback = _fake_llm(
+    o._llm = _fake_llm(raises=True)  # type: ignore[assignment]
+    o._llm_fallback = _fake_llm(  # type: ignore[assignment]
         returns=CompletionResult(content="from-openai", has_tool_calls=False, tool_calls=[])
     )
     o._llm_fallback2 = None

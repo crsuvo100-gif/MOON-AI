@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any, Awaitable, Callable
 
 
 @dataclass
@@ -65,7 +65,7 @@ class SkillChainer:
         self,
         chain_name: str,
         initial_input: str,
-        skill_executor: Callable[[str, str], str],
+        skill_executor: Callable[[str, str], Awaitable[str]],
     ) -> ChainResult:
         """Execute a skill chain.
 

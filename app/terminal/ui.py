@@ -183,7 +183,7 @@ class MoonTerminalApp(App):
     def _build_window(self) -> Vertical:
         """Construct the single terminal window with the log content."""
         # build the content children list
-        content_children = []
+        content_children: list[Static] = []
         for text, style in self._lines:
             if style == "section-header":
                 content_children.append(_White(text, classes="output"))
@@ -206,7 +206,7 @@ class MoonTerminalApp(App):
         return window
 
     # ── actions ─────────────────────────────────────────────────────────────
-    def action_quit(self) -> None:
+    def action_quit(self) -> None:  # type: ignore[override]
         self.exit()
 
 

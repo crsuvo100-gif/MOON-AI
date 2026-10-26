@@ -1,0 +1,25 @@
+# pyrefly config — MOON-AI project
+[pyrefly]
+# Root module name(s) — project packages
+module = "moon"
+
+# Source roots to type-check
+source = ["app", "moon", "scripts", "tests"]
+
+# Exclude patterns for generated/virtual dirs
+exclude = [
+    "**/.git",
+    "**/node_modules",
+    "**/.venv",
+    "**/venv",
+    "**/build",
+    "**/dist",
+    "**/__pycache__",
+    "**/.pytest_cache",
+    "**/.mypy_cache",
+    "**/.ruff_cache",
+    "**/.moon_logs",
+    "**/.moon_sessions.json",
+    "**/.moon_workflow_logs",
+    "**/moon_ai_agent.egg-info",
+]

@@ -72,7 +72,9 @@ class _EventBus:
     def publish(self, event: Event | str, payload: Any = None) -> None:
         ev = self._resolve_event(event)
         # Notify new‑style subscribers
-        for cb in self._subscribers.get(ev if isinstance(ev, Event) else None, []):
+        if isinstance(ev, Event):
+        for cb in self._subscribers.get(ev, [])  # type: ignore[no-matching-overload]:
+            cb(ev)
             try:
                 cb(payload)
             except Exception as exc:  # noqa: BLE001

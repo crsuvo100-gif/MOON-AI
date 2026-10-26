@@ -19,7 +19,7 @@ from typing import Any
 from app.config.settings import get_settings
 from app.memory.conversation_history import ConversationHistory
 from app.memory.working_memory import WorkingMemory
-from app.services.llm_service import ChatMessage
+from app.services.llm_service import ChatMessage, LLMService
 
 logger = logging.getLogger(__name__)
 

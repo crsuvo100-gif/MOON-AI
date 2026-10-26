@@ -1,3 +1,2 @@
 [submodule "regexr"]
-	path = regexr
 	url = https://github.com/gskinner/regexr.git

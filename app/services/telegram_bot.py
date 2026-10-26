@@ -71,6 +71,8 @@ class TelegramBot:
     async def reply(self, chat_id: str, text: str) -> None:
         # Telegram messages are limited to 4096 chars; chunk if needed.
         for i in range(0, len(text), 4000):
+            if self._bot is None:
+                return
             await self._bot.send_message(chat_id=chat_id, text=text[i : i + 4000])
 
     async def _handle(self, chat_id: str, text: str) -> None:
@@ -89,6 +91,8 @@ class TelegramBot:
         if not self.available:
             raise RuntimeError("TELEGRAM_BOT_TOKEN not set -- cannot start Telegram channel")
         await self._ensure()
+        if self._bot is None:
+            return
         last_update_id = 0
         logger.info("Telegram listener started (chat gate: %s)", self.allowed_chat or "ANY")
         while True:

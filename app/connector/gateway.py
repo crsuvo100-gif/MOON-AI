@@ -15,7 +15,7 @@ import socket
 import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 from urllib.parse import urlparse
 
 from app.connector.permission import ConnectorPermissionManager
@@ -97,7 +97,7 @@ class ConnectionGateway:
     def get(self, name: str) -> ConnectionRecord | None:
         return self._conns.get(name)
 
-    def list(self) -> list[ConnectionRecord]:
+    def list(self) -> List[ConnectionRecord]:
         return list(self._conns.values())
 
     def remove(self, name: str) -> bool:
@@ -136,7 +136,7 @@ class ConnectionGateway:
 
     # -- federation ---------------------------------------------------------
     async def call_agent(self, name: str, message: str, *,
-                         system: str = "", history: list[dict] | None = None,
+                         system: str = "", history: List[dict] | None = None,
                          timeout: float | None = 90.0) -> dict[str, Any]:
         """Delegate a prompt to a registered peer AI agent and return its answer.
 

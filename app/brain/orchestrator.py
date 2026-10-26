@@ -29,6 +29,7 @@ from app.brain.reasoning import ReasoningEngine
 from app.brain.self_reflection import SelfReflection
 from app.brain.tool_manager import ToolManager
 from app.brain.validator import Validator
+from app.improvement import SelfImprovement
 from app.config.logging import get_logger
 from app.context.retriever import ContextRetriever
 from app.memory.conversation_history import ConversationHistory
@@ -683,16 +684,18 @@ class Orchestrator:
             except Exception:  # noqa: BLE001
                 pass
         # --- Advanced memory maintenance task shutdown ---
-        if getattr(self, "_advanced_memory_maintenance_task", None) is not None:
+        task = getattr(self, "_advanced_memory_maintenance_task", None)
+        if task is not None:
             try:
-                self._advanced_memory_maintenance_task.cancel()
-                await self._advanced_memory_maintenance_task
+                task.cancel()
+                await task  # type: ignore[union-attr]
             except Exception:  # noqa: BLE001
                 pass
         # --- Advanced memory shutdown ---
-        if getattr(self, "_advanced_memory", None) is not None:
+        advanced_memory = getattr(self, "_advanced_memory", None)
+        if advanced_memory is not None:
             try:
-                await self._advanced_memory.shutdown()
+                await advanced_memory.shutdown()
             except Exception:  # noqa: BLE001
                 pass
         # --- Advanced agent system shutdown ---

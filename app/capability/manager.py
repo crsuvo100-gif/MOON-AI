@@ -108,7 +108,9 @@ class CapabilityManager:
         if self.registry.is_verified(name):
             return "verified"
         if self.registry.has(name):
-            return self.registry.get(name).status
+            rec = self.registry.get(name)
+            if rec is not None:
+                return rec.status
         if self.installer.is_cli_available(name):
             return "installed(cli)"
         return "missing"

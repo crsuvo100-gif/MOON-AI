@@ -54,3 +54,6 @@ env/
 .hermes/
 .pytest_cache/
 .vscode/
+
+# Diagnostic / probe scripts (not part of the project)
+_proof_system_info.py
