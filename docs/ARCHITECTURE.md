@@ -2,80 +2,51 @@
 
 ## Overview
 
-MOON is a self-hosted autonomous AI agent with a modular, layered architecture. The system is organized around a central agent engine that routes requests through persona-based intent detection, a pluggable tool registry, and per-agent memory, all backed by a local Ollama LLM.
+The current MOON repository is a real Python application organized around the `app/` package rather than a single monolithic `engine.py` module. The verified runtime structure is a layered system made up of:
 
-```
-                    USER
-                     │
-                     ▼
-              INTERFACE LAYER
-          ┌──────────┼──────────┐
-          │          │          │
-         CLI        API        UI
-          │          │          │
-          └──────────┼──────────┘
-                     ▼
-               AI ASSISTANT
-                     │
-             ┌───────┴───────┐
-             │               │
-          PLANNER         MEMORY
-             │               │
-             ▼               ▼
-       TASK EXECUTOR    RETRIEVAL
-             │
-       ┌─────┼─────┐
-       ▼     ▼     ▼
-     TOOLS SERVICES AGENTS
-       │     │     │
-       └─────┼─────┘
-             ▼
-        MODEL ROUTER
-             │
-      ┌──────┼──────┐
-      ▼      ▼      ▼
-    LOCAL   REMOTE  CUSTOM
-    MODELS  MODELS  PROVIDERS
-```
+- root CLI bootstrap in `main.py`
+- Python package entry wrappers in `moon/`
+- application runtime packages under `app/`
+- developer automation under `scripts/`, `Makefile`, and `deploy/`
+- data and runtime state under project-local directories such as `data/`, `connections/`, and `.moon/`
 
----
-
-## Component Diagram
-
-```
+```text
 MOON/
-├── main.py                  # Entry point — CLI, service bootstrap
-├── engine.py                # Core agent engine (4,352 lines)
-│   ├── Persona detection (13 personas)
-│   ├── Intent routing (13 rules)
-│   ├── Tool-calling loop
-│   └── Response generation
-├── app/                     # Core application package
-│   ├── voice.py             # Female voice TTS (espeak + SoX)
-│   ├── memory.py            # SQLite + semantic memory
+├── main.py                  # CLI / bootstrap / service entry point
+├── app/                     # active application implementation
+│   ├── brain/               # orchestration, reasoning, and memory coordination
+│   ├── config/              # settings, env, logging, and config helpers
+│   ├── capability/          # capability registry + discovery
+│   ├── connector/           # connection gateway and integration tools
+│   ├── terminal/            # REPL / terminal UI / interactive runtime
+│   ├── tools/               # tool definitions and execution wrappers
+│   ├── models/              # model providers and adapters
+│   ├── memory/              # persistence and retrieval logic
+│   ├── context/             # session and conversation state
+│   ├── verification/        # health and validation checks
 │   └── ...
-├── src/agents/              # 50+ specialist agents
-│   ├── cyber/               # Red-team / offensive security
-│   ├── research/            # Web research, OSINT
-│   ├── coding/              # Code generation, review
-│   ├── security/            # Defensive security
-│   ├── voice/               # Voice interaction
-│   ├── admin/               # System administration
-│   ├── creative/            # ASCII art, image gen
-│   ├── monitor/             # Health, watchdog
-│   └── ...
-├── src/tools/               # Tool registry + tool definitions
-│   ├── tools_core.py        # 14 core tools
-│   ├── tools_pro.py         # 52 professional tools (task_queue, workflow, etc.)
-│   ├── tools_advanced.py    # Advanced tools (web, API, search)
-│   └── ...
-├── tests/                   # 130 tests (unit, integration, agent, tool, e2e)
-├── deploy/                  # systemd service files
-├── install.sh               # One-command installer
-├── install_moon.py          # Python-stage bootstrap + verification
-├── install_moon_full.py     # Full installer (deps, models, voice, smoke test)
-├── setup_wizard.py          # Interactive configuration wizard
-└── Makefile                 # Common targets: test, voice, models, install
+├── moon/                    # compatibility/bootstrap package for `python -m moon`
+├── scripts/                 # setup and maintenance helpers
+├── tests/                   # test suite and fixtures
+├── docs/                    # architecture, config, install, and deployment notes
+├── skills/                  # installed skill definitions and reusable automation
+├── data/                    # runtime data
+├── connections/             # connection metadata
+├── capabilities/            # installed capability registry data
+├── deploy/                  # service definitions and runtime deployment config
+├── apps/                    # app-specific interfaces or variants
+├── web/                     # web resources / UI assets
+├── voices/                  # voice assets and related runtime files
+├── plugins/                 # plugin entry points / generated runtime integration
+├── build/                   # generated build artifacts
+├── dist/                    # packaged distribution outputs
+├── .github/                 # repo automation and contribution files
+├── README.md                # project overview and startup instructions
+├── pyproject.toml           # packaging metadata
+├── Makefile                 # developer entry points
+├── .env.example             # environment template
+├── .gitignore               # local state exclusions
+└── LICENSE                  # project license
 ```
 
 ---
