@@ -39,7 +39,7 @@ class Settings(BaseSettings):
         description="API key; most local endpoints ignore this.",
     )
     model_temperature: float = 0.7
-    model_max_tokens: int = 2048
+    model_max_tokens: int = 4096
     model_timeout: float = Field(default=120.0, description="Per-request timeout (seconds).")
 
     # --- OpenAI-compatible FALLBACK backend ---------------------------------

@@ -497,6 +497,12 @@ def main() -> int:
     build_p.add_argument("--out", default=None, help="Output directory (default: project dir)")
     build_p.add_argument("--force", action="store_true", help="Overwrite existing generated files")
 
+    # --- integration hub commands (spec 4, 6, 15, 24) -----------------------
+    sub.add_parser("integrations", help="List integrations, connections, lifecycle state and diagnostics - MOON's own integration catalog")
+    work_p = sub.add_parser("work", help="Execute an authorized task through the integration hub - MOON owns the runtime path")
+    work_p.add_argument("task", nargs="?", default=None, help="Task to execute through the integration hub")
+
+
     args, remaining = ap.parse_known_args()
     _ensure_default_peer()
     if args.cmd == "run":
@@ -547,8 +553,35 @@ def main() -> int:
         _cmd_version()
         return 0
 
-    elif args.cmd == "build":
-        return _cmd_build(args)
+    elif args.cmd == "integrations":
+        from app.connector.hub import IntegrationHub
+
+        hub = IntegrationHub()
+        print("[MOON-AI] integration catalog + connections (MOON owns the integration system):")
+        print("  lifecycle states:", ", ".join(hub.lifecycle_states()))
+        print("  capabilities   :", len(hub.capabilities()))
+        print("  connections    :", len(hub.connections()))
+        print("  audit entries  :", len(hub._audit))
+        print("  health diagnostics:")
+        health = asyncio.run(hub.health())
+        for it in health["items"]:
+            print(f"    - {it['name']} [{it['status'].lower()}] {it['detail']}")
+        return 0
+
+    elif args.cmd == "work":
+        task = args.task or args.task_flag
+        if not task:
+            print("usage: moon work <task>  [--confirmed]", file=sys.stderr)
+            return 1
+        from app.connector.hub import IntegrationHub
+
+        hub = IntegrationHub()
+        ok = asyncio.run(hub.execute_permitted_task(task))
+        if not ok.get("ok"):
+            print(f"[MOON-AI] work failed: {ok.get('error')}", file=sys.stderr)
+            return 1
+        print("[MOON-AI] work executed through the integration hub (MOON owns the runtime path).")
+        return 0
 
     else:
         # No subcommand -> show help
