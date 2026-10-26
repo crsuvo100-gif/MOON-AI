@@ -47,7 +47,7 @@ async def test_fallback_triggers_when_primary_empty():
     """When the local model returns empty content, fall back to the API."""
     o = Orchestrator(get_settings())
     o._llm = _fake_llm(returns=CompletionResult(content="", has_tool_calls=False, tool_calls=[]))  # type: ignore[assignment]
-    o._llm_fallback = _fake_llm(
+    o._llm_fallback = _fake_llm(  # type: ignore[assignment]
         returns=CompletionResult(content="api-answer", has_tool_calls=False, tool_calls=[])
     )
     o._llm_fallback2 = None
@@ -67,7 +67,7 @@ async def test_primary_used_when_ok_no_fallback_call():
 
     o = Orchestrator(get_settings())
     o._llm = _fake_llm(returns=CompletionResult(content="local-answer", has_tool_calls=False, tool_calls=[]))  # type: ignore[assignment]
-    o._llm_fallback = SimpleNamespace(complete=_fb_complete)
+    o._llm_fallback = SimpleNamespace(complete=_fb_complete)  # type: ignore[assignment]
     o._llm_fallback2 = None
     o._settings.openai_model = "gpt-4o-mini"
     res = await o._complete_with_fallback([{"role": "user", "content": "hi"}])
@@ -80,7 +80,7 @@ async def test_fallback_chain_local_openai_openrouter():
     """When local AND OpenAI fail, the secondary OpenRouter backend is used."""
     o = Orchestrator(get_settings())
     o._llm = _fake_llm(raises=True)  # type: ignore[assignment]
-    o._llm_fallback = _fake_llm(raises=True)  # type: ignore[assignment]  # OpenAI also down  # type: ignore[assignment]  # OpenAI also down
+    o._llm_fallback = _fake_llm(raises=True)  # type: ignore[assignment]  # OpenAI also down
     o._llm_fallback2 = _fake_llm(  # type: ignore[assignment]
         returns=CompletionResult(content="from-openrouter", has_tool_calls=False, tool_calls=[])
     )
@@ -95,7 +95,8 @@ async def test_openrouter_used_when_local_empty_and_openai_empty():
     """OpenRouter is the last resort when local+OpenAI return empty content."""
     o = Orchestrator(get_settings())
     o._llm = _fake_llm(returns=CompletionResult(content="", has_tool_calls=False, tool_calls=[]))  # type: ignore[assignment]
-    o._llm_fallback = _fake_llm(returns=CompletionResult(content="", has_tool_calls=False, tool_calls=[]))  # type: ignore[assignment] o._llm_fallback2 = _fake_llm(
+    o._llm_fallback = _fake_llm(returns=CompletionResult(content="", has_tool_calls=False, tool_calls=[]))  # type: ignore[assignment]
+    o._llm_fallback2 = _fake_llm(  # type: ignore[assignment]
         returns=CompletionResult(content="routed-to-openrouter", has_tool_calls=False, tool_calls=[])
     )
     o._settings.openrouter_model = "openai/gpt-4o-mini"
@@ -114,10 +115,10 @@ async def test_openai_preferred_over_openrouter():
 
     o = Orchestrator(get_settings())
     o._llm = _fake_llm(returns=CompletionResult(content="", has_tool_calls=False, tool_calls=[]))  # type: ignore[assignment]
-    o._llm_fallback = _fake_llm(
+    o._llm_fallback = _fake_llm(  # type: ignore[assignment]
         returns=CompletionResult(content="openai-answer", has_tool_calls=False, tool_calls=[])
     )
-    o._llm_fallback2 = SimpleNamespace(complete=_or_complete)
+    o._llm_fallback2 = SimpleNamespace(complete=_or_complete)  # type: ignore[assignment]
     o._settings.openai_model = "gpt-4o-mini"
     o._settings.openrouter_model = "openai/gpt-4o-mini"
     res = await o._complete_with_fallback([{"role": "user", "content": "hi"}])
@@ -131,7 +132,9 @@ async def test_huggingface_used_when_all_prior_fail():
     o = Orchestrator(get_settings())
     o._llm = _fake_llm(raises=True)  # type: ignore[assignment]
     o._llm_fallback = _fake_llm(raises=True)  # type: ignore[assignment]
-    o._llm_fallback2 = _fake_llm(raises=True)  # type: ignore[assignment] o._llm_fallback3 = _fake_llm(  # type: ignore[assignment] returns=CompletionResult(content="from-huggingface", has_tool_calls=False, tool_calls=[])
+    o._llm_fallback2 = _fake_llm(raises=True)  # type: ignore[assignment]
+    o._llm_fallback3 = _fake_llm(  # type: ignore[assignment]
+        returns=CompletionResult(content="from-huggingface", has_tool_calls=False, tool_calls=[])
     )
     o._settings.huggingface_model = "meta-llama/Llama-3.1-8B-Instruct"
     res = await o._complete_with_fallback([{"role": "user", "content": "hi"}])
@@ -150,10 +153,10 @@ async def test_openrouter_preferred_over_huggingface():
     o = Orchestrator(get_settings())
     o._llm = _fake_llm(returns=CompletionResult(content="", has_tool_calls=False, tool_calls=[]))  # type: ignore[assignment]
     o._llm_fallback = _fake_llm(returns=CompletionResult(content="", has_tool_calls=False, tool_calls=[]))  # type: ignore[assignment]
-    o._llm_fallback2 = _fake_llm(
+    o._llm_fallback2 = _fake_llm(  # type: ignore[assignment]
         returns=CompletionResult(content="openrouter-answer", has_tool_calls=False, tool_calls=[])
     )
-    o._llm_fallback3 = SimpleNamespace(complete=_hf_complete)
+    o._llm_fallback3 = SimpleNamespace(complete=_hf_complete)  # type: ignore[assignment]
     o._settings.openrouter_model = "openai/gpt-4o-mini"
     o._settings.huggingface_model = "meta-llama/Llama-3.1-8B-Instruct"
     res = await o._complete_with_fallback([{"role": "user", "content": "hi"}])
