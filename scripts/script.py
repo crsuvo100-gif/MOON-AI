@@ -671,7 +671,7 @@ def install_service() -> None:
     user_units_dir = Path.home() / ".config" / "systemd" / "user"
     user_units_dir.mkdir(parents=True, exist_ok=True)
 
-    MOON-AI_terminal_path = str(ROOT)
+    MOON_AI_terminal_path = str(ROOT)
     python_path = str(VENV / "bin" / "python")
 
     # Remove stale/obsolete MOON-AI units left by older layouts so a fresh install

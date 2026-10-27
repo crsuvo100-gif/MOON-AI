@@ -1,0 +1,30 @@
+{
+  "task_id": "TEST-001",
+  "content": "verify local ledger writes to source folder",
+  "summary": "test completion save",
+  "owner_id": "moon",
+  "agent_id": "local",
+  "project_id": "MOON",
+  "scope": "TASK",
+  "task_status": "COMPLETED",
+  "result": "ledger verified locally in source folder",
+  "exit_code": 0,
+  "start_time": 1793086748.4605684,
+  "end_time": 1793090348.4605706,
+  "created_at": 1793090348.460571,
+  "updated_at": 1793090348.4605718,
+  "tags": [
+    "verify",
+    "build"
+  ],
+  "metadata": {
+    "folder": "MOON source folder"
+  },
+  "source_type": "AGENT",
+  "provenance": {},
+  "confidence": 0.6,
+  "importance": "MEDIUM",
+  "session_id": "test",
+  "deleted": false,
+  "recorded_at": "2026-10-27T08:39:08.470797+00:00"
+}

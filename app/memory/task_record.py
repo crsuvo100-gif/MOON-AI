@@ -135,8 +135,21 @@ class TaskStore:
     # -- public API ---------------------------------------------------------
 
     def record(self, task: TaskRecord) -> TaskRecord:
-        """Persist (insert or update) a task record. Idempotent upsert."""
+        """Persist (insert or update) a task record. Idempotent upsert.
+
+        Also writes a JSON snapshot into the local project-folder ledger
+        (app/memory/task_ledger.py), so a task is never *only* in the SQLite
+        database: the completion is physically present on disk in the source
+        folder on every record() call.
+        """
+        from app.memory.task_ledger import get_ledger  # local, avoid circular import
+
         self._store.record_task(task)
+        # Persist local (source-folder) snapshot. Best-effort; never raise.
+        try:
+            get_ledger().record(task)
+        except Exception:  # noqa: BLE001
+            logger.warning("local task ledger write failed", exc_info=True)
         return task
 
     def get(self, task_id: str, *, project_id: str = "MOON") -> TaskRecord | None:

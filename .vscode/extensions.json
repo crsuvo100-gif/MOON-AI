@@ -7,7 +7,9 @@
     "ms-python.python",
     "ms-python.vscode-pylance",
     "ms-python.black-formatter",
-    "ms-python.debugpy"
+    "ms-python.debugpy",
+    "jagreehal.rundebug",
+    "omercnet.vscode-acp"
   ],
   "languages": [
     "Python"
