@@ -1,0 +1,16 @@
+{
+  "terminal.integrated.shell.linux": "/bin/bash",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "editor.fontFamily": "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+  "editor.fontLigatures": true,
+  "window.title": "MOON - ${dirty}${activeEditorLong}${separator}${rootName}",
+  "workbench.colorTheme": "vs-dark",
+  "files.autoSave": "onFocusChange",
+  "git.enableSmartCommit": true,
+  "editor.tabSize": 4,
+  "python.pythonPath": "/usr/bin/python3",
+  "python.analysis.autoImportCompletions": true,
+  "terminal.integrated.env.linux": {
+    "PATH": "/home/meow/.hermes/bin:/home/meow/.local/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin"
+  }
+}
