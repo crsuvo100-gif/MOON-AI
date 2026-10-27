@@ -100,6 +100,8 @@ except Exception as _iface_exc:  # noqa: BLE001
 try:
     from app.api.terminal import get_terminal_router as _get_terminal_router
     app.include_router(_get_terminal_router(), prefix="/api/terminal")
+    from app.api.gateway import get_gateway_router as _get_gateway_router
+    app.include_router(_get_gateway_router(), prefix="/api/gateway")
 except Exception as _term_exc:  # noqa: BLE001
     import logging as _logging
 

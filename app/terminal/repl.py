@@ -11,6 +11,7 @@ the TerminalInterface's execution engine.
 
 Special commands:
     /help          Show this help
+    /version       Show MOON-AI version
     /status        Show terminal + brain status
     /sessions      List active sessions
     /processes     List background processes
@@ -87,6 +88,7 @@ def _print_help() -> None:
 
 {_BOLD}  Special Commands:{_RESET}
     /help          Show this help
+    /version       Show MOON-AI version
     /status        Show terminal + brain status
     /sessions      List active sessions
     /processes     List background processes

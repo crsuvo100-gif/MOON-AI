@@ -23,8 +23,17 @@ class BrowserTool(BaseTool):
         try:
             from playwright.async_api import async_playwright
 
+            # Prevent GLib/GObject errors on Linux: force X11 backend instead of GTK.
+            # Chromium's GTK integration emits "instance '0x... has no handler with id"
+            # when launched on Linux without a compatible GTK stack; X11 avoids it.
+            env = {
+                "GDK_BACKEND": "x11",
+                "GTK_BACKEND": "x11",
+                "MOZ_ENABLE_WAYLAND": "0",
+                "MOZ_WAYLAND": "0",
+            }
             async with async_playwright() as p:
-                browser = await p.chromium.launch()
+                browser = await p.chromium.launch(env=env)
                 page = await browser.new_page()
                 await page.goto(url or "about:blank")
                 text = await page.inner_text("body")
