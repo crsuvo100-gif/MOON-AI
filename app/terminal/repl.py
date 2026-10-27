@@ -347,6 +347,13 @@ class MoonTerminalREPL:
                 print(f"{_GREEN}  [UNLOCKED] MOON-AI love you 3000 — interface online.{_RESET}")
             else:
                 print(f"{_RED}  Wrong phrase.  Type /help for help.{_RESET}")
+        elif command == "/version":
+            try:
+                import importlib.metadata as _md
+                ver = _md.version("moon-ai-agent")
+            except Exception:
+                ver = "0.1.0"
+            print(f"moon-ai-agent {ver}")
         elif command == "/status":
             _print_status(self.orchestrator)
         elif command == "/sessions":
