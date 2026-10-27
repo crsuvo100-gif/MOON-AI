@@ -1,11 +1,29 @@
 {
-  "editor.tabSize": 2,
-  "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true,
-  "git.autofetch": true,
-  "python.analysis.autoImportCompletions": true,
-  "python.linting.enabled": true,
-  "python.defaultInterpreterPath": ".venv/bin/python",
-  "python.formatting.provider": "black",
-  "python.testing.pytestEnabled": true
+  "observer.exclude": [
+    "node_modules",
+    "**/node_modules",
+    ".venv",
+    "**/.venv",
+    "venv",
+    "**/venv",
+    "__pycache__",
+    "**/__pycache__",
+    ".git",
+    "**/.git",
+    "dist",
+    "**/dist",
+    "build",
+    "**/build",
+    ".output",
+    "**/.output",
+    "target",
+    "**/target"
+  ],
+  "agent_servers": {
+    "hermes-agent": {
+      "type": "custom",
+      "command": "hermes",
+      "args": ["acp"]
+    }
+  }
 }
