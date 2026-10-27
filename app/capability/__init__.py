@@ -20,29 +20,29 @@ Logical components (per the integration spec):
 
 from __future__ import annotations
 
-from app.capability.manager import CapabilityManager
-from app.capability.registry import CapabilityRegistry, CapabilityRecord
-from app.capability.permission_manager import PermissionManager, PolicyLevel
-from app.capability.tool import CapabilityManagerTool
-from app.capability.sandbox import SandboxExecutor
-from app.capability.installer import InstallationManager
-from app.capability.verification import VerificationEngine
-from app.capability.self_repair import SelfRepairEngine
-from app.capability.github_retriever import GitHubRetriever
 from app.capability.dependency_analyzer import analyze_path, analyze_text
+from app.capability.github_retriever import GitHubRetriever
+from app.capability.installer import InstallationManager
+from app.capability.manager import CapabilityManager
+from app.capability.permission_manager import PermissionManager, PolicyLevel
+from app.capability.registry import CapabilityRecord, CapabilityRegistry
+from app.capability.sandbox import SandboxExecutor
+from app.capability.self_repair import SelfRepairEngine
+from app.capability.tool import CapabilityManagerTool
+from app.capability.verification import VerificationEngine
 
 __all__ = [
     "CapabilityManager",
-    "CapabilityRegistry",
+    "CapabilityManagerTool",
     "CapabilityRecord",
+    "CapabilityRegistry",
+    "GitHubRetriever",
+    "InstallationManager",
     "PermissionManager",
     "PolicyLevel",
-    "CapabilityManagerTool",
     "SandboxExecutor",
-    "InstallationManager",
-    "VerificationEngine",
     "SelfRepairEngine",
-    "GitHubRetriever",
+    "VerificationEngine",
     "analyze_path",
     "analyze_text",
 ]

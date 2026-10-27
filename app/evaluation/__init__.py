@@ -4,6 +4,6 @@ Compatibility layer re-exporting the real EvaluationEngine from app.runtime.eval
 Non-destructive.
 """
 
-from app.runtime.evaluation import EvaluationEngine, ScoreCard  # noqa: F401
+from app.runtime.evaluation import EvaluationEngine, ScoreCard
 
 __all__ = ["EvaluationEngine", "ScoreCard"]

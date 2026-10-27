@@ -12,12 +12,10 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 from app.agent_factory.architect import AgentSpec
 from app.agent_factory.builder import BuildArtifact
 from app.agent_factory.tester import TestResult
-
 
 # Patterns that are never allowed in generated agent code (spec 18/47/50).
 _FORBIDDEN = [
@@ -76,4 +74,4 @@ class RepairAgent:
         return new, changed
 
 
-__all__ = ["SecurityReviewer", "ReviewResult", "RepairAgent"]
+__all__ = ["RepairAgent", "ReviewResult", "SecurityReviewer"]

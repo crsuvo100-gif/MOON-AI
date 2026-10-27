@@ -17,17 +17,26 @@ settings, LLMService backends) and adds only what was missing. Nothing in the
 existing brain/capability/tools layers is modified.
 """
 
-from app.runtime.task_analyzer import TaskAnalyzer, GoalSpec
-from app.runtime.goal_manager import GoalManager
 from app.runtime.agent_router import AgentRouter
-from app.runtime.model_router import ModelRouter
+from app.runtime.autonomy import Autonomy, AutonomyLevel
 from app.runtime.evaluation import EvaluationEngine, ScoreCard
-from app.runtime.autonomy import AutonomyLevel, Autonomy
-from app.runtime.skill_system import SkillSystem
 from app.runtime.event_bus import EventBus, EventType
+from app.runtime.goal_manager import GoalManager
+from app.runtime.model_router import ModelRouter
+from app.runtime.skill_system import SkillSystem
+from app.runtime.task_analyzer import GoalSpec, TaskAnalyzer
 
 __all__ = [
-    "TaskAnalyzer", "GoalSpec", "GoalManager", "AgentRouter", "ModelRouter",
-    "EvaluationEngine", "ScoreCard", "AutonomyLevel", "Autonomy", "SkillSystem",
-    "EventBus", "EventType",
+    "AgentRouter",
+    "Autonomy",
+    "AutonomyLevel",
+    "EvaluationEngine",
+    "EventBus",
+    "EventType",
+    "GoalManager",
+    "GoalSpec",
+    "ModelRouter",
+    "ScoreCard",
+    "SkillSystem",
+    "TaskAnalyzer",
 ]

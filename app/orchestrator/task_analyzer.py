@@ -3,6 +3,6 @@
 Re-exports the real TaskAnalyzer/GoalSpec from app.runtime.task_analyzer.
 """
 
-from app.runtime.task_analyzer import TaskAnalyzer, GoalSpec  # noqa: F401
+from app.runtime.task_analyzer import GoalSpec, TaskAnalyzer
 
-__all__ = ["TaskAnalyzer", "GoalSpec"]
+__all__ = ["GoalSpec", "TaskAnalyzer"]

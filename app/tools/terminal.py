@@ -5,12 +5,12 @@ Provides a guard‑ed terminal execution that respects MOON-AI's risk, permissio
 
 from __future__ import annotations
 
-import asyncio
-from typing import Any, Dict
+from typing import Any
 
-from app.tools.base import BaseTool
 from app.terminal.execution_engine import ExecutionEngine
 from app.terminal.models import ExecutionRequest, ExecutionResult
+from app.tools.base import BaseTool
+
 
 class TerminalTool(BaseTool):
     """Agent‑visible terminal tool.
@@ -22,7 +22,7 @@ class TerminalTool(BaseTool):
     name = "terminal"
     description = "Execute a command with full terminal model (risk, backend, verification)."
 
-    async def execute(self, **kwargs: Any) -> Dict[str, Any]:
+    async def execute(self, **kwargs: Any) -> dict[str, Any]:
         request_obj = kwargs.get("request")
         if request_obj is None:
             return {"error": "Missing 'request' argument"}

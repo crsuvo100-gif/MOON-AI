@@ -7,7 +7,6 @@ Reduces user cognitive load by surfacing needs before they are expressed.
 
 from __future__ import annotations
 
-import re
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field

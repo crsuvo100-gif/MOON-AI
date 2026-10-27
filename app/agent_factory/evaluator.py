@@ -7,8 +7,7 @@ directory layout (agent_factory/evaluator.py).
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any
+from dataclasses import dataclass
 
 from app.agent_factory.architect import AgentSpec
 from app.agent_factory.tester import TestResult
@@ -45,4 +44,4 @@ class PerformanceEvaluator:
                           notes=f"tests_passed={test.passed} security_ok={security_ok}")
 
 
-__all__ = ["PerformanceEvaluator", "EvalResult"]
+__all__ = ["EvalResult", "PerformanceEvaluator"]

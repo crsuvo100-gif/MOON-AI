@@ -6,14 +6,11 @@ Provides in‑memory tracking of terminal sessions and optional JSON persistence
 import json
 import uuid
 from pathlib import Path
-from typing import Dict, List, Optional
-
-from .models import ExecutionRequest
 
 SESSION_STATE_FILE = Path(".moon_sessions.json")
 
 class Session:
-    def __init__(self, shell: str = "sh", cwd: Optional[Path] = None, env: Optional[Dict[str, str]] = None):
+    def __init__(self, shell: str = "sh", cwd: Path | None = None, env: dict[str, str] | None = None):
         self.session_id: str = str(uuid.uuid4())
         self.shell = shell
         self.cwd = cwd or Path.cwd()
@@ -37,7 +34,7 @@ class Session:
 
 class SessionManager:
     def __init__(self, persist: bool = True):
-        self._sessions: Dict[str, Session] = {}
+        self._sessions: dict[str, Session] = {}
         self.persist = persist
         if self.persist and SESSION_STATE_FILE.exists():
             try:
@@ -57,16 +54,16 @@ class SessionManager:
         data = {sid: sess.to_dict() for sid, sess in self._sessions.items()}
         SESSION_STATE_FILE.write_text(json.dumps(data, indent=2))
 
-    def create_session(self, shell: str = "sh", cwd: Optional[Path] = None, env: Optional[Dict[str, str]] = None) -> Session:
+    def create_session(self, shell: str = "sh", cwd: Path | None = None, env: dict[str, str] | None = None) -> Session:
         sess = Session(shell=shell, cwd=cwd, env=env)
         self._sessions[sess.session_id] = sess
         self._save()
         return sess
 
-    def list_sessions(self) -> List[Session]:
+    def list_sessions(self) -> list[Session]:
         return list(self._sessions.values())
 
-    def get_session(self, session_id: str) -> Optional[Session]:
+    def get_session(self, session_id: str) -> Session | None:
         return self._sessions.get(session_id)
 
     def attach_session(self, session_id: str) -> Session:

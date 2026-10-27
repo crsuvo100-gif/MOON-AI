@@ -189,7 +189,7 @@ class MemoryRecord:
         return d
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "MemoryRecord":
+    def from_dict(cls, data: dict[str, Any]) -> MemoryRecord:
         d = dict(data or {})
         for key, enum_cls in (("scope", Scope), ("type", MemoryType),
                               ("source_type", SourceType),
@@ -204,7 +204,7 @@ class MemoryRecord:
         allowed = {f for f in cls.__dataclass_fields__}
         return cls(**{k: v for k, v in d.items() if k in allowed})
 
-    def apply_defaults(self) -> "MemoryRecord":
+    def apply_defaults(self) -> MemoryRecord:
         """Fill confidence from the source when the caller left the default."""
         base = DEFAULT_CONFIDENCE.get(self.source_type, 0.6)
         if abs(self.confidence - 0.6) < 1e-9:
@@ -218,6 +218,12 @@ class MemoryRecord:
 
 
 __all__ = [
-    "Scope", "MemoryType", "SourceType", "Importance", "SyncStatus",
-    "MemoryRecord", "DEFAULT_CONFIDENCE", "DEFAULT_IMPORTANCE",
+    "DEFAULT_CONFIDENCE",
+    "DEFAULT_IMPORTANCE",
+    "Importance",
+    "MemoryRecord",
+    "MemoryType",
+    "Scope",
+    "SourceType",
+    "SyncStatus",
 ]

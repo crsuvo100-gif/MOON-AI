@@ -22,13 +22,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.runtime.task_analyzer import GoalSpec, TaskAnalyzer
 from app.runtime.agent_router import AgentRouter
-from app.runtime.model_router import ModelRouter
 from app.runtime.autonomy import Autonomy
 from app.runtime.evaluation import EvaluationEngine
 from app.runtime.event_bus import bus as _bus
-
+from app.runtime.model_router import ModelRouter
+from app.runtime.task_analyzer import GoalSpec, TaskAnalyzer
 
 # Module-level singletons reused across tasks (stateful: performance history,
 # evaluation history, autonomy level).
@@ -130,7 +129,16 @@ def router_explain(spec: GoalSpec) -> dict[str, Any]:
 
 
 __all__ = [
-    "analyze_task", "route_agent", "choose_model", "set_autonomy", "autonomy_level",
-    "gate_action", "record_outcome", "record_evaluation", "evaluation_summary",
-    "emit", "router_explain", "GoalSpec",
+    "GoalSpec",
+    "analyze_task",
+    "autonomy_level",
+    "choose_model",
+    "emit",
+    "evaluation_summary",
+    "gate_action",
+    "record_evaluation",
+    "record_outcome",
+    "route_agent",
+    "router_explain",
+    "set_autonomy",
 ]

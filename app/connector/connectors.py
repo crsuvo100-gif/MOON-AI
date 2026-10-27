@@ -163,9 +163,7 @@ class MCPConnector:
         if self._transport == "http":
             if self._command:
                 self._transport = "stdio"
-            elif self._url:
-                self._transport = "sse"
-            elif not self._url and not self._command:
+            elif self._url or not self._url and not self._command:
                 self._transport = "sse"
         self._session: Any = None
         self._read: Any = None
@@ -240,7 +238,7 @@ class MCPConnector:
         return CallResult(ok=True, status=200,
                           data={"transport": self._transport, "mcp": "connected"})
 
-    async def __aenter__(self) -> "MCPConnector":
+    async def __aenter__(self) -> MCPConnector:
         await self.connect()
         return self
 

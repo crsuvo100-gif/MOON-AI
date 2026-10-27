@@ -69,4 +69,4 @@ def is_memory_command(text: str) -> bool:
     return parse_memory_command(text) is not None
 
 
-__all__ = ["parse_memory_command", "is_memory_command"]
+__all__ = ["is_memory_command", "parse_memory_command"]

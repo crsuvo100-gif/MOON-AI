@@ -13,8 +13,9 @@ from __future__ import annotations
 import math
 import re
 import time
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable
+from typing import Any
 
 from app.memory.record import Importance, MemoryRecord, Scope
 
@@ -256,6 +257,12 @@ class RetrievalCache:
 
 
 __all__ = [
-    "HybridRetriever", "Scored", "RetrievalCache", "rewrite_query",
-    "keyword_score", "recency_score", "scope_score", "DEFAULT_WEIGHTS",
+    "DEFAULT_WEIGHTS",
+    "HybridRetriever",
+    "RetrievalCache",
+    "Scored",
+    "keyword_score",
+    "recency_score",
+    "rewrite_query",
+    "scope_score",
 ]

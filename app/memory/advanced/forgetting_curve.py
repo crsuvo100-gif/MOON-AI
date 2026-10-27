@@ -51,8 +51,7 @@ class ForgettingCurve:
         where t = at_time - last_access
         """
         t = (at_time or time.time()) - self.last_access
-        if t < 0:
-            t = 0
+        t = max(t, 0)
         if self.stability <= 0:
             return 0.0
         return self.base_retention * math.exp(-t / self.stability)

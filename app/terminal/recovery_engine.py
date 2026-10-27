@@ -23,9 +23,8 @@ Uses bounded retries — never repeatedly performs destructive operations.
 from __future__ import annotations
 
 import re
-import time
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from .models import ExecutionRequest, ExecutionResult
 
@@ -52,7 +51,7 @@ class FailureType(str, Enum):
 
 
 # Patterns that indicate specific failure types
-_FAILURE_PATTERNS: Dict[FailureType, List[str]] = {
+_FAILURE_PATTERNS: dict[FailureType, list[str]] = {
     FailureType.COMMAND_NOT_FOUND: [
         r"command not found",
         r"not found",
@@ -83,13 +82,13 @@ class RecoveryEngine:
 
     def __init__(self, max_retries: int = 2):
         self.max_retries = max_retries
-        self._retry_counts: Dict[str, int] = {}  # execution_id → retry count
+        self._retry_counts: dict[str, int] = {}  # execution_id → retry count
 
     def analyze_failure(
         self,
         request: ExecutionRequest,
         result: ExecutionResult,
-    ) -> Tuple[FailureType, str]:
+    ) -> tuple[FailureType, str]:
         """Analyze a failure and return (failure_type, description)."""
         if result.status == "timed_out":
             return FailureType.TIMEOUT, "Command timed out"
@@ -120,9 +119,9 @@ class RecoveryEngine:
         failure_type: FailureType,
         request: ExecutionRequest,
         result: ExecutionResult,
-    ) -> List[RecoveryAction]:
+    ) -> list[RecoveryAction]:
         """Plan recovery actions based on failure type."""
-        actions: List[RecoveryAction] = []
+        actions: list[RecoveryAction] = []
 
         if failure_type == FailureType.COMMAND_NOT_FOUND:
             actions.append(RecoveryAction.CHANGE_COMMAND)
@@ -163,7 +162,7 @@ class RecoveryEngine:
         request: ExecutionRequest,
         result: ExecutionResult,
         executor: Callable[[ExecutionRequest], ExecutionResult],
-    ) -> Optional[ExecutionResult]:
+    ) -> ExecutionResult | None:
         """Execute a recovery action.
 
         `executor` is a callable that takes an ExecutionRequest and returns

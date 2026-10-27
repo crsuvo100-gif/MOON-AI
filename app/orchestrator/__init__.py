@@ -12,10 +12,10 @@ from __future__ import annotations
 
 # The real Master Orchestrator (spec 9) -- single source of truth.
 from app.brain.orchestrator import Orchestrator
+from app.runtime.agent_router import AgentRouter
+from app.runtime.goal_manager import Goal, GoalManager
 
 # Real runtime components, surfaced at spec paths.
-from app.runtime.task_analyzer import TaskAnalyzer, GoalSpec
-from app.runtime.goal_manager import GoalManager, Goal
-from app.runtime.agent_router import AgentRouter
+from app.runtime.task_analyzer import GoalSpec, TaskAnalyzer
 
-__all__ = ["Orchestrator", "TaskAnalyzer", "GoalSpec", "GoalManager", "Goal", "AgentRouter"]
+__all__ = ["AgentRouter", "Goal", "GoalManager", "GoalSpec", "Orchestrator", "TaskAnalyzer"]

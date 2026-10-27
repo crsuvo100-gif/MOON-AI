@@ -20,7 +20,6 @@ import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 # Directories/files under the project root that constitute runtime DATA.
 # Source code, agents' *definitions* and config templates are version-controlled
@@ -38,7 +37,7 @@ def _snapshot_name() -> str:
     return "moon_" + datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
-def backup(dest_root: Optional[Path] = None) -> Path:
+def backup(dest_root: Path | None = None) -> Path:
     """Create a timestamped backup of MOON-AI runtime data. Returns the backup dir."""
     root = _project_root()
     dest_root = dest_root or (root / "backups")
@@ -72,7 +71,7 @@ def backup(dest_root: Optional[Path] = None) -> Path:
     return dest
 
 
-def restore(snapshot: Path, root: Optional[Path] = None) -> list[str]:
+def restore(snapshot: Path, root: Path | None = None) -> list[str]:
     """Restore a backup snapshot over the live runtime data. Returns restored paths."""
     root = root or _project_root()
     snapshot = Path(snapshot)

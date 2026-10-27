@@ -19,7 +19,6 @@ apply layer‑specific policies (e.g., automatic decay, promotion, or archival).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Dict
 
 from .record import MemoryType
 
@@ -43,7 +42,7 @@ class Layer:
 
     name: str
     memory_type: MemoryType
-    retention_seconds: Optional[int]
+    retention_seconds: int | None
     description: str
 
 
@@ -53,7 +52,7 @@ class Layer:
 # at runtime via the ``MOON-AI_LAYER_TTLS`` environment variable if needed.
 # ---------------------------------------------------------------------------
 
-LAYER_REGISTRY: Dict[MemoryType, Layer] = {
+LAYER_REGISTRY: dict[MemoryType, Layer] = {
     MemoryType.WORKING: Layer(
         name="Working Memory",
         memory_type=MemoryType.WORKING,
@@ -110,4 +109,4 @@ LAYER_REGISTRY: Dict[MemoryType, Layer] = {
     ),
 }
 
-__all__ = ["Layer", "LAYER_REGISTRY"]
+__all__ = ["LAYER_REGISTRY", "Layer"]

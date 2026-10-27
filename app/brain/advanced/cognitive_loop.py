@@ -7,17 +7,17 @@ should use for professional-grade agent cognition.
 
 from __future__ import annotations
 
-import asyncio
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Awaitable
+from typing import Any
 
-from app.config.logging import get_logger
-from app.brain.advanced.working_memory import WorkingMemory
 from app.brain.advanced.context_compressor import ContextCompressor
+from app.brain.advanced.metacognition import Metacognition, Strategy
 from app.brain.advanced.tool_composer import ToolComposer
 from app.brain.advanced.uncertainty import UncertaintyEstimator
-from app.brain.advanced.metacognition import Metacognition, Strategy
+from app.brain.advanced.working_memory import WorkingMemory
+from app.config.logging import get_logger
 
 logger = get_logger(__name__)
 

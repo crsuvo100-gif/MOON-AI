@@ -168,4 +168,4 @@ class MemoryHealthService:
                 f"Context Used: {used}")
 
 
-__all__ = ["MemoryHealthService", "HealthReport"]
+__all__ = ["HealthReport", "MemoryHealthService"]

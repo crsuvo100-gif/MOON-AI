@@ -8,16 +8,16 @@ from __future__ import annotations
 
 import os
 import shlex
-import signal
 import subprocess
 import threading
 import time
 import uuid
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, cast
+from typing import cast
 
-from ..models import ExecutionRequest, ExecutionResult
 from ..event_bus import get_bus
+from ..models import ExecutionRequest, ExecutionResult
 from ..output_engine import OutputEngine
 
 
@@ -27,14 +27,14 @@ class LocalBackend:
     def __init__(self):
         self.bus = get_bus()
         self.output_engine = OutputEngine()
-        self._background_processes: Dict[str, subprocess.Popen] = {}
+        self._background_processes: dict[str, subprocess.Popen] = {}
         self._lock = threading.Lock()
 
     def run(
         self,
         request: ExecutionRequest,
-        on_output: Optional[Callable[[str], None]] = None,
-    ) -> Dict:
+        on_output: Callable[[str], None] | None = None,
+    ) -> dict:
         """Execute a command and return a dict with exit_code, stdout, stderr, pid.
 
         If on_output is provided, output is streamed via the callback.
@@ -63,15 +63,15 @@ class LocalBackend:
 
     def _run_streaming(
         self,
-        cmd: List[str],
+        cmd: list[str],
         cwd: Path,
-        env: Dict[str, str],
+        env: dict[str, str],
         request: ExecutionRequest,
         on_output: Callable[[str], None],
-    ) -> Dict:
+    ) -> dict:
         """Run with streaming output via callback."""
-        stdout_parts: List[str] = []
-        stderr_parts: List[str] = []
+        stdout_parts: list[str] = []
+        stderr_parts: list[str] = []
         exit_code = None
         pid = None
         timed_out = False
@@ -151,11 +151,11 @@ class LocalBackend:
 
     def _run_capture(
         self,
-        cmd: List[str],
+        cmd: list[str],
         cwd: Path,
-        env: Dict[str, str],
+        env: dict[str, str],
         request: ExecutionRequest,
-    ) -> Dict:
+    ) -> dict:
         """Run and capture all output (non-streaming)."""
         try:
             proc = subprocess.run(
@@ -195,7 +195,7 @@ class LocalBackend:
     def start_background(
         self,
         request: ExecutionRequest,
-        on_output: Optional[Callable[[str], None]] = None,
+        on_output: Callable[[str], None] | None = None,
     ) -> str:
         """Start a background process and return execution_id immediately."""
         execution_id = str(uuid.uuid4())
@@ -268,7 +268,7 @@ class LocalBackend:
                 pass
         return True
 
-    def get_background_status(self, execution_id: str) -> Optional[Dict]:
+    def get_background_status(self, execution_id: str) -> dict | None:
         """Get status of a background process."""
         with self._lock:
             proc = self._background_processes.get(execution_id)
@@ -281,7 +281,7 @@ class LocalBackend:
             "exit_code": proc.poll(),
         }
 
-    def get_background_logs(self, execution_id: str) -> Dict[str, str]:
+    def get_background_logs(self, execution_id: str) -> dict[str, str]:
         """Get logs for a background process."""
         log_dir = Path(".moon_logs")
         stdout_file = log_dir / f"{execution_id}.stdout"

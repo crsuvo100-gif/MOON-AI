@@ -19,9 +19,9 @@ should customise it to the organisation's security posture.
 from __future__ import annotations
 
 import fnmatch
-import yaml
 from pathlib import Path
-from typing import List, Dict
+
+import yaml
 
 from .models import ExecutionRequest
 
@@ -43,7 +43,6 @@ class PermissionRequired(Exception):
 class Denied(Exception):
     """Raised when a command is explicitly denied by policy."""
 
-    pass
 
 
 # ---------------------------------------------------------------------------
@@ -76,12 +75,12 @@ class PermissionEngine:
             self.policy_path = candidate if candidate.is_file() else None
         else:
             self.policy_path = Path(policy_path)
-        self.rules: List[Dict[str, str]] = self._load_policy()
+        self.rules: list[dict[str, str]] = self._load_policy()
 
     # -------------------------------------------------------------------
     # Private helpers
     # -------------------------------------------------------------------
-    def _load_policy(self) -> List[Dict[str, str]]:
+    def _load_policy(self) -> list[dict[str, str]]:
         if self.policy_path and self.policy_path.is_file():
             raw = self.policy_path.read_text()
         else:
@@ -92,7 +91,7 @@ class PermissionEngine:
             raise ValueError(f"Failed to parse permission policy: {exc}")
         return parsed
 
-    def _match_rule(self, command: str) -> Dict[str, str] | None:
+    def _match_rule(self, command: str) -> dict[str, str] | None:
         for rule in self.rules:
             pattern = rule.get("pattern", "*")
             if fnmatch.fnmatch(command, pattern):

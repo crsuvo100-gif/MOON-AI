@@ -20,6 +20,7 @@ All endpoints reuse real MOON runtime objects. Nothing is faked.
 from __future__ import annotations
 
 import time
+
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
@@ -36,7 +37,6 @@ def _auth_ok(headers: dict | None):
 # ---- helpers -------------------------------------------------------------
 async def _diagnostics_snapshot():
     """Real diagnostics gathered from live MOON runtime objects."""
-    from app.brain.orchestrator import Orchestrator, Task
     orch = await _get_orchestrator()
     from app.brain.tool_manager import ToolManager  # noqa: F401  (used via orch._tools)
     try:
@@ -83,8 +83,9 @@ def _model_reachable():
 
 def _load_version():
     try:
-        import tomllib
         from pathlib import Path
+
+        import tomllib
         p = Path(__file__).resolve().parent.parent.parent / "pyproject.toml"
         with open(p, "rb") as fh:
             return tomllib.load(fh).get("project", {}).get("version", "0.1.0")
@@ -164,7 +165,6 @@ def get_terminal_router():
         if not _auth_ok(dict(request.headers)):
             return JSONResponse({"detail": "Unauthorized"}, status_code=401)
         try:
-            from app.brain.orchestrator import Orchestrator
             orch = await _get_orchestrator()
             tm = getattr(orch, "_tools", None)
             specs = tm.available_specs() if tm else []
@@ -256,7 +256,7 @@ def get_terminal_router():
             return JSONResponse({"detail": "Unauthorized"}, status_code=401)
         events = []
         try:
-            from app.brain.orchestrator import Orchestrator, Task
+            from app.brain.orchestrator import Task
             body = await request.json()
             task_prompt = str((body or {}).get("task") or (body or {}).get("prompt") or "")
             agent_name = str((body or {}).get("agent") or "auto")

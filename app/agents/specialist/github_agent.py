@@ -517,10 +517,10 @@ class GitHubAgent(BaseAgent):
 __all__ = [
     "GitHubAgent",
     "GitHubAgentConfig",
-    "Repository",
-    "PullRequest",
     "Issue",
-    "Release",
-    "PRState",
     "IssueState",
+    "PRState",
+    "PullRequest",
+    "Release",
+    "Repository",
 ]

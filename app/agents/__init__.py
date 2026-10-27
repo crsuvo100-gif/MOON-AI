@@ -30,10 +30,10 @@ from app.agents.base_runtime import AgentResult, BaseAgent, OrchestratorAgent
 from app.agents.memory_agent import MemoryAgent
 
 __all__ = [
-    "RuntimeAgent",       # async runtime agent (wraps an AgentBrain)
-    "BaseAgent",          # spec 6 common interface
     "AgentResult",        # spec 7 structured result
-    "OrchestratorAgent",  # spec 6/9/12 bridge to the live orchestrator
+    "BaseAgent",          # spec 6 common interface
     "MemoryAgent",        # specialist
+    "OrchestratorAgent",  # spec 6/9/12 bridge to the live orchestrator
+    "RuntimeAgent",       # async runtime agent (wraps an AgentBrain)
 ]
 

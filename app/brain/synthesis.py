@@ -8,7 +8,6 @@ Final response should represent the verified combined result.
 """
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
@@ -268,7 +267,13 @@ def create_default_pipeline() -> ResultSynthesisPipeline:
 
 
 __all__ = [
-    "SynthesisStage", "SynthesisResult", "ResultSynthesisPipeline",
-    "normalize_results", "extract_evidence", "detect_conflicts",
-    "verify_results", "synthesize_final", "create_default_pipeline",
+    "ResultSynthesisPipeline",
+    "SynthesisResult",
+    "SynthesisStage",
+    "create_default_pipeline",
+    "detect_conflicts",
+    "extract_evidence",
+    "normalize_results",
+    "synthesize_final",
+    "verify_results",
 ]

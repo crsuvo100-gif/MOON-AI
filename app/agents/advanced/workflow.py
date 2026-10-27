@@ -14,21 +14,20 @@ This workflow enhances the basic pipeline with:
 
 from __future__ import annotations
 
-import asyncio
 import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from app.config.logging import get_logger
 from app.agents.advanced.blackboard import Blackboard
+from app.agents.advanced.context_sharing import ContextSharing
+from app.agents.advanced.coordination import CoordinationMode, CoordinationProtocol
+from app.agents.advanced.error_recovery import ErrorCategory, ErrorRecovery, ErrorSeverity
+from app.agents.advanced.learning import AgentLearning
 from app.agents.advanced.lifecycle import AgentLifecycle, AgentState
 from app.agents.advanced.performance import PerformanceTracker, TaskExecution
-from app.agents.advanced.learning import AgentLearning
-from app.agents.advanced.coordination import CoordinationProtocol, CoordinationMode
-from app.agents.advanced.context_sharing import ContextSharing
-from app.agents.advanced.error_recovery import ErrorRecovery, ErrorCategory, ErrorSeverity
-from app.agents.advanced.tool_optimizer import ToolOptimizer
 from app.agents.advanced.state_manager import AgentStateManager
+from app.agents.advanced.tool_optimizer import ToolOptimizer
+from app.config.logging import get_logger
 
 logger = get_logger(__name__)
 

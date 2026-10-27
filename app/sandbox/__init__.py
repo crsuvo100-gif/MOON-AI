@@ -6,7 +6,7 @@ Non-destructive: implementation is not duplicated or replaced.
 
 from __future__ import annotations
 
-from app.capability.sandbox import SandboxExecutor, SandboxResult  # noqa: F401
+from app.capability.sandbox import SandboxExecutor, SandboxResult
 
 
 class SandboxManager:
@@ -20,4 +20,4 @@ class SandboxManager:
 
 
 # Spec-aligned submodule re-exports (real logic lives in app.capability.sandbox).
-__all__ = ["SandboxExecutor", "SandboxResult", "SandboxManager"]
+__all__ = ["SandboxExecutor", "SandboxManager", "SandboxResult"]

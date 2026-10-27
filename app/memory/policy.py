@@ -32,16 +32,11 @@ execute an untrusted record, the corresponding ``can_*`` method returns
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
-from typing import Any
 
 from app.memory.record import (
     MemoryRecord,
     Scope,
-    MemoryType,
-    SourceType,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helper: scope hierarchy – lower index == higher privilege

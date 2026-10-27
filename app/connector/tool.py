@@ -16,12 +16,10 @@ from __future__ import annotations
 
 import json
 import logging
-from pathlib import Path
 from typing import Any
 
-from app.tools.base import BaseTool
 from app.connector.gateway import ConnectionGateway, ConnectionRecord
-from app.connector.permission import ConnectorPermissionManager
+from app.tools.base import BaseTool
 
 logger = logging.getLogger(__name__)
 

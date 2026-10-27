@@ -142,4 +142,4 @@ class RecoveryPolicy:
         )
 
 
-__all__ = ["RecoveryAction", "FailureContext", "RecoveryDecision", "RecoveryPolicy"]
+__all__ = ["FailureContext", "RecoveryAction", "RecoveryDecision", "RecoveryPolicy"]

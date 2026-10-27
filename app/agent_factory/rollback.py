@@ -7,9 +7,6 @@ returns a structured Registration. Separated per the spec directory layout
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any
-
 from app.agent_factory.registrar import Registration
 
 
@@ -17,8 +14,8 @@ class AgentFactoryRollback:
     def rollback(self, agent_id: str) -> Registration:
         try:
             from app.agent_factory.lifecycle import AgentLifecycle
-            from app.agent_factory.store import AgentStore
             from app.agent_factory.models import AuditEvent
+            from app.agent_factory.store import AgentStore
             r = AgentLifecycle().rollback(agent_id)
             AgentStore().audit(AuditEvent(
                 action="agent.rollback", agent_id=agent_id, detail=f"rolled back -> {r.status}"))

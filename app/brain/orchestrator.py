@@ -29,20 +29,36 @@ from app.brain.reasoning import ReasoningEngine
 from app.brain.self_reflection import SelfReflection
 from app.brain.tool_manager import ToolManager
 from app.brain.validator import Validator
-from app.improvement import SelfImprovement
+from app.capability.tool import CapabilityManagerTool
 from app.config.logging import get_logger
+from app.connector.tool import GlobalConnectorTool
 from app.context.retriever import ContextRetriever
+from app.improvement import SelfImprovement
 from app.memory.conversation_history import ConversationHistory
-from app.memory.record import MemoryType, Scope, SourceType
-from app.memory.semantic_search import SemanticSearch
 from app.memory.enhanced_long_term import EnhancedLongTermMemory
 from app.memory.enhanced_short_term import EnhancedShortTermMemory
 from app.memory.memory_graph import MemoryGraph
-from app.memory.memory_stats import MemoryStatsCollector
 from app.memory.memory_maintenance import MemoryMaintenance
+from app.memory.memory_stats import MemoryStatsCollector
+from app.memory.record import MemoryType, Scope, SourceType
+from app.memory.semantic_search import SemanticSearch
 from app.models.agent import AgentCard
 from app.models.message import Message
 from app.models.task import Task
+
+# --- Spec runtime integration glue (spec 10/12/28/30/41/46) ----------------
+# The 0af96c2 refactor deleted app/runtime/* and with it this import, leaving
+# emit() / analyze_task() / route_agent() / choose_model() called but UNDEFINED.
+# Every call site sits inside `try/except Exception: pass`, so each augmentation
+# silently no-op'd instead of failing loudly (no GoalSpec, no routing refinement,
+# no model recommendation, zero events on the bus). Restored here.
+from app.runtime.integration import (
+    analyze_task,
+    choose_model,
+    emit,
+    gate_action,
+    route_agent,
+)
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import ChatMessage, CompletionResult, LLMService
 from app.tools.api_requests import ApiRequestsTool
@@ -61,6 +77,8 @@ from app.tools.file_manager import FileManagerTool
 from app.tools.git_tool import GitTool
 from app.tools.github_sync_tool import GitHubSyncTool
 from app.tools.hardening_audit_tool import HardeningAuditTool
+from app.tools.huggingface_deploy import HuggingFaceDeployTool
+from app.tools.huggingface_tool import HuggingFaceTool
 from app.tools.image_processing import ImageProcessingTool
 from app.tools.learning_tool import LearningTool
 from app.tools.log_analyzer_tool import LogAnalyzerTool
@@ -81,26 +99,6 @@ from app.tools.terminal import TerminalTool
 from app.tools.utility_tools import IpGeolocationTool, TimezoneConverterTool, UnitConverterTool
 from app.tools.vuln_scanner_tool import VulnScannerTool
 from app.tools.web_search import WebSearchTool
-from app.capability.tool import CapabilityManagerTool
-from app.connector.tool import GlobalConnectorTool
-from app.tools.huggingface_deploy import HuggingFaceDeployTool
-from app.tools.huggingface_tool import HuggingFaceTool
-
-# --- Spec runtime integration glue (spec 10/12/28/30/41/46) ----------------
-# The 0af96c2 refactor deleted app/runtime/* and with it this import, leaving
-# emit() / analyze_task() / route_agent() / choose_model() called but UNDEFINED.
-# Every call site sits inside `try/except Exception: pass`, so each augmentation
-# silently no-op'd instead of failing loudly (no GoalSpec, no routing refinement,
-# no model recommendation, zero events on the bus). Restored here.
-from app.runtime.integration import (  # noqa: E402
-    analyze_task,
-    choose_model,
-    emit,
-    gate_action,
-    record_evaluation,
-    record_outcome,
-    route_agent,
-)
 
 # The same refactor that deleted the import above also left NINE call sites
 # using the private alias `_emit(...)` (verification, memory-update and tool
@@ -175,8 +173,6 @@ class Orchestrator:
     async def setup(self) -> None:
         from app.config.model_config import build_embedding_config, build_model_config
         from app.memory.knowledge_base import KnowledgeBase
-        from app.memory.long_term import LongTermMemory
-        from app.memory.short_term import ShortTermMemory
         from app.memory.vector_db import InMemoryVectorStore
 
         cfg = build_model_config(self._settings)
@@ -332,8 +328,8 @@ class Orchestrator:
         try:
             from app.memory.cognitive import CognitiveMemoryManager
             from app.memory.context_engine import ContextEngine
-            from app.memory.sync import SyncEngine, NullCloudProvider
             from app.memory.health import MemoryHealthService
+            from app.memory.sync import NullCloudProvider, SyncEngine
             self._cognitive_memory = CognitiveMemoryManager(
                 embed_fn=self._embeddings.embed if self._embeddings else None,
                 vector_store=store,
@@ -431,7 +427,9 @@ class Orchestrator:
 
         # --- Professional agent system (communication, quality, self-healing) ---
         try:
-            from app.agents.professional.professional_orchestrator import ProfessionalAgentOrchestrator
+            from app.agents.professional.professional_orchestrator import (
+                ProfessionalAgentOrchestrator,
+            )
             self._professional_orchestrator = ProfessionalAgentOrchestrator(
                 max_concurrent_tasks=getattr(self._settings, "professional_max_concurrent_tasks", 5),
                 quality_threshold=0.7,
@@ -975,7 +973,7 @@ class Orchestrator:
                 "migrate|benchmark|profile|document"
             )
             # split on ', ' or ' and ' only when the NEXT word is a known verb
-            raw = _re.split(rf"(?:,\s*|\s+and\s+)(?=(?:{verbs})\b)", text, flags=_re.I)
+            raw = _re.split(rf"(?:,\s*|\s+and\s+)(?=(?:{verbs})\b)", text, flags=_re.IGNORECASE)
             clauses = [c.strip().rstrip(".,;:") for c in raw if c.strip()]
             if len(clauses) > 1:
                 parts = clauses
@@ -1283,8 +1281,7 @@ class Orchestrator:
                 emit("AGENT_SELECTED", execution_id=task.id, agent_id=refined,
                      detail=f"selected {refined} by capability")
             try:
-                setattr(task, "_selected_agents",
-                        [c.id for c in get_registry().select(capability=task.prompt)][:5])
+                task._selected_agents = [c.id for c in get_registry().select(capability=task.prompt)][:5]
             except Exception:  # noqa: BLE001
                 pass
             emit("TASK_STARTED", execution_id=task.id, agent_id=task.agent_name,
@@ -2261,7 +2258,7 @@ class Orchestrator:
 
     async def _complete_with_fallback(
         self, messages, *, tools=None, max_tokens=None, temperature=None
-    ) -> "CompletionResult":
+    ) -> CompletionResult:
         """Run a completion on the primary (local) model, falling back through the
         configured hosted backends if the local call fails or returns no content.
 
@@ -2519,7 +2516,7 @@ class Orchestrator:
                 if not m:
                     m = re.search(r"exec\(([^)]*)\)", task.prompt)
                 if not m and "```" in task.prompt:
-                    m = re.search(r"```(?:python)?\s*(.*?)```", task.prompt, re.S)
+                    m = re.search(r"```(?:python)?\s*(.*?)```", task.prompt, re.DOTALL)
                 if not m:
                     return None
                 # Pass the FULL snippet (group 0) so the executor prints/runs it
@@ -2534,17 +2531,17 @@ class Orchestrator:
                 p = task.prompt or ""
                 cmd = ""
                 # 1) fenced code block (bash/sh/shell)
-                m = _re.search(r"```(?:bash|sh|shell)?\s*(.*?)```", p, _re.S | _re.I)
+                m = _re.search(r"```(?:bash|sh|shell)?\s*(.*?)```", p, _re.DOTALL | _re.IGNORECASE)
                 if m:
                     cmd = m.group(1).strip()
                 else:
                     # 2) explicit "command:" / "terminal tool:" marker
-                    m = _re.search(r"(?:command|terminal tool)\s*[:\-]\s*(.+)", p, _re.I)
+                    m = _re.search(r"(?:command|terminal tool)\s*[:\-]\s*(.+)", p, _re.IGNORECASE)
                     if m:
                         cmd = m.group(1).strip()
                     else:
                         # 3) inline 'echo ...' / 'run: ...'
-                        m = _re.search(r"\b(?:echo|run|sh|bash|ls|cat|pwd|whoami|date|uname|python|curl|wget|git|pip|apt|systemctl|cat)\b[^\n]*", p, _re.I)
+                        m = _re.search(r"\b(?:echo|run|sh|bash|ls|cat|pwd|whoami|date|uname|python|curl|wget|git|pip|apt|systemctl|cat)\b[^\n]*", p, _re.IGNORECASE)
                         if m:
                             cmd = m.group(0).strip()
                 # Trim trailing prose (" and report ...", sentence end) so only the

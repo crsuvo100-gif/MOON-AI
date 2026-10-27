@@ -32,7 +32,6 @@ from app.memory.record import (
 )
 from app.memory.security import detect_secret
 
-
 # --------------------------------------------------------------------------
 # spec 11: candidate detection
 # --------------------------------------------------------------------------
@@ -292,7 +291,12 @@ class CandidatePipeline:
 
 
 __all__ = [
-    "Candidate", "CandidatePipeline", "MemoryPolicyEngine",
-    "detect_candidate", "classify", "find_duplicate", "similarity",
+    "Candidate",
+    "CandidatePipeline",
+    "MemoryPolicyEngine",
+    "classify",
+    "detect_candidate",
+    "find_duplicate",
     "score_importance",
+    "similarity",
 ]

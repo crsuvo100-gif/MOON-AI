@@ -17,9 +17,8 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any
 
-from app.agent_factory.models import AgentMetadata, GeneratedAgent, RiskLevel
+from app.agent_factory.models import AgentMetadata, GeneratedAgent
 
 # Deterministic id/name sanitisers.
 _ID_RE = re.compile(r"[^a-z0-9_]")

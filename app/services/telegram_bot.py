@@ -16,7 +16,6 @@ Optional env:
 from __future__ import annotations
 
 import asyncio
-import logging
 import os
 
 from app.config.logging import get_logger
@@ -125,7 +124,7 @@ def main() -> int:
         asyncio.run(bot.run())
     except KeyboardInterrupt:
         return 0
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         logger.exception("Telegram bot stopped: %s", exc)
         print(f"[MOON-AI Telegram] fatal: {exc}", file=__import__("sys").stderr)
         return 1

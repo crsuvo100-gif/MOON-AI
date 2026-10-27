@@ -20,8 +20,9 @@ class ApiRequestsTool(BaseTool):
         try:
             # Egress permission check via connector permission manager
             try:
-                from app.connector.permission import ConnectorPermissionManager
                 from urllib.parse import urlparse
+
+                from app.connector.permission import ConnectorPermissionManager
                 host = urlparse(url).hostname or ""
                 perm = ConnectorPermissionManager()
                 decision = perm.egress_decision(host, "network.egress")

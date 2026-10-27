@@ -9,17 +9,17 @@ Never hard-codes credentials. Never stores plaintext secrets.
 from __future__ import annotations
 
 import os
-import shlex
 import shutil
 import subprocess
 import threading
 import time
 import uuid
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, cast
+from typing import cast
 
-from ..models import ExecutionRequest, ExecutionResult
 from ..event_bus import get_bus
+from ..models import ExecutionRequest, ExecutionResult
 
 
 class SSHBackend:
@@ -28,9 +28,9 @@ class SSHBackend:
     def __init__(self):
         self.bus = get_bus()
         self.available = shutil.which("ssh") is not None
-        self._active_sessions: Dict[str, subprocess.Popen] = {}
+        self._active_sessions: dict[str, subprocess.Popen] = {}
 
-    def _build_ssh_args(self, request: ExecutionRequest) -> List[str]:
+    def _build_ssh_args(self, request: ExecutionRequest) -> list[str]:
         """Build SSH command arguments from an ExecutionRequest.
 
         The SSH connection details are passed via environment variables:
@@ -77,8 +77,8 @@ class SSHBackend:
     def run(
         self,
         request: ExecutionRequest,
-        on_output: Optional[Callable[[str], None]] = None,
-    ) -> Dict:
+        on_output: Callable[[str], None] | None = None,
+    ) -> dict:
         """Execute a command on a remote host via SSH."""
         if not self.available:
             return {
@@ -105,8 +105,8 @@ class SSHBackend:
         try:
             if on_output:
                 # Streaming mode
-                stdout_parts: List[str] = []
-                stderr_parts: List[str] = []
+                stdout_parts: list[str] = []
+                stderr_parts: list[str] = []
 
                 proc = subprocess.Popen(
                     args,

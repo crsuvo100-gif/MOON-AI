@@ -17,7 +17,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from app.memory.record import MemoryRecord, Scope, SyncStatus, MemoryType, SourceType, Importance
+from app.memory.record import Importance, MemoryRecord, MemoryType, Scope, SourceType, SyncStatus
 from app.memory.task_record import TaskRecord, TaskStatus
 
 logger = logging.getLogger(__name__)
@@ -60,10 +60,10 @@ class MemoryStore:
     def record_task(self, task: TaskRecord) -> TaskRecord:  # pragma: no cover
         raise NotImplementedError
 
-    def get_task(self, task_id: str, *, project_id: str = "MOON", include_deleted: bool = False) -> "TaskRecord | None":  # pragma: no cover
+    def get_task(self, task_id: str, *, project_id: str = "MOON", include_deleted: bool = False) -> TaskRecord | None:  # pragma: no cover
         raise NotImplementedError
 
-    def list_tasks(self, *, project_id: str = "MOON", status: str | None = None, limit: int = 50, offset: int = 0) -> list["TaskRecord"]:  # pragma: no cover
+    def list_tasks(self, *, project_id: str = "MOON", status: str | None = None, limit: int = 50, offset: int = 0) -> list[TaskRecord]:  # pragma: no cover
         raise NotImplementedError
 
     def update_task(self, task: TaskRecord) -> TaskRecord:  # pragma: no cover
@@ -331,7 +331,7 @@ class LocalMemoryStore(MemoryStore):
         self.upsert(self._task_to_memory(task))
         return task
 
-    def get_task(self, task_id: str, *, project_id: str = "MOON", include_deleted: bool = False) -> "TaskRecord | None":
+    def get_task(self, task_id: str, *, project_id: str = "MOON", include_deleted: bool = False) -> TaskRecord | None:
         """Rehydrate a single task by id."""
         rec = self.get(f"{project_id}:{task_id}", include_deleted=include_deleted)
         return self._task_from_memory(rec) if rec is not None else None
@@ -345,7 +345,7 @@ class LocalMemoryStore(MemoryStore):
                 out[tid] = self._task_from_memory(rec)
         return out
 
-    def list_tasks(self, *, project_id: str = "MOON", status: "TaskStatus | None" = None, limit: int = 50, offset: int = 0) -> list["TaskRecord"]:
+    def list_tasks(self, *, project_id: str = "MOON", status: TaskStatus | None = None, limit: int = 50, offset: int = 0) -> list[TaskRecord]:
         """List task records for a project, optionally filtered by status."""
         records = self.query(scope=Scope.TASK, project_id=project_id, include_deleted=True, limit=limit, offset=offset)
         out: list[TaskRecord] = []
@@ -663,4 +663,4 @@ def task_from_memory(rec: MemoryRecord, *, parent: TaskRecord | None = None) -> 
     )
 
 
-__all__ = ["MemoryStore", "LocalMemoryStore", "default_db_path", "DEFAULT_MEMORY_DIR", "SCHEMA_VERSION"]
+__all__ = ["DEFAULT_MEMORY_DIR", "SCHEMA_VERSION", "LocalMemoryStore", "MemoryStore", "default_db_path"]

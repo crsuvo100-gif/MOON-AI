@@ -80,11 +80,11 @@ class AgentBrain:
     """
 
     def __init__(self, agent_name: str, main_brain=None,
-                 agent_models: "AgentModelManager | None" = None) -> None:
+                 agent_models: AgentModelManager | None = None) -> None:
         self.agent_name = agent_name
         self.main_brain = main_brain
         self.agent_models = agent_models
-        self._llm: "LLMService | None" = None
+        self._llm: LLMService | None = None
         self.working = WorkingMemory()
         self.history = ConversationHistory(session_id=f"agent:{agent_name}")
         self._store = _AgentBrainStore(agent_name)

@@ -18,14 +18,11 @@ bottom-left corner.
 from __future__ import annotations
 
 from textual.app import App, ComposeResult
-from textual.containers import Vertical, Horizontal, VerticalScroll, HorizontalScroll
-from textual.widgets import Static, Markdown, Button, Label, Input, RichLog, \
-    ContentSwitcher, Switch, RadioButton, Checkbox, TextArea, Log, \
-    Tab, TabPane, TabbedContent, Rule, Collapsible, Tree
-from textual.reactive import reactive
 from textual.binding import Binding
-from textual import events
-
+from textual.containers import Vertical, VerticalScroll
+from textual.widgets import (
+    Static,
+)
 
 # ── colour palette ──────────────────────────────────────────────────────────
 BG_DARK       = "#0a0a12"
@@ -176,9 +173,8 @@ class MoonTerminalApp(App):
 
     def compose(self) -> ComposeResult:
         self.build_log()
-        with VerticalScroll(classes="terminal-screen"):
-            with Vertical():
-                yield self._build_window()
+        with VerticalScroll(classes="terminal-screen"), Vertical():
+            yield self._build_window()
 
     def _build_window(self) -> Vertical:
         """Construct the single terminal window with the log content."""

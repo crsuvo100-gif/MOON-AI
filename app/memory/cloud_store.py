@@ -25,11 +25,11 @@ from typing import Any
 # optional dependency (a clean install without PostgreSQL must still be able
 # to import app.memory).
 try:
-    import asyncpg  # noqa: F401
+    import asyncpg
 except ImportError:  # pragma: no cover
     asyncpg = None
 
-from .record import MemoryRecord, MemoryType, Scope, SyncStatus
+from .record import MemoryRecord, Scope, SyncStatus
 from .store import MemoryStore
 
 logger = logging.getLogger(__name__)

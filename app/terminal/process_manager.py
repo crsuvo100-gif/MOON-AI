@@ -3,27 +3,28 @@ Provides an in‑memory registry of running / completed processes.
 """
 
 import os
-import uuid
 import signal
 import subprocess
+import uuid
 from datetime import datetime
-from typing import Dict, List, Optional
 from pathlib import Path
 
 from pydantic import BaseModel, Field
+
 from .output_engine import OutputEngine
+
 
 class ProcessInfo(BaseModel):
     execution_id: str = Field(..., description="Unique ID for this execution")
-    pid: Optional[int] = Field(None, description="Process ID")
+    pid: int | None = Field(None, description="Process ID")
     command: str = Field(..., description="Command line string")
     cwd: Path = Field(..., description="Working directory when launched")
     backend: str = Field(..., description="Backend name, e.g., 'local'")
     status: str = Field(..., description="One of 'running', 'stopped', 'completed', 'failed', 'killed'")
     start_time: datetime = Field(default_factory=datetime.utcnow)
-    duration: Optional[float] = Field(None, description="Seconds elapsed; set when finished")
-    stdout: Optional[str] = Field(None)
-    stderr: Optional[str] = Field(None)
+    duration: float | None = Field(None, description="Seconds elapsed; set when finished")
+    stdout: str | None = Field(None)
+    stderr: str | None = Field(None)
 
 class ProcessManager:
     """Singleton-like manager tracking background processes.
@@ -31,7 +32,7 @@ class ProcessManager:
     """
     def __init__(self):
         # Mapping execution_id -> dict with 'proc' (Popen) and 'info' (ProcessInfo)
-        self._registry: Dict[str, Dict] = {}
+        self._registry: dict[str, dict] = {}
 
     def _finalize(self, execution_id: str):
         entry = self._registry.get(execution_id)
@@ -89,7 +90,7 @@ class ProcessManager:
         self._registry[execution_id] = {'proc': proc, 'info': info}
         return execution_id
 
-    def list_processes(self) -> List[ProcessInfo]:
+    def list_processes(self) -> list[ProcessInfo]:
         # Update statuses before returning
         for eid in list(self._registry.keys()):
             entry = self._registry[eid]
@@ -98,7 +99,7 @@ class ProcessManager:
                 self._finalize(eid)
         return [entry['info'] for entry in self._registry.values()]
 
-    def get_process(self, execution_id: str) -> Optional[ProcessInfo]:
+    def get_process(self, execution_id: str) -> ProcessInfo | None:
         entry = self._registry.get(execution_id)
         if not entry:
             return None

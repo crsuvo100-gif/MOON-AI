@@ -13,8 +13,7 @@ can be observed (spec 28 "Keep evaluation history").
 
 from __future__ import annotations
 
-import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 

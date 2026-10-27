@@ -8,11 +8,9 @@ SandboxExecutor / bubblewrap). The performance scoring lives in
 from __future__ import annotations
 
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
-from app.agent_factory.architect import AgentSpec
 from app.agent_factory.builder import BuildArtifact
 
 
@@ -47,8 +45,8 @@ class AgentTester:
 
     @staticmethod
     def _direct_test(artifact: BuildArtifact) -> TestResult:
-        import os, sys
-        from pathlib import Path as _P
+        import os
+        import sys
         test_dir = Path(artifact.test_path).parent
         py = test_dir / ".venv" / "bin" / "python"
         if not py.exists():

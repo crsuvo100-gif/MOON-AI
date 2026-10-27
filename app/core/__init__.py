@@ -7,11 +7,12 @@ spine at app.runtime. Non-destructive.
 
 from __future__ import annotations
 
-from app.brain.orchestrator import Orchestrator  # noqa: F401
-from app.config import settings  # noqa: F401
+from app.brain.orchestrator import Orchestrator
+from app.config import settings
+
 try:
     from app.runtime import integration  # type: ignore
 except Exception:  # noqa: BLE001
     integration = None
 
-__all__ = ["Orchestrator", "settings", "integration"]
+__all__ = ["Orchestrator", "integration", "settings"]

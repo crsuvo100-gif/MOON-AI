@@ -292,4 +292,4 @@ async def memory_backups() -> JSONResponse:
     return JSONResponse({"backups": list_backups()})
 
 
-__all__ = ["router", "set_manager", "_get_manager"]
+__all__ = ["_get_manager", "router", "set_manager"]

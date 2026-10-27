@@ -20,10 +20,14 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.config.logging import get_logger
-from app.context.advanced.context_window import ContextWindow, ContextItem, EvictionPolicy
-from app.context.advanced.context_awareness import ContextAwareness, ContextHealth, ContextAwarenessState
+from app.context.advanced.context_awareness import (
+    ContextAwareness,
+    ContextAwarenessState,
+    ContextHealth,
+)
 from app.context.advanced.context_injector import ContextInjector, InjectionFormat, InjectionResult
-from app.context.advanced.context_lifecycle import ContextLifecycle, ContextPhase
+from app.context.advanced.context_lifecycle import ContextLifecycle
+from app.context.advanced.context_window import ContextItem, ContextWindow, EvictionPolicy
 
 logger = get_logger(__name__)
 

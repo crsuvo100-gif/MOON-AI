@@ -15,28 +15,25 @@ from __future__ import annotations
 
 import asyncio
 import base64
-import os
-import re
-import sys
-import logging
-import time
-from typing import Iterable, Any, Optional
-
 import json
-import subprocess
+import logging
+import os
 import shlex
-import threading
-from datetime import datetime
+import subprocess
+import time
+from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import Any
 
 _START_TIME = time.time()
 from collections import deque
 from pathlib import Path
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
-from app.brain.orchestrator import Orchestrator, Task
+
+from app.brain.orchestrator import Task
 
 SETTINGS_JSON = None  # web/ removed; settings persistence removed with it
 
@@ -57,7 +54,9 @@ app = FastAPI(title="MOON-AI Terminal", version="1.0.0")
 
 # CORS middleware — restrict to configured origins
 from fastapi.middleware.cors import CORSMiddleware as _CORSMiddleware
+
 from app.config.settings import get_settings as _get_settings
+
 app.add_middleware(
     _CORSMiddleware,
     allow_origins=_get_settings().cors_origins_list,
@@ -193,7 +192,7 @@ async def _get_orchestrator():
         return _ORCH
     async with _ORCH_LOCK:
         if _ORCH is None:
-            from app.brain.orchestrator import Orchestrator, Task
+            from app.brain.orchestrator import Orchestrator
             from app.config.env_guard import decontaminate_pythonpath
             from app.config.settings import get_settings
             decontaminate_pythonpath()
@@ -248,7 +247,7 @@ def _log(msg: str, sev: str = "info"):
     _emit_event("log", msg, sev)
     # push to any live HUD log subscribers (send is an async coroutine -> schedule it)
     if _LOG_SUBSCRIBERS:
-        for sub in list(_LOG_SUBSCRIBERS):
+        for sub in _LOG_SUBSCRIBERS:
             try:
                 asyncio.ensure_future(sub(type="log", t=ts, sev=sev, msg=msg))
             except Exception:
@@ -269,7 +268,7 @@ def _telemetry_snapshot(orch) -> dict:
 # Bounded ring buffer of real, recent system events (logs + workflow stages +
 # assistant activity). Feeds the HUD EVENTS timeline via /api/events. Pure
 # observability — never blocks the live paths that populate it.
-_EVENTS: "deque" = deque(maxlen=200)
+_EVENTS: deque = deque(maxlen=200)
 
 
 def _emit_event(kind: str, detail: str, sev: str = "info") -> None:
@@ -849,7 +848,6 @@ async def api_voice_clone(req: VoiceCloneRequest, request: Request):
         from fastapi import Response
         return Response("Unauthorized", status_code=401)
     try:
-        import base64
         ve = _get_voice_engine()
         if ve is None:
             return JSONResponse({"ok": False, "error": "voice engine unavailable"}, status_code=500)
@@ -1180,7 +1178,8 @@ async def api_agent_run(agent_id: str, request: Request):
         task = (body or {}).get("task", "")
         if rec:
             # Generated/factory agent: load its module and run it.
-            import importlib.util, sys
+            import importlib.util
+            import sys
             mod_key = f"moonfactory_{agent_id}"
             sys.modules.pop(mod_key, None)
             spec = importlib.util.spec_from_file_location(mod_key, rec.module_path)
@@ -1451,8 +1450,8 @@ async def api_metrics(request: Request):
         from fastapi import Response
         return Response("Unauthorized", status_code=401)
     try:
-        from app.runtime.skill_system import SkillSystem
         from app.agent_factory.factory import AgentFactory
+        from app.runtime.skill_system import SkillSystem
         sm = _system_metrics()
         return JSONResponse({
             "cpu_pct": sm.get("cpu"), "ram_pct": sm.get("ram_pct"),
@@ -1818,7 +1817,7 @@ async def ws_endpoint(ws: WebSocket):
                             result_task = await asyncio.wait_for(
                                 orch.run_task(task, on_event=stream_event), timeout=180)
                             answer = result_task.result or ""
-                        except (asyncio.TimeoutError, Exception) as e:  # noqa: BLE001
+                        except (asyncio.TimeoutError, Exception):  # noqa: BLE001
                             _last_error = True
                             await send(type="workflow", stage="fallback",
                                        detail="run_task slow — using fast brain path")
@@ -2068,7 +2067,7 @@ async def ws_endpoint(ws: WebSocket):
                                 out = "no capabilities registered"
                         elif cmd == "search" and len(parts) > 1:
                             res = await asyncio.to_thread(mgr.search_github, " ".join(parts[1:]), limit=5)
-                            out = f"GITHUB search: " + ("\n".join(
+                            out = "GITHUB search: " + ("\n".join(
                                 f"  - {c.get('name','?')}" for c in (res or [])[:10]) if res else "no results")
                         elif cmd == "install" and len(parts) > 1:
                             out = f"[capabilities] install '{parts[1]}' queued via capability manager."
@@ -2483,7 +2482,6 @@ async def ws_agent(ws: WebSocket, agent_id: str):
         await ws.close(code=1008, reason="unauthorized")
         return
     await ws.accept()
-    from typing import Any
     from app.runtime.event_bus import bus as _bus_fn
     _bus = _bus_fn()
     q: list[Any] = []

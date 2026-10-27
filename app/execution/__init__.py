@@ -160,4 +160,4 @@ class ResourceManager:
             return {"cpu_loadavg": list(load), "note": "psutil unavailable"}
 
 
-__all__ = ["ExecState", "Job", "ExecutionManager", "ResourceManager"]
+__all__ = ["ExecState", "ExecutionManager", "Job", "ResourceManager"]

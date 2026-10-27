@@ -200,7 +200,7 @@ class MultiModelConsensus:
                 latency=latency,
                 confidence=0.7,  # Base confidence
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             logger.warning("Model %s query failed: %s", name, exc)
             raise
 

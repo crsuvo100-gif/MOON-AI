@@ -18,14 +18,14 @@ logger = get_logger(__name__)
 EPISODE_PATH = Path(__file__).resolve().parent.parent / "memory" / "episodes.json"
 
 if TYPE_CHECKING:
-    from app.memory.knowledge_base import KnowledgeBase
-    from app.memory.long_term import LongTermMemory
-    from app.memory.short_term import ShortTermMemory
     from app.memory.enhanced_long_term import EnhancedLongTermMemory
     from app.memory.enhanced_short_term import EnhancedShortTermMemory
+    from app.memory.knowledge_base import KnowledgeBase
+    from app.memory.long_term import LongTermMemory
     from app.memory.memory_graph import MemoryGraph
-    from app.memory.memory_stats import MemoryStatsCollector
     from app.memory.memory_maintenance import MemoryMaintenance
+    from app.memory.memory_stats import MemoryStatsCollector
+    from app.memory.short_term import ShortTermMemory
 
 
 class MemoryManager:

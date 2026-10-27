@@ -10,11 +10,9 @@ from __future__ import annotations
 
 import ipaddress
 import os
-import socket
 from dataclasses import dataclass
 
 from app.capability.permission_manager import PermissionManager, PolicyLevel
-
 
 # Network scopes used by the connector (added on top of the base manager).
 NETWORK_SCOPES = (

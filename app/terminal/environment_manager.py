@@ -16,7 +16,6 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Set
 
 # Patterns that indicate a secret value
 _SECRET_KEY_PATTERN = re.compile(
@@ -24,7 +23,7 @@ _SECRET_KEY_PATTERN = re.compile(
 )
 
 # Environment variable names that are always secret
-_SECRET_VAR_NAMES: Set[str] = {
+_SECRET_VAR_NAMES: set[str] = {
     "API_KEY", "APIKEY", "TOKEN", "PASSWORD", "SECRET", "AUTH_TOKEN",
     "ACCESS_TOKEN", "REFRESH_TOKEN", "PRIVATE_KEY", "SECRET_KEY",
     "OPENAI_API_KEY", "OPENROUTER_API_KEY", "ANTHROPIC_API_KEY",
@@ -34,7 +33,7 @@ _SECRET_VAR_NAMES: Set[str] = {
 }
 
 # Environment variables that should never be exposed
-_SENSITIVE_VARS: Set[str] = _SECRET_VAR_NAMES | {
+_SENSITIVE_VARS: set[str] = _SECRET_VAR_NAMES | {
     "SSH_AUTH_SOCK", "SSH_AGENT_PID", "GPG_AGENT_INFO",
     "GNUPGHOME", "KEYCHAIN", "SECURITYSESSIONID",
 }
@@ -44,8 +43,8 @@ class EnvironmentManager:
     """Manages shell detection, environment variables, and secret redaction."""
 
     def __init__(self):
-        self._detected_shell: Optional[str] = None
-        self._available_shells: Dict[str, str] = {}
+        self._detected_shell: str | None = None
+        self._available_shells: dict[str, str] = {}
         self._detect_shells()
 
     def _detect_shells(self):
@@ -56,7 +55,7 @@ class EnvironmentManager:
                 self._available_shells[shell] = path
 
     @property
-    def available_shells(self) -> Dict[str, str]:
+    def available_shells(self) -> dict[str, str]:
         """Return dict of {shell_name: path} for available shells."""
         return dict(self._available_shells)
 
@@ -83,7 +82,7 @@ class EnvironmentManager:
         self._detected_shell = "sh"
         return "sh"
 
-    def get_shell_path(self, shell: str) -> Optional[str]:
+    def get_shell_path(self, shell: str) -> str | None:
         """Get the path to a specific shell."""
         return self._available_shells.get(shell)
 
@@ -91,7 +90,7 @@ class EnvironmentManager:
         """Check if a shell is available."""
         return shell in self._available_shells
 
-    def get_environment(self, session_env: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+    def get_environment(self, session_env: dict[str, str] | None = None) -> dict[str, str]:
         """Get the current environment, optionally merged with session env.
 
         Secrets are NOT redacted here — this is the real environment for
@@ -102,12 +101,12 @@ class EnvironmentManager:
             env.update(session_env)
         return env
 
-    def get_redacted_environment(self, session_env: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+    def get_redacted_environment(self, session_env: dict[str, str] | None = None) -> dict[str, str]:
         """Get environment with secrets redacted for display/logging."""
         env = self.get_environment(session_env)
         return self.redact_environment(env)
 
-    def redact_environment(self, env: Dict[str, str]) -> Dict[str, str]:
+    def redact_environment(self, env: dict[str, str]) -> dict[str, str]:
         """Return a copy of env with secret values redacted."""
         redacted = {}
         for key, value in env.items():
@@ -144,11 +143,11 @@ class EnvironmentManager:
         """Get the path to the current Python executable."""
         return sys.executable
 
-    def get_virtual_env(self) -> Optional[str]:
+    def get_virtual_env(self) -> str | None:
         """Get the active virtual environment path, if any."""
         return os.environ.get("VIRTUAL_ENV")
 
-    def get_os_info(self) -> Dict[str, str]:
+    def get_os_info(self) -> dict[str, str]:
         """Get OS information."""
         import platform
         return {
@@ -158,7 +157,7 @@ class EnvironmentManager:
             "python_version": self.get_python_version(),
         }
 
-    def get_git_state(self, cwd: Optional[Path] = None) -> Dict[str, str]:
+    def get_git_state(self, cwd: Path | None = None) -> dict[str, str]:
         """Get git repository state for a directory."""
         cwd = cwd or Path.cwd()
         result = {
@@ -203,9 +202,9 @@ class EnvironmentManager:
 
     def build_session_env(
         self,
-        cwd: Optional[Path] = None,
-        extra_env: Optional[Dict[str, str]] = None,
-    ) -> Dict[str, str]:
+        cwd: Path | None = None,
+        extra_env: dict[str, str] | None = None,
+    ) -> dict[str, str]:
         """Build a complete environment for a session."""
         env = dict(os.environ)
         if cwd:

@@ -24,10 +24,10 @@ exit code is zero.
 
 from __future__ import annotations
 
-import os
-import requests
+from collections.abc import Callable
 from pathlib import Path
-from typing import Dict, Tuple, Callable
+
+import requests
 
 
 class VerificationEngine:
@@ -39,7 +39,7 @@ class VerificationEngine:
 
     def __init__(self):
         # Mapping ``type`` → callable(request, resp) -> (bool, dict)
-        self._handlers: Dict[str, Callable[[Dict, Dict], Tuple[bool, Dict]]] = {
+        self._handlers: dict[str, Callable[[dict, dict], tuple[bool, dict]]] = {
             "file_exists": self._verify_file_exists,
             "http_status": self._verify_http_status,
         }
@@ -47,7 +47,7 @@ class VerificationEngine:
     # -------------------------------------------------------------------
     # Built‑in verification handlers
     # -------------------------------------------------------------------
-    def _verify_file_exists(self, request: Dict, resp: Dict) -> Tuple[bool, Dict]:
+    def _verify_file_exists(self, request: dict, resp: dict) -> tuple[bool, dict]:
         spec = request.get("verification", {})
         path = spec.get("path")
         if not path:
@@ -55,7 +55,7 @@ class VerificationEngine:
         exists = Path(path).exists()
         return exists, {"path": str(path), "exists": exists}
 
-    def _verify_http_status(self, request: Dict, resp: Dict) -> Tuple[bool, Dict]:
+    def _verify_http_status(self, request: dict, resp: dict) -> tuple[bool, dict]:
         spec = request.get("verification", {})
         url = spec.get("url")
         expected = spec.get("code")
@@ -71,7 +71,7 @@ class VerificationEngine:
     # -------------------------------------------------------------------
     # Public API
     # -------------------------------------------------------------------
-    def verify(self, request: Dict, resp: Dict) -> Tuple[bool, Dict]:
+    def verify(self, request: dict, resp: dict) -> tuple[bool, dict]:
         """Verify execution result.
 
         - Fails if ``exit_code`` != 0.

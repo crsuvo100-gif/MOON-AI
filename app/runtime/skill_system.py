@@ -8,7 +8,6 @@ corpus -- it indexes and scores what already exists (additive).
 
 from __future__ import annotations
 
-import json
 import logging
 import re
 from dataclasses import asdict, dataclass, field

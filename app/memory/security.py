@@ -25,10 +25,10 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("slack_token", re.compile(r"\bxox[baprs]-[A-Za-z0-9\-]{10,}\b")),
     ("jwt", re.compile(r"\beyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\b")),
     ("neon_db_url",
-     re.compile(r"\bpostgres(?:ql)?://[^\s:@/]+:[^\s@/]+@[^\s/]+", re.I)),
+     re.compile(r"\bpostgres(?:ql)?://[^\s:@/]+:[^\s@/]+@[^\s/]+", re.IGNORECASE)),
     ("db_url_password",
-     re.compile(r"\b(?:mysql|mariadb|mongodb|redis|amqp)://[^\s:@/]+:[^\s@/]+@", re.I)),
-    ("bearer_header", re.compile(r"\bBearer\s+[A-Za-z0-9\-._~+/]{20,}=*\b", re.I)),
+     re.compile(r"\b(?:mysql|mariadb|mongodb|redis|amqp)://[^\s:@/]+:[^\s@/]+@", re.IGNORECASE)),
+    ("bearer_header", re.compile(r"\bBearer\s+[A-Za-z0-9\-._~+/]{20,}=*\b", re.IGNORECASE)),
     ("assignment_secret",
      re.compile(r"(?i)\b(?:api[_-]?key|secret|password|passwd|pwd|token|"
                 r"client[_-]?secret|private[_-]?key|access[_-]?key)\b"

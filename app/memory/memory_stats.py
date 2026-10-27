@@ -173,15 +173,15 @@ class MemoryStatsCollector:
 
     def record_store(self, memory_type: str) -> None:
         """Record a memory store event."""
-        pass  # Stats are collected on-demand via collect()
+        # Stats are collected on-demand via collect()
 
     def record_recall(self, keyword: str, result_count: int) -> None:
         """Record a memory recall event."""
-        pass  # Stats are collected on-demand via collect()
+        # Stats are collected on-demand via collect()
 
     def record_search(self, query: str, result_count: int) -> None:
         """Record a unified search event."""
-        pass  # Stats are collected on-demand via collect()
+        # Stats are collected on-demand via collect()
 
     def get_stats(self) -> dict[str, Any]:
         """Get current statistics snapshot."""

@@ -25,18 +25,17 @@ Entry point (CLI):  moon build_all <goal> [--status]
 
 from __future__ import annotations
 
-import inspect
 import asyncio
+import inspect
 import json
 import sys
-import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Awaitable
+from typing import Any
 
 from app.capability.manager import CapabilityManager
-from app.capability.verification import VerificationEngine
 from app.config.logging import get_logger
 from app.connector.gateway import ConnectionGateway, ConnectionRecord
 from app.memory.vector_db import InMemoryVectorStore
@@ -227,8 +226,8 @@ _BUILTIN_SUBSYSTEMS: list[tuple[str, list[str], Callable[[BuildReport], Awaitabl
 
 async def _verify_llm(r: BuildReport) -> bool:
     try:
-        from app.services.llm_service import LLMService
         from app.config.settings import get_settings
+        from app.services.llm_service import LLMService
 
         s = get_settings()
         svc = LLMService(
@@ -250,8 +249,6 @@ async def _verify_llm(r: BuildReport) -> bool:
 
 def _verify_memory(r: BuildReport) -> bool:
     try:
-        from app.memory.conversation_history import ConversationHistory
-        from app.memory.semantic_search import SemanticSearch
         from app.memory.enhanced_long_term import EnhancedLongTermMemory
         from app.memory.enhanced_short_term import EnhancedShortTermMemory
         from app.memory.memory_graph import MemoryGraph
@@ -273,8 +270,8 @@ def _verify_memory(r: BuildReport) -> bool:
 
 def _verify_embedding(r: BuildReport) -> bool:
     try:
-        from app.services.embedding_service import EmbeddingService
         from app.config.settings import get_settings
+        from app.services.embedding_service import EmbeddingService
 
         s = get_settings()
         svc = EmbeddingService(
@@ -293,9 +290,9 @@ def _verify_embedding(r: BuildReport) -> bool:
 
 def _verify_knowledge(r: BuildReport) -> bool:
     try:
+        from app.config.settings import get_settings
         from app.memory.knowledge_base import KnowledgeBase
         from app.services.embedding_service import EmbeddingService
-        from app.config.settings import get_settings
 
         s = get_settings()
         emb = EmbeddingService(
@@ -315,11 +312,11 @@ def _verify_knowledge(r: BuildReport) -> bool:
 
 def _verify_tools(r: BuildReport) -> bool:
     try:
-        from app.tools.registry import ToolRegistry
         from app.tools.file_manager import FileManagerTool
+        from app.tools.python_executor import PythonExecutorTool
+        from app.tools.registry import ToolRegistry
         from app.tools.terminal import TerminalTool
         from app.tools.web_search import WebSearchTool
-        from app.tools.python_executor import PythonExecutorTool
 
         reg = ToolRegistry()
         for t in (FileManagerTool(allowed_root="."), TerminalTool(),
@@ -336,7 +333,6 @@ def _verify_tools(r: BuildReport) -> bool:
 def _verify_agents(r: BuildReport) -> bool:
     try:
         from app.brain.agent_registry import build_agents
-        from app.models.agent import AgentCard
 
         agents = build_agents(tool_names=["file_manager", "terminal", "web_search"])
         n = len(agents)
@@ -378,7 +374,7 @@ async def _verify_skills(r: BuildReport) -> bool:
 
 def _verify_connector(r: BuildReport) -> bool:
     try:
-        from app.connector.gateway import ConnectionGateway, ConnectionRecord
+        from app.connector.gateway import ConnectionGateway
 
         gw = ConnectionGateway()
         r.add_item(BuildItem("connector_gateway", "verified",
@@ -460,12 +456,11 @@ def _verify_graph(r: BuildReport) -> bool:
 
 def _verify_maintenance(r: BuildReport) -> bool:
     try:
-        from app.memory.memory_maintenance import MemoryMaintenance
         from app.memory.enhanced_long_term import EnhancedLongTermMemory
         from app.memory.enhanced_short_term import EnhancedShortTermMemory
-        from app.memory.semantic_search import SemanticSearch
-        from app.memory.memory_stats import MemoryStatsCollector
         from app.memory.memory_graph import MemoryGraph
+        from app.memory.memory_maintenance import MemoryMaintenance
+        from app.memory.memory_stats import MemoryStatsCollector
 
         ltm = EnhancedLongTermMemory(path=str(Path(sys.modules[__name__].__file__ or ".") / "maint_test.jsonl"))
         stm = EnhancedShortTermMemory(max_items=50)
@@ -485,10 +480,9 @@ def _verify_meta(r: BuildReport) -> bool:
         from app.config.settings import get_settings
 
         s = get_settings()
-        import moon
 
         r.add_item(BuildItem("metadata", "verified",
-                             f"settings + moon package resolved"))
+                             "settings + moon package resolved"))
         return True
     except Exception as exc:
         r.add_item(BuildItem("metadata", "failed", error=str(exc)))
@@ -514,11 +508,8 @@ def _assemble_llm(r: BuildReport) -> dict[str, Any]:
 
 
 def _assemble_memory(r: BuildReport) -> dict[str, Any]:
-    from app.brain.memory_manager import MemoryManager
     from app.memory.enhanced_long_term import EnhancedLongTermMemory
     from app.memory.enhanced_short_term import EnhancedShortTermMemory
-    from app.memory.semantic_search import SemanticSearch
-    from app.services.embedding_service import EmbeddingService
 
     stm = EnhancedShortTermMemory(max_items=50, auto_promote_threshold=0.7)
     ltm = EnhancedLongTermMemory(path=str(Path(__file__).resolve().parent.parent / "app" / "data" / "long_term.jsonl"))
@@ -526,8 +517,8 @@ def _assemble_memory(r: BuildReport) -> dict[str, Any]:
 
 
 def _assemble_embedding(r: BuildReport) -> dict[str, Any]:
-    from app.services.embedding_service import EmbeddingService
     from app.config.model_config import build_embedding_config
+    from app.services.embedding_service import EmbeddingService
 
     ecfg = build_embedding_config(r.assembled.get("_settings", None))
     return {"embedding_service": EmbeddingService(
@@ -538,18 +529,16 @@ def _assemble_embedding(r: BuildReport) -> dict[str, Any]:
 
 def _assemble_knowledge(r: BuildReport) -> dict[str, Any]:
     from app.memory.knowledge_base import KnowledgeBase
-    from app.services.embedding_service import EmbeddingService
 
     return {"knowledge_base": KnowledgeBase(store=None, embeddings=None)}
 
 
 def _assemble_tools(r: BuildReport) -> dict[str, Any]:
-    from app.tools.registry import ToolRegistry
     from app.tools.file_manager import FileManagerTool
+    from app.tools.python_executor import PythonExecutorTool
+    from app.tools.registry import ToolRegistry
     from app.tools.terminal import TerminalTool
     from app.tools.web_search import WebSearchTool
-    from app.tools.python_executor import PythonExecutorTool
-    from app.tools.python_executor import PythonExecutorTool
 
     reg = ToolRegistry()
     for t in (FileManagerTool(allowed_root="."), TerminalTool(),
@@ -566,7 +555,6 @@ def _assemble_agents(r: BuildReport) -> dict[str, Any]:
 
 
 def _assemble_capability_manager(r: BuildReport) -> dict[str, Any]:
-    from app.capability.manager import CapabilityManager
 
     mgr = CapabilityManager()
     return {"capability_manager": mgr}
@@ -581,8 +569,8 @@ def _assemble_skills(r: BuildReport) -> dict[str, Any]:
 
 
 def _assemble_connector(r: BuildReport) -> dict[str, Any]:
-    from app.connector.gateway import ConnectionGateway, ConnectionRecord
     from app.config.settings import get_settings
+    from app.connector.gateway import ConnectionRecord
 
     s = get_settings()
     gw = ConnectionGateway()
@@ -631,10 +619,9 @@ def _assemble_graph(r: BuildReport) -> dict[str, Any]:
 
 
 def _assemble_maintenance(r: BuildReport) -> dict[str, Any]:
-    from app.memory.memory_maintenance import MemoryMaintenance
     from app.memory.enhanced_long_term import EnhancedLongTermMemory
     from app.memory.enhanced_short_term import EnhancedShortTermMemory
-    from app.memory.semantic_search import SemanticSearch
+    from app.memory.memory_maintenance import MemoryMaintenance
     from app.memory.memory_stats import MemoryStatsCollector
 
     ltm = EnhancedLongTermMemory(path=str(Path(__file__).resolve().parent.parent / "app" / "data" / "long_term.jsonl"))
@@ -646,7 +633,6 @@ def _assemble_maintenance(r: BuildReport) -> dict[str, Any]:
 
 def _assemble_meta(r: BuildReport) -> dict[str, Any]:
     import moon
-
     from app.config.settings import get_settings
 
     return {"settings": get_settings(), "moon_version": getattr(moon, "__version__", "0.1.0")}

@@ -18,14 +18,14 @@ Nothing here deletes or replaces existing MOON-AI functionality.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
-from app.capability.dependency_analyzer import analyze_text
-from app.capability.github_retriever import GitHubRetriever, RepoCandidate
+from app.capability.github_retriever import GitHubRetriever
 from app.capability.installer import InstallationManager
 from app.capability.permission_manager import PermissionManager, PolicyLevel
-from app.capability.registry import CapabilityRegistry, CapabilityRecord
+from app.capability.registry import CapabilityRecord, CapabilityRegistry
 from app.capability.sandbox import SandboxExecutor
 from app.capability.self_repair import SelfRepairEngine
 from app.capability.verification import VerificationEngine
@@ -180,7 +180,6 @@ class CapabilityManager:
         if self.registry.has(name):
             return AcquisitionResult(name, "cached", self.registry.get(name).source)
         try:
-            from app.tools.tool_acquisition import acquire_by_catalog, generate_plugin
             from app.tools.registry import ToolRegistry
         except Exception:  # noqa: BLE001
             return None

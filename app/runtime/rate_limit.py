@@ -147,4 +147,4 @@ def get_limiter() -> RateLimiter:
         return _LIMITER
 
 
-__all__ = ["RateLimitDecision", "TokenBucket", "RateLimiter", "get_limiter"]
+__all__ = ["RateLimitDecision", "RateLimiter", "TokenBucket", "get_limiter"]

@@ -7,15 +7,13 @@ reverts a generated agent to its previous version (spec 45).
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any
+from dataclasses import dataclass
 
 from app.agent_factory.architect import AgentSpec
 from app.agent_factory.builder import BuildArtifact
-from app.agent_factory.tester import TestResult
-from app.agent_factory.reviewer import ReviewResult
 from app.agent_factory.evaluator import EvalResult
+from app.agent_factory.reviewer import ReviewResult
+from app.agent_factory.tester import TestResult
 
 
 @dataclass
@@ -36,7 +34,7 @@ class AgentRegistrar:
                                 error=f"test={test.passed} security={review.approved}")
         try:
             # 1) structured registry (spec 8) -- update in-memory singleton too
-            from app.agents.registry import AgentRegistry, AgentMetadata, get_registry
+            from app.agents.registry import AgentMetadata, get_registry
             reg = get_registry()
             meta = AgentMetadata(
                 id=spec.agent_id, name=spec.name, version=spec.version,
@@ -48,8 +46,8 @@ class AgentRegistrar:
             )
             reg.register(meta)  # persists JSON + updates in-memory dict (spec 12 reuse)
             # 2) factory store (spec 39)
-            from app.agent_factory.store import AgentStore
             from app.agent_factory.models import AgentFactoryRecord, AgentStatus
+            from app.agent_factory.store import AgentStore
             st = AgentStore()
             rec = AgentFactoryRecord(
                 agent_id=spec.agent_id, name=spec.name, version=spec.version,
@@ -81,4 +79,4 @@ class AgentRollback:
             return Registration(agent_id=agent_id, status="rejected", error=str(e))
 
 
-__all__ = ["AgentRegistrar", "Registration", "AgentRollback"]
+__all__ = ["AgentRegistrar", "AgentRollback", "Registration"]

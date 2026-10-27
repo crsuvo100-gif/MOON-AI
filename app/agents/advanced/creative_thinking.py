@@ -15,14 +15,13 @@ Creative thinking methods:
 
 from __future__ import annotations
 
-import asyncio
-import logging
 import random
 import time
 import uuid
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Awaitable
+from typing import Any
 
 from app.config.logging import get_logger
 

@@ -9,13 +9,13 @@ permission-checked via ConnectorPermissionManager + the active-op auth gate.
 from __future__ import annotations
 
 import asyncio
+import builtins
 import json
 import logging
-import socket
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 from urllib.parse import urlparse
 
 from app.connector.permission import ConnectorPermissionManager
@@ -49,7 +49,7 @@ class ConnectionRecord:
         return d
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "ConnectionRecord":
+    def from_dict(cls, d: dict[str, Any]) -> ConnectionRecord:
         d = dict(d)
         d["permissions"] = tuple(d.get("permissions", []))
         return cls(**d)
@@ -97,7 +97,7 @@ class ConnectionGateway:
     def get(self, name: str) -> ConnectionRecord | None:
         return self._conns.get(name)
 
-    def list(self) -> List[ConnectionRecord]:
+    def list(self) -> builtins.list[ConnectionRecord]:
         return list(self._conns.values())
 
     def remove(self, name: str) -> bool:
@@ -124,7 +124,10 @@ class ConnectionGateway:
     def build_connector(self, rec: ConnectionRecord):
         """Instantiate the concrete connector client for a record (no call yet)."""
         from app.connector.connectors import (
-            HTTPConnector, AgentConnector, WebSocketConnector, MCPConnector,
+            AgentConnector,
+            HTTPConnector,
+            MCPConnector,
+            WebSocketConnector,
         )
         if rec.kind == "agent":
             return AgentConnector(rec.url, rec.model or "gpt-4o-mini", timeout=120.0)
@@ -136,7 +139,7 @@ class ConnectionGateway:
 
     # -- federation ---------------------------------------------------------
     async def call_agent(self, name: str, message: str, *,
-                         system: str = "", history: List[dict] | None = None,
+                         system: str = "", history: builtins.list[dict] | None = None,
                          timeout: float | None = 90.0) -> dict[str, Any]:
         """Delegate a prompt to a registered peer AI agent and return its answer.
 

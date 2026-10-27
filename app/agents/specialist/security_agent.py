@@ -435,11 +435,11 @@ class SecurityAgent(BaseAgent):
 
 
 __all__ = [
+    "RiskLevel",
+    "ScanResult",
+    "ScanType",
     "SecurityAgent",
     "SecurityAgentConfig",
-    "Vulnerability",
-    "ScanResult",
     "SecurityReport",
-    "RiskLevel",
-    "ScanType",
+    "Vulnerability",
 ]

@@ -21,10 +21,9 @@ from __future__ import annotations
 
 import json
 import threading
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
-
 
 # Default risk/permission profiles per built-in scope so personas get real
 # structured metadata without manually authoring all 39.
@@ -66,7 +65,7 @@ class AgentMetadata:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "AgentMetadata":
+    def from_dict(cls, d: dict[str, Any]) -> AgentMetadata:
         known = {f.name for f in cls.__dataclass_fields__.values()} if False else None
         valid = {k: v for k, v in d.items() if k in cls.__dataclass_fields__}
         return cls(**valid)
@@ -226,7 +225,7 @@ class AgentRegistry:
 
 
 # Module-level singleton (lazy import-safe).
-_REGISTRY: "AgentRegistry | None" = None
+_REGISTRY: AgentRegistry | None = None
 
 
 def get_registry() -> AgentRegistry:

@@ -358,4 +358,4 @@ class WebAgent(BaseAgent):
         }
 
 
-__all__ = ["WebAgent", "WebAgentConfig", "WebPage", "APIEndpoint"]
+__all__ = ["APIEndpoint", "WebAgent", "WebAgentConfig", "WebPage"]

@@ -22,10 +22,9 @@ import threading
 import time
 import uuid
 from pathlib import Path
-from typing import Dict, List, Optional
 
-from .models import ExecutionRequest, ExecutionResult
 from .event_bus import get_bus
+from .models import ExecutionRequest, ExecutionResult
 
 
 class PythonExecutor:
@@ -33,8 +32,8 @@ class PythonExecutor:
 
     def __init__(self):
         self.bus = get_bus()
-        self._detected_python: Optional[str] = None
-        self._detected_pip: Optional[str] = None
+        self._detected_python: str | None = None
+        self._detected_pip: str | None = None
         self._detect_python()
 
     def _detect_python(self):
@@ -60,7 +59,7 @@ class PythonExecutor:
         return self._detected_python or sys.executable
 
     @property
-    def pip_path(self) -> Optional[str]:
+    def pip_path(self) -> str | None:
         """Get the detected pip path."""
         return self._detected_pip
 
@@ -69,7 +68,7 @@ class PythonExecutor:
         """Get the Python version string."""
         return f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
 
-    def get_virtual_env(self) -> Optional[str]:
+    def get_virtual_env(self) -> str | None:
         """Get the active virtual environment path, if any."""
         return os.environ.get("VIRTUAL_ENV")
 
@@ -77,7 +76,7 @@ class PythonExecutor:
         """Check if a virtual environment is currently active."""
         return self.get_virtual_env() is not None
 
-    def find_virtual_envs(self, cwd: Optional[Path] = None) -> List[Path]:
+    def find_virtual_envs(self, cwd: Path | None = None) -> list[Path]:
         """Find virtual environments in the current directory tree."""
         cwd = cwd or Path.cwd()
         venvs = []
@@ -90,7 +89,7 @@ class PythonExecutor:
     def execute_code(
         self,
         code: str,
-        cwd: Optional[Path] = None,
+        cwd: Path | None = None,
         timeout: int = 30,
         on_output=None,
     ) -> ExecutionResult:
@@ -108,8 +107,8 @@ class PythonExecutor:
                 text=True,
             )
 
-            stdout_parts: List[str] = []
-            stderr_parts: List[str] = []
+            stdout_parts: list[str] = []
+            stderr_parts: list[str] = []
 
             def _read_stdout():
                 try:
@@ -193,8 +192,8 @@ class PythonExecutor:
     def execute_module(
         self,
         module: str,
-        args: Optional[List[str]] = None,
-        cwd: Optional[Path] = None,
+        args: list[str] | None = None,
+        cwd: Path | None = None,
         timeout: int = 60,
     ) -> ExecutionResult:
         """Execute a Python module (python -m module)."""
@@ -219,8 +218,8 @@ class PythonExecutor:
     def execute_script(
         self,
         script_path: Path,
-        args: Optional[List[str]] = None,
-        cwd: Optional[Path] = None,
+        args: list[str] | None = None,
+        cwd: Path | None = None,
         timeout: int = 60,
     ) -> ExecutionResult:
         """Execute a Python script file."""
@@ -245,7 +244,7 @@ class PythonExecutor:
     def install_package(
         self,
         package: str,
-        cwd: Optional[Path] = None,
+        cwd: Path | None = None,
         timeout: int = 120,
     ) -> ExecutionResult:
         """Install a Python package via pip."""
@@ -265,7 +264,7 @@ class PythonExecutor:
         from .execution_engine import execution_engine
         return execution_engine.execute(req)
 
-    def check_import(self, module: str, cwd: Optional[Path] = None) -> bool:
+    def check_import(self, module: str, cwd: Path | None = None) -> bool:
         """Check if a Python module can be imported."""
         try:
             result = subprocess.run(
@@ -279,7 +278,7 @@ class PythonExecutor:
         except Exception:
             return False
 
-    def get_installed_packages(self, cwd: Optional[Path] = None) -> List[str]:
+    def get_installed_packages(self, cwd: Path | None = None) -> list[str]:
         """Get list of installed Python packages."""
         try:
             result = subprocess.run(
@@ -297,8 +296,8 @@ class PythonExecutor:
 
     def run_tests(
         self,
-        test_path: Optional[Path] = None,
-        cwd: Optional[Path] = None,
+        test_path: Path | None = None,
+        cwd: Path | None = None,
         timeout: int = 120,
     ) -> ExecutionResult:
         """Run Python tests via pytest."""

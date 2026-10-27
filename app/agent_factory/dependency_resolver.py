@@ -6,6 +6,6 @@ layout is satisfied without duplicating logic.
 
 from __future__ import annotations
 
-from app.agent_factory.builder import DependencyResolver  # noqa: F401
+from app.agent_factory.builder import DependencyResolver
 
 __all__ = ["DependencyResolver"]

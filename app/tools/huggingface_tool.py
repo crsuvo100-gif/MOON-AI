@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import json
 
-from app.tools.base import BaseTool, ToolResult
 from app.services.hf_inference import HuggingFaceInference
+from app.tools.base import BaseTool
 
 
 class HuggingFaceTool(BaseTool):

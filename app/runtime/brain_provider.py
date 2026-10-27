@@ -127,7 +127,7 @@ class OllamaProvider(BrainProvider):
 
     def health(self, spec: BrainSpec) -> BrainHealth:
         base = (spec.base_url or "http://127.0.0.1:11434/v1").rstrip("/")
-        root = base[:-3] if base.endswith("/v1") else base
+        root = base.removesuffix("/v1")
         ok, ms, err = self._http_ok(f"{root}/api/tags")
         model_ready = False
         if ok:
@@ -362,7 +362,15 @@ class BrainRouter:
 
 
 __all__ = [
-    "BrainHealth", "BrainSpec", "BrainProvider", "OllamaProvider",
-    "OpenAICompatibleProvider", "HuggingFaceProvider", "RemoteProvider",
-    "BrainRouter", "FallbackRecord", "provider_for", "available_providers",
+    "BrainHealth",
+    "BrainProvider",
+    "BrainRouter",
+    "BrainSpec",
+    "FallbackRecord",
+    "HuggingFaceProvider",
+    "OllamaProvider",
+    "OpenAICompatibleProvider",
+    "RemoteProvider",
+    "available_providers",
+    "provider_for",
 ]

@@ -14,7 +14,7 @@ throughout the process.
 from __future__ import annotations
 
 import os
-from typing import Final, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
     from .store import MemoryStore
@@ -24,7 +24,7 @@ _BACKEND_ENV_VAR: Final = "MOON-AI_MEMORY_BACKEND"
 _DEFAULT_BACKEND: Final = "local"
 
 # Cache the singleton after first creation.
-_instance: Optional[MemoryStore] = None
+_instance: MemoryStore | None = None
 
 
 def memory_store_factory() -> MemoryStore:
@@ -48,4 +48,4 @@ def memory_store_factory() -> MemoryStore:
         _instance = LocalMemoryStore()
     return _instance
 
-__all__ = ["memory_store_factory", "_BACKEND_ENV_VAR", "_DEFAULT_BACKEND"]
+__all__ = ["_BACKEND_ENV_VAR", "_DEFAULT_BACKEND", "memory_store_factory"]

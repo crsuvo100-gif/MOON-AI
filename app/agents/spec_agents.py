@@ -15,8 +15,6 @@ runtime (spec 16/17).
 
 from __future__ import annotations
 
-from typing import Iterable
-
 from app.agents.registry import AgentMetadata, get_registry
 
 # (id, name, capabilities, required_tools, permissions, risk, deps, role_group)
@@ -164,4 +162,4 @@ def spec_agent_ids() -> list[str]:
     return [a[0] for a in _SPEC_AGENTS]
 
 
-__all__ = ["register_spec_agents", "spec_agent_ids", "_SPEC_AGENTS"]
+__all__ = ["_SPEC_AGENTS", "register_spec_agents", "spec_agent_ids"]

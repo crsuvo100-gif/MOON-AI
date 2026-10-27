@@ -8,9 +8,8 @@ as "key", "token", or "password" with the placeholder "***REDACTED***". The
 sanitized tokens are rejoined with spaces to produce a safe command string.
 """
 
-import shlex
 import re
-from typing import List
+import shlex
 
 # regex to match secret tokens – any token containing these substrings
 _SECRET_PATTERN = re.compile(r"(?i)(key|token|password|\*{3})")
@@ -47,5 +46,5 @@ def sanitize_command(command: str) -> str:
     except ValueError:
         # Fallback – if parsing fails, treat the whole command as a single token.
         tokens = [command]
-    redacted: List[str] = [_redact_token(t) for t in tokens]
+    redacted: list[str] = [_redact_token(t) for t in tokens]
     return " ".join(redacted)

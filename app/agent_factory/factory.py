@@ -19,7 +19,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from app.agent_factory.generator import generate, slugify
+from app.agent_factory.generator import slugify
 from app.agent_factory.models import (
     AgentFactoryRecord,
     AgentMetadata,
@@ -118,10 +118,10 @@ class AgentFactory:
     def _build_pipeline(self, capability: str, need, *, autonomy_level: int = 2) -> FactoryResult:
         from app.agent_factory.architect import AgentArchitect
         from app.agent_factory.builder import AgentBuilder, DependencyResolver
-        from app.agent_factory.tester import AgentTester
-        from app.agent_factory.reviewer import SecurityReviewer, RepairAgent
         from app.agent_factory.evaluator import PerformanceEvaluator
         from app.agent_factory.registrar import AgentRegistrar
+        from app.agent_factory.reviewer import RepairAgent, SecurityReviewer
+        from app.agent_factory.tester import AgentTester
 
         exec_id = ""
         try:
@@ -280,7 +280,8 @@ class AgentFactory:
         rec = AgentStore().get(agent_id)
         if not rec or not rec.module_path:
             raise ValueError(f"agent {agent_id} not found or not built")
-        import shutil, re
+        import re
+        import shutil
         m = re.match(r"^(\d+)\.(\d+)\.(\d+)$", rec.version or "1.0.0")
         major, minor, patch = (int(x) for x in m.groups())
         new_version = f"{major}.{minor + 1}.{patch}"
@@ -305,7 +306,8 @@ class AgentFactory:
         rec = AgentStore().get(agent_id)
         if not rec or not rec.module_path:
             raise ValueError(f"agent {agent_id} not found or not built")
-        import importlib.util, sys
+        import importlib.util
+        import sys
         mod_key = f"moonfactory_{agent_id}"
         # Always re-exec a fresh module instance (avoid stale sys.modules reuse
         # when run() is called repeatedly for the same agent in one process).

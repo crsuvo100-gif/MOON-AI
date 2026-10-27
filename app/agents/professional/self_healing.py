@@ -10,9 +10,10 @@ from __future__ import annotations
 import asyncio
 import time
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 from app.config.logging import get_logger
 
@@ -109,7 +110,7 @@ class CircuitBreaker:
                 else:
                     self._failures = max(0, self._failures - 1)
             return result
-        except Exception as exc:
+        except Exception:
             async with self._lock:
                 self._failures += 1
                 self._last_failure_time = time.time()

@@ -10,9 +10,8 @@ import json
 import time
 import uuid
 from pathlib import Path
-from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from .security import sanitize_command
 
@@ -24,16 +23,16 @@ class HistoryEntry(BaseModel):
     cwd: str
     backend: str
     status: str
-    exit_code: Optional[int] = None
+    exit_code: int | None = None
     duration: float = 0.0
-    session_id: Optional[str] = None
+    session_id: str | None = None
 
 
 class HistoryManager:
     """Manages execution history with persistence and search."""
 
     def __init__(self, persist: bool = True, max_entries: int = 1000):
-        self._entries: List[HistoryEntry] = []
+        self._entries: list[HistoryEntry] = []
         self.persist = persist
         self.max_entries = max_entries
         self._history_file = Path(".moon_terminal_history.json")
@@ -68,9 +67,9 @@ class HistoryManager:
         cwd: str,
         backend: str,
         status: str,
-        exit_code: Optional[int] = None,
+        exit_code: int | None = None,
         duration: float = 0.0,
-        session_id: Optional[str] = None,
+        session_id: str | None = None,
     ) -> HistoryEntry:
         """Add a history entry. Command is sanitized before storage."""
         entry = HistoryEntry(
@@ -91,15 +90,15 @@ class HistoryManager:
         self._save()
         return entry
 
-    def get_recent(self, count: int = 20) -> List[HistoryEntry]:
+    def get_recent(self, count: int = 20) -> list[HistoryEntry]:
         """Get the most recent entries."""
         return list(reversed(self._entries[-count:]))
 
-    def get_all(self) -> List[HistoryEntry]:
+    def get_all(self) -> list[HistoryEntry]:
         """Get all entries."""
         return list(self._entries)
 
-    def search(self, query: str) -> List[HistoryEntry]:
+    def search(self, query: str) -> list[HistoryEntry]:
         """Search history by command text."""
         query_lower = query.lower()
         return [
@@ -107,19 +106,19 @@ class HistoryManager:
             if query_lower in e.command.lower()
         ]
 
-    def get_by_status(self, status: str) -> List[HistoryEntry]:
+    def get_by_status(self, status: str) -> list[HistoryEntry]:
         """Get entries filtered by status."""
         return [e for e in self._entries if e.status == status]
 
-    def get_by_session(self, session_id: str) -> List[HistoryEntry]:
+    def get_by_session(self, session_id: str) -> list[HistoryEntry]:
         """Get entries for a specific session."""
         return [e for e in self._entries if e.session_id == session_id]
 
-    def get_successful(self) -> List[HistoryEntry]:
+    def get_successful(self) -> list[HistoryEntry]:
         """Get successful executions."""
         return [e for e in self._entries if e.status == "success"]
 
-    def get_failed(self) -> List[HistoryEntry]:
+    def get_failed(self) -> list[HistoryEntry]:
         """Get failed executions."""
         return [e for e in self._entries if e.status == "failed"]
 

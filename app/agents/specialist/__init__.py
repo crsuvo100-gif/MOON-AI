@@ -10,15 +10,15 @@ These are ADDITIVE: they do not replace the 40 spec agents in
 for the most critical specialist roles.
 """
 
-from app.agents.specialist.web_agent import WebAgent, WebAgentConfig
-from app.agents.specialist.security_agent import SecurityAgent, SecurityAgentConfig
 from app.agents.specialist.github_agent import GitHubAgent, GitHubAgentConfig
+from app.agents.specialist.security_agent import SecurityAgent, SecurityAgentConfig
+from app.agents.specialist.web_agent import WebAgent, WebAgentConfig
 
 __all__ = [
-    "WebAgent",
-    "WebAgentConfig",
-    "SecurityAgent",
-    "SecurityAgentConfig",
     "GitHubAgent",
     "GitHubAgentConfig",
+    "SecurityAgent",
+    "SecurityAgentConfig",
+    "WebAgent",
+    "WebAgentConfig",
 ]

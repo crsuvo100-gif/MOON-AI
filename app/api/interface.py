@@ -26,12 +26,12 @@ app/terminal_interface.py (same gate as /api/health, /api/brain-status).
 """
 from __future__ import annotations
 
-import tomllib
 from pathlib import Path
+
+import tomllib
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
-from app.agents.registry import get_registry
 from app.config.settings import get_settings
 
 
@@ -149,7 +149,6 @@ def _build_capability_registry():
 
     # Memory
     try:
-        from app.memory.health import MemoryHealthService
         capabilities.append({
             "id": "MOON.memory",
             "name": "Memory",
@@ -167,7 +166,6 @@ def _build_capability_registry():
 
     # Voice (if present)
     try:
-        from app.voice_engine import VoiceEngine
         capabilities.append({
             "id": "MOON.voice",
             "name": "Voice",
@@ -211,7 +209,7 @@ def get_interface_router():
             return JSONResponse({"detail": "Unauthorized"}, status_code=401)
         events: list[dict] = []
         try:
-            from app.brain.orchestrator import Orchestrator, Task
+            from app.brain.orchestrator import Task
             body = await request.json()
             task_prompt = str((body or {}).get("task") or (body or {}).get("prompt") or "")
             agent_name = str((body or {}).get("agent") or "auto")

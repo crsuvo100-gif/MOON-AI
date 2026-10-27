@@ -22,11 +22,9 @@ from typing import Any
 
 from app.brain.aggregator import (
     AgentEnvelope,
-    AggregatedResult,
     Conflict,
     ConflictKind,
     ConflictResolver,
-    VerificationStatus,
 )
 
 
@@ -385,9 +383,9 @@ Return JSON with keys: winner (agent_id), reasoning (string), confidence (0.0-1.
 
 
 __all__ = [
-    "AdvancedConflictResolver",
-    "AdvancedConflict",
     "AdjudicationResult",
+    "AdvancedConflict",
+    "AdvancedConflictResolver",
     "ConflictResolutionStrategy",
     "ConflictSeverity",
     "Evidence",

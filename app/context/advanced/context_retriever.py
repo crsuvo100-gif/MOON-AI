@@ -8,7 +8,6 @@ with relevance scoring and deduplication.
 
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass, field
 from typing import Any
 

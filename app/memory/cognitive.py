@@ -32,8 +32,8 @@ from app.memory.record import (
 from app.memory.retrieval import HybridRetriever, RetrievalCache, rewrite_query
 from app.memory.security import detect_secret
 from app.memory.store import MemoryStore, default_db_path
+
 from .factory import memory_store_factory
-from .store import LocalMemoryStore
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,6 @@ class CognitiveMemoryManager:
     def _load_device_id() -> str:
         """spec 35: a stable per-installation device id (NOT a secret)."""
         import uuid
-        from pathlib import Path
 
         p = default_db_path().parent / "device_id"
         try:

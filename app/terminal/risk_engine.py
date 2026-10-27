@@ -4,13 +4,15 @@ It loads ``risk_policy.yaml`` (placed in ``app/terminal``) and evaluates the
 sanitized command using token‑aware matching to avoid false positives.
 """
 
-import yaml
 import re
 import shlex
 from pathlib import Path
 
-from .security import sanitize_command
+import yaml
+
 from .models import ExecutionRequest
+from .security import sanitize_command
+
 
 class RiskEngine:
     def __init__(self, policy_path: Path = Path(__file__).with_name("risk_policy.yaml")):

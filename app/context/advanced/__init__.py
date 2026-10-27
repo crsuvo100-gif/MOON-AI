@@ -13,35 +13,43 @@ context like a professional AI assistant:
 - ContextOrchestrator: unified orchestrator tying it all together
 """
 
-from app.context.advanced.context_window import ContextWindow, ContextItem, EvictionPolicy
-from app.context.advanced.context_awareness import ContextAwareness, ContextHealth, ContextAwarenessState
+from app.context.advanced.context_analytics import ContextAnalytics, ContextAnalyticsTracker
+from app.context.advanced.context_awareness import (
+    ContextAwareness,
+    ContextAwarenessState,
+    ContextHealth,
+)
+from app.context.advanced.context_compressor import (
+    CompressionResult,
+    CompressionStrategy,
+    ContextCompressor,
+)
 from app.context.advanced.context_injector import ContextInjector, InjectionFormat, InjectionResult
 from app.context.advanced.context_lifecycle import ContextLifecycle, ContextPhase, LifecycleEvent
-from app.context.advanced.context_retriever import ContextRetriever, RetrievalResult
-from app.context.advanced.context_compressor import ContextCompressor, CompressionStrategy, CompressionResult
-from app.context.advanced.context_analytics import ContextAnalytics, ContextAnalyticsTracker
 from app.context.advanced.context_orchestrator import ContextOrchestrator, ContextSnapshot
+from app.context.advanced.context_retriever import ContextRetriever, RetrievalResult
+from app.context.advanced.context_window import ContextItem, ContextWindow, EvictionPolicy
 
 __all__ = [
-    "ContextWindow",
-    "ContextItem",
-    "EvictionPolicy",
-    "ContextAwareness",
-    "ContextHealth",
-    "ContextAwarenessState",
-    "ContextInjector",
-    "InjectionFormat",
-    "InjectionResult",
-    "ContextLifecycle",
-    "ContextPhase",
-    "LifecycleEvent",
-    "ContextRetriever",
-    "RetrievalResult",
-    "ContextCompressor",
-    "CompressionStrategy",
     "CompressionResult",
+    "CompressionStrategy",
     "ContextAnalytics",
     "ContextAnalyticsTracker",
+    "ContextAwareness",
+    "ContextAwarenessState",
+    "ContextCompressor",
+    "ContextHealth",
+    "ContextInjector",
+    "ContextItem",
+    "ContextLifecycle",
     "ContextOrchestrator",
+    "ContextPhase",
+    "ContextRetriever",
     "ContextSnapshot",
+    "ContextWindow",
+    "EvictionPolicy",
+    "InjectionFormat",
+    "InjectionResult",
+    "LifecycleEvent",
+    "RetrievalResult",
 ]

@@ -17,8 +17,9 @@ Every transition is validated. The UI subscribes to state-change events.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any
 
 
 class ExecutionState(str, Enum):
@@ -37,7 +38,7 @@ class ExecutionState(str, Enum):
 
 
 # Valid transitions: current_state → {allowed_next_states}
-_VALID_TRANSITIONS: Dict[ExecutionState, Set[ExecutionState]] = {
+_VALID_TRANSITIONS: dict[ExecutionState, set[ExecutionState]] = {
     ExecutionState.IDLE: {
         ExecutionState.PLANNING,
         ExecutionState.STARTING,
@@ -94,8 +95,8 @@ class StateMachine:
     def __init__(self, execution_id: str):
         self.execution_id = execution_id
         self._state = ExecutionState.IDLE
-        self._history: List[Dict[str, Any]] = []
-        self._listeners: List[Callable[[ExecutionState, ExecutionState], None]] = []
+        self._history: list[dict[str, Any]] = []
+        self._listeners: list[Callable[[ExecutionState, ExecutionState], None]] = []
         self._record(ExecutionState.IDLE, "initialized")
 
     @property
@@ -103,7 +104,7 @@ class StateMachine:
         return self._state
 
     @property
-    def history(self) -> List[Dict[str, Any]]:
+    def history(self) -> list[dict[str, Any]]:
         return list(self._history)
 
     def _record(self, new_state: ExecutionState, reason: str = ""):

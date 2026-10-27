@@ -8,23 +8,31 @@ into a unified professional agent experience.
 
 from __future__ import annotations
 
-import asyncio
 import time
 import uuid
 from collections import defaultdict
 from typing import Any
 
+from app.agents.professional.adaptive_prompts import AdaptivePrompts
+from app.agents.professional.communication_bus import AgentEvent, CommunicationBus, EventPriority
+from app.agents.professional.execution_analytics import (
+    ExecutionAnalytics,
+    ExecutionRecord,
+)
+from app.agents.professional.knowledge_graph import EntityType, KnowledgeGraph
+from app.agents.professional.multi_model_consensus import MultiModelConsensus
+from app.agents.professional.proactive_suggestions import (
+    ProactiveSuggestions,
+    Suggestion,
+)
+from app.agents.professional.quality_gate import QualityGate
+from app.agents.professional.self_healing import HealthStatus, SelfHealing
+from app.agents.professional.session_continuity import (
+    SessionContext,
+    SessionContinuity,
+)
+from app.agents.professional.task_queue import TaskPriority, TaskQueue
 from app.config.logging import get_logger
-from app.agents.professional.communication_bus import CommunicationBus, AgentEvent, EventPriority
-from app.agents.professional.task_queue import TaskQueue, TaskPriority, TaskStatus
-from app.agents.professional.quality_gate import QualityGate, QualityLevel
-from app.agents.professional.self_healing import SelfHealing, HealthStatus, FailureType
-from app.agents.professional.proactive_suggestions import ProactiveSuggestions, Suggestion, SuggestionType
-from app.agents.professional.multi_model_consensus import MultiModelConsensus, ConsensusStrategy
-from app.agents.professional.execution_analytics import ExecutionAnalytics, ExecutionRecord, MetricType
-from app.agents.professional.adaptive_prompts import AdaptivePrompts, TaskComplexity, UserExpertise
-from app.agents.professional.session_continuity import SessionContinuity, SessionContext, SessionStatus
-from app.agents.professional.knowledge_graph import KnowledgeGraph, EntityType, RelationType
 
 logger = get_logger(__name__)
 

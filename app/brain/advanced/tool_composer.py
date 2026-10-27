@@ -8,9 +8,10 @@ conditional routing, and result aggregation.
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Awaitable
+from typing import Any
 
 from app.config.logging import get_logger
 

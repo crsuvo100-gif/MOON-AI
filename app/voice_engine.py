@@ -37,7 +37,7 @@ from pathlib import Path
 from typing import Any
 
 try:
-    import langdetect  # type: ignore  # noqa: F401
+    import langdetect  # type: ignore
 except Exception:  # noqa: BLE001  -- langdetect is optional; lang routing degrades gracefully
     langdetect = None  # type: ignore[assignment]
 

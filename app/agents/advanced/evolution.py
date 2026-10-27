@@ -14,17 +14,16 @@ Evolution mechanisms:
 
 from __future__ import annotations
 
-import asyncio
 import copy
 import json
-import logging
 import random
 import time
 import uuid
-from dataclasses import dataclass, field, asdict
+from collections.abc import Callable
+from dataclasses import asdict, dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from app.config.logging import get_logger
 

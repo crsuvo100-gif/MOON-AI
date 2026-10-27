@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.config.logging import get_logger
-from app.memory.record import Importance, Scope
+from app.memory.record import Importance
 
 logger = get_logger(__name__)
 

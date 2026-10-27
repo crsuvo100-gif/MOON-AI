@@ -16,12 +16,11 @@ import pty
 import select
 import signal
 import struct
-import subprocess
 import termios
 import threading
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
 
 from .models import ExecutionRequest, ExecutionResult
 
@@ -30,7 +29,7 @@ class PTYManager:
     """Manages pseudo-terminal execution for interactive commands."""
 
     def __init__(self):
-        self._active_ptys: Dict[str, dict] = {}  # execution_id → {proc, master_fd, thread}
+        self._active_ptys: dict[str, dict] = {}  # execution_id → {proc, master_fd, thread}
         self._lock = threading.Lock()
 
     def is_available(self) -> bool:
@@ -47,8 +46,8 @@ class PTYManager:
     def run_interactive(
         self,
         request: ExecutionRequest,
-        on_output: Optional[Callable[[str], None]] = None,
-        on_exit: Optional[Callable[[int], None]] = None,
+        on_output: Callable[[str], None] | None = None,
+        on_exit: Callable[[int], None] | None = None,
     ) -> ExecutionResult:
         """Run a command in a PTY.
 
@@ -141,7 +140,7 @@ class PTYManager:
             # Parent process
             os.close(slave_fd)
             start_time = time.time()
-            output_parts: List[str] = []
+            output_parts: list[str] = []
             exit_code = None
 
             try:
@@ -243,7 +242,7 @@ class PTYManager:
     def start_session(
         self,
         request: ExecutionRequest,
-        on_output: Optional[Callable[[str], None]] = None,
+        on_output: Callable[[str], None] | None = None,
     ) -> str:
         """Start a non-blocking interactive PTY session.
 
@@ -375,7 +374,7 @@ class PTYManager:
             pass
         return True
 
-    def list_sessions(self) -> List[str]:
+    def list_sessions(self) -> list[str]:
         """List active PTY session IDs."""
         with self._lock:
             return list(self._active_ptys.keys())

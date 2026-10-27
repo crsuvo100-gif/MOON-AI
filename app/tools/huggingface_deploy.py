@@ -28,7 +28,7 @@ import shutil
 import subprocess
 
 from app.config.settings import get_settings
-from app.tools.base import BaseTool, ToolResult
+from app.tools.base import BaseTool
 
 
 def _hf_cli() -> str | None:

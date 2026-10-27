@@ -236,6 +236,9 @@ def get_dashboard() -> AgentSupervisionDashboard:
 
 
 __all__ = [
-    "AgentStatus", "AgentDashboardEntry", "DashboardState",
-    "AgentSupervisionDashboard", "get_dashboard",
+    "AgentDashboardEntry",
+    "AgentStatus",
+    "AgentSupervisionDashboard",
+    "DashboardState",
+    "get_dashboard",
 ]

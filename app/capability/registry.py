@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import json
 import logging
-import shutil
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -49,7 +48,7 @@ class CapabilityRecord:
         return d
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "CapabilityRecord":
+    def from_dict(cls, d: dict[str, Any]) -> CapabilityRecord:
         known = {f for f in cls.__dataclass_fields__}  # type: ignore[attr-defined]
         return cls(**{k: v for k, v in d.items() if k in known})
 

@@ -21,10 +21,11 @@ delimited DATA block that states it must not be treated as instructions.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Any, Iterable
+from typing import Any
 
-from app.memory.record import MemoryRecord, Scope
+from app.memory.record import MemoryRecord
 
 # spec 67/68: retrieved memory is DATA, never an instruction.
 MEMORY_BLOCK_HEADER = (
@@ -89,7 +90,7 @@ class ContextItem:
     trusted: bool = False
 
     @classmethod
-    def from_scored(cls, s: Any) -> "ContextItem":
+    def from_scored(cls, s: Any) -> ContextItem:
         r: MemoryRecord = s.record
         return cls(memory_id=r.memory_id, content=r.content, score=s.score,
                    scope=r.scope.value, type=r.type.value,
@@ -277,6 +278,11 @@ class ContextEngine:
 
 
 __all__ = [
-    "ContextEngine", "ContextBudget", "ContextItem", "ContextResult",
-    "estimate_tokens", "dedupe_items", "MEMORY_BLOCK_HEADER",
+    "MEMORY_BLOCK_HEADER",
+    "ContextBudget",
+    "ContextEngine",
+    "ContextItem",
+    "ContextResult",
+    "dedupe_items",
+    "estimate_tokens",
 ]

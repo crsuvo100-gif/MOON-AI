@@ -7,21 +7,20 @@ and goal tracking into a cohesive cognitive pipeline.
 
 from __future__ import annotations
 
-import asyncio
 import time
 from dataclasses import dataclass, field
 from typing import Any
 
-from app.config.logging import get_logger
-from app.brain.advanced.react import ReActLoop, ReActResult
-from app.brain.advanced.dag_planner import DAGPlanner, DAGPlan
-from app.brain.advanced.working_memory import WorkingMemory
-from app.brain.advanced.metacognition import Metacognition, Strategy
 from app.brain.advanced.context_compressor import ContextCompressor
-from app.brain.advanced.tool_composer import ToolComposer, ToolChain
-from app.brain.advanced.uncertainty import UncertaintyEstimator
+from app.brain.advanced.dag_planner import DAGPlan, DAGPlanner
+from app.brain.advanced.goal_tracker import GoalStatus, GoalTracker
+from app.brain.advanced.metacognition import Metacognition
+from app.brain.advanced.react import ReActLoop, ReActResult
 from app.brain.advanced.reflection import DeepReflection, ReflectionLevel
-from app.brain.advanced.goal_tracker import GoalTracker, GoalStatus
+from app.brain.advanced.tool_composer import ToolComposer
+from app.brain.advanced.uncertainty import UncertaintyEstimator
+from app.brain.advanced.working_memory import WorkingMemory
+from app.config.logging import get_logger
 
 logger = get_logger(__name__)
 

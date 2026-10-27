@@ -13,54 +13,6 @@ Provides professional-grade agent features:
 - Knowledge Graph: integrated knowledge representation
 """
 
-from app.agents.professional.communication_bus import (
-    CommunicationBus,
-    AgentEvent,
-    EventPriority,
-    Subscription,
-)
-from app.agents.professional.task_queue import (
-    TaskQueue,
-    QueuedTask,
-    TaskStatus,
-    TaskPriority,
-)
-from app.agents.professional.quality_gate import (
-    QualityGate,
-    QualityCheck,
-    QualityReport,
-    QualityLevel,
-    QualityStage,
-)
-from app.agents.professional.self_healing import (
-    SelfHealing,
-    HealthCheck,
-    HealthStatus,
-    FailureType,
-    RecoveryAction,
-    CircuitBreaker,
-)
-from app.agents.professional.proactive_suggestions import (
-    ProactiveSuggestions,
-    Suggestion,
-    SuggestionType,
-    SuggestionPriority,
-    UserPattern,
-)
-from app.agents.professional.multi_model_consensus import (
-    MultiModelConsensus,
-    ModelResponse,
-    ConsensusResult,
-    ConsensusStrategy,
-    ConfidenceLevel,
-)
-from app.agents.professional.execution_analytics import (
-    ExecutionAnalytics,
-    ExecutionRecord,
-    MetricType,
-    AnalyticsSummary,
-    MetricPoint,
-)
 from app.agents.professional.adaptive_prompts import (
     AdaptivePrompts,
     PromptConfig,
@@ -68,74 +20,121 @@ from app.agents.professional.adaptive_prompts import (
     TaskComplexity,
     UserExpertise,
 )
-from app.agents.professional.session_continuity import (
-    SessionContinuity,
-    SessionContext,
-    SessionStatus,
-    SessionHandoff,
+from app.agents.professional.communication_bus import (
+    AgentEvent,
+    CommunicationBus,
+    EventPriority,
+    Subscription,
+)
+from app.agents.professional.execution_analytics import (
+    AnalyticsSummary,
+    ExecutionAnalytics,
+    ExecutionRecord,
+    MetricPoint,
+    MetricType,
 )
 from app.agents.professional.knowledge_graph import (
-    KnowledgeGraph,
     Entity,
     EntityType,
+    Fact,
+    KnowledgeGraph,
     Relationship,
     RelationType,
-    Fact,
+)
+from app.agents.professional.multi_model_consensus import (
+    ConfidenceLevel,
+    ConsensusResult,
+    ConsensusStrategy,
+    ModelResponse,
+    MultiModelConsensus,
+)
+from app.agents.professional.proactive_suggestions import (
+    ProactiveSuggestions,
+    Suggestion,
+    SuggestionPriority,
+    SuggestionType,
+    UserPattern,
 )
 from app.agents.professional.professional_orchestrator import (
     ProfessionalAgentOrchestrator,
 )
-
+from app.agents.professional.quality_gate import (
+    QualityCheck,
+    QualityGate,
+    QualityLevel,
+    QualityReport,
+    QualityStage,
+)
+from app.agents.professional.self_healing import (
+    CircuitBreaker,
+    FailureType,
+    HealthCheck,
+    HealthStatus,
+    RecoveryAction,
+    SelfHealing,
+)
+from app.agents.professional.session_continuity import (
+    SessionContext,
+    SessionContinuity,
+    SessionHandoff,
+    SessionStatus,
+)
+from app.agents.professional.task_queue import (
+    QueuedTask,
+    TaskPriority,
+    TaskQueue,
+    TaskStatus,
+)
 
 __all__ = [
-    "CommunicationBus",
+    "AdaptivePrompts",
     "AgentEvent",
-    "EventPriority",
-    "Subscription",
-    "TaskQueue",
-    "QueuedTask",
-    "TaskStatus",
-    "TaskPriority",
-    "QualityGate",
-    "QualityCheck",
-    "QualityReport",
-    "QualityLevel",
-    "QualityStage",
-    "SelfHealing",
-    "HealthCheck",
-    "HealthStatus",
-    "FailureType",
-    "RecoveryAction",
+    "AnalyticsSummary",
     "CircuitBreaker",
-    "ProactiveSuggestions",
-    "Suggestion",
-    "SuggestionType",
-    "SuggestionPriority",
-    "UserPattern",
-    "MultiModelConsensus",
-    "ModelResponse",
+    "CommunicationBus",
+    "ConfidenceLevel",
     "ConsensusResult",
     "ConsensusStrategy",
-    "ConfidenceLevel",
-    "ExecutionAnalytics",
-    "ExecutionRecord",
-    "MetricType",
-    "AnalyticsSummary",
-    "MetricPoint",
-    "AdaptivePrompts",
-    "PromptConfig",
-    "PromptTemplate",
-    "TaskComplexity",
-    "UserExpertise",
-    "SessionContinuity",
-    "SessionContext",
-    "SessionStatus",
-    "SessionHandoff",
-    "KnowledgeGraph",
     "Entity",
     "EntityType",
-    "Relationship",
-    "RelationType",
+    "EventPriority",
+    "ExecutionAnalytics",
+    "ExecutionRecord",
     "Fact",
+    "FailureType",
+    "HealthCheck",
+    "HealthStatus",
+    "KnowledgeGraph",
+    "MetricPoint",
+    "MetricType",
+    "ModelResponse",
+    "MultiModelConsensus",
+    "ProactiveSuggestions",
     "ProfessionalAgentOrchestrator",
+    "PromptConfig",
+    "PromptTemplate",
+    "QualityCheck",
+    "QualityGate",
+    "QualityLevel",
+    "QualityReport",
+    "QualityStage",
+    "QueuedTask",
+    "RecoveryAction",
+    "RelationType",
+    "Relationship",
+    "SelfHealing",
+    "SessionContext",
+    "SessionContinuity",
+    "SessionHandoff",
+    "SessionStatus",
+    "Subscription",
+    "Suggestion",
+    "SuggestionPriority",
+    "SuggestionType",
+    "TaskComplexity",
+    "TaskPriority",
+    "TaskQueue",
+    "TaskStatus",
+    "UserExpertise",
+    "UserPattern",
 ]

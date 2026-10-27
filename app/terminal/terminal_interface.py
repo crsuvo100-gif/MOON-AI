@@ -15,20 +15,18 @@ It wires together all terminal subsystems:
 
 from __future__ import annotations
 
-import time
-import uuid
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Literal
+from typing import Any, Literal
 
-from .models import ExecutionRequest, ExecutionResult
-from .execution_engine import execution_engine
-from .session_manager import SessionManager, Session
-from .process_manager import process_manager, ProcessInfo
-from .pty_manager import pty_manager
 from .environment_manager import environment_manager
-from .history_manager import history_manager, HistoryEntry
-from .event_bus import get_bus, Event
-from .state_machine import ExecutionState
+from .event_bus import get_bus
+from .execution_engine import execution_engine
+from .history_manager import HistoryEntry, history_manager
+from .models import ExecutionRequest, ExecutionResult
+from .process_manager import ProcessInfo, process_manager
+from .pty_manager import pty_manager
+from .session_manager import Session, SessionManager
 
 
 class TerminalInterface:
@@ -76,17 +74,17 @@ class TerminalInterface:
     def execute(
         self,
         command: str,
-        cwd: Optional[Path] = None,
-        env: Optional[Dict[str, str]] = None,
+        cwd: Path | None = None,
+        env: dict[str, str] | None = None,
         backend: Literal["local", "docker", "ssh"] = "local",
         shell: bool = False,
         timeout: int = 60,
         background: bool = False,
         interactive: bool = False,
         permission_mode: Literal["auto", "ask", "deny"] = "ask",
-        verification: Optional[Dict] = None,
-        session_id: Optional[str] = None,
-        on_output: Optional[Callable[[str], None]] = None,
+        verification: dict | None = None,
+        session_id: str | None = None,
+        on_output: Callable[[str], None] | None = None,
     ) -> ExecutionResult:
         """Execute a command through the full pipeline."""
         req = ExecutionRequest(
@@ -106,14 +104,14 @@ class TerminalInterface:
     def execute_streaming(
         self,
         command: str,
-        cwd: Optional[Path] = None,
-        env: Optional[Dict[str, str]] = None,
+        cwd: Path | None = None,
+        env: dict[str, str] | None = None,
         backend: Literal["local", "docker", "ssh"] = "local",
         shell: bool = False,
         timeout: int = 60,
         permission_mode: Literal["auto", "ask", "deny"] = "ask",
-        verification: Optional[Dict] = None,
-        session_id: Optional[str] = None,
+        verification: dict | None = None,
+        session_id: str | None = None,
     ) -> tuple[str, Callable[[Callable[[str], None]], ExecutionResult]]:
         """Execute with streaming output.
 
@@ -138,9 +136,9 @@ class TerminalInterface:
 
     def create_session(
         self,
-        shell: Optional[str] = None,
-        cwd: Optional[Path] = None,
-        env: Optional[Dict[str, str]] = None,
+        shell: str | None = None,
+        cwd: Path | None = None,
+        env: dict[str, str] | None = None,
         name: str = "",
     ) -> Session:
         """Create a new terminal session."""
@@ -157,11 +155,11 @@ class TerminalInterface:
         })
         return session
 
-    def list_sessions(self) -> List[Session]:
+    def list_sessions(self) -> list[Session]:
         """List all sessions."""
         return self.sessions.list_sessions()
 
-    def get_session(self, session_id: str) -> Optional[Session]:
+    def get_session(self, session_id: str) -> Session | None:
         """Get a session by ID."""
         return self.sessions.get_session(session_id)
 
@@ -179,11 +177,11 @@ class TerminalInterface:
     def start_background(
         self,
         command: str,
-        cwd: Optional[Path] = None,
-        env: Optional[Dict[str, str]] = None,
+        cwd: Path | None = None,
+        env: dict[str, str] | None = None,
         backend: Literal["local", "docker", "ssh"] = "local",
         shell: bool = False,
-        on_output: Optional[Callable[[str], None]] = None,
+        on_output: Callable[[str], None] | None = None,
     ) -> str:
         """Start a background process. Returns execution_id."""
         req = ExecutionRequest(
@@ -217,11 +215,11 @@ class TerminalInterface:
             })
             return exec_id
 
-    def list_processes(self) -> List[ProcessInfo]:
+    def list_processes(self) -> list[ProcessInfo]:
         """List all tracked processes."""
         return self.processes.list_processes()
 
-    def get_process(self, execution_id: str) -> Optional[ProcessInfo]:
+    def get_process(self, execution_id: str) -> ProcessInfo | None:
         """Get process info by execution_id."""
         return self.processes.get_process(execution_id)
 
@@ -235,7 +233,7 @@ class TerminalInterface:
         self.processes.kill_process(execution_id)
         self.bus.emit("terminal.process.stopped", {"execution_id": execution_id})
 
-    def get_process_logs(self, execution_id: str) -> Dict[str, str]:
+    def get_process_logs(self, execution_id: str) -> dict[str, str]:
         """Get logs for a background process."""
         backend_obj = self.engine.backend_manager.get_backend("local")
         if hasattr(backend_obj, 'get_background_logs'):
@@ -250,9 +248,9 @@ class TerminalInterface:
     def start_pty(
         self,
         command: str,
-        cwd: Optional[Path] = None,
-        env: Optional[Dict[str, str]] = None,
-        on_output: Optional[Callable[[str], None]] = None,
+        cwd: Path | None = None,
+        env: dict[str, str] | None = None,
+        on_output: Callable[[str], None] | None = None,
     ) -> str:
         """Start an interactive PTY session. Returns execution_id."""
         req = ExecutionRequest(
@@ -289,13 +287,13 @@ class TerminalInterface:
             self.bus.emit("terminal.pty.stopped", {"execution_id": execution_id})
         return result
 
-    def list_ptys(self) -> List[str]:
+    def list_ptys(self) -> list[str]:
         """List active PTY session IDs."""
         return self.ptys.list_sessions()
 
     # ── Environment ──
 
-    def get_available_shells(self) -> Dict[str, str]:
+    def get_available_shells(self) -> dict[str, str]:
         """Get available shells on the system."""
         return self.env.available_shells
 
@@ -303,27 +301,27 @@ class TerminalInterface:
         """Get the default shell."""
         return self.env.detect_default_shell()
 
-    def get_environment(self, redacted: bool = True) -> Dict[str, str]:
+    def get_environment(self, redacted: bool = True) -> dict[str, str]:
         """Get current environment variables."""
         if redacted:
             return self.env.get_redacted_environment()
         return self.env.get_environment()
 
-    def get_os_info(self) -> Dict[str, str]:
+    def get_os_info(self) -> dict[str, str]:
         """Get OS information."""
         return self.env.get_os_info()
 
-    def get_git_state(self, cwd: Optional[Path] = None) -> Dict[str, str]:
+    def get_git_state(self, cwd: Path | None = None) -> dict[str, str]:
         """Get git repository state."""
         return self.env.get_git_state(cwd)
 
     # ── History ──
 
-    def get_history(self, count: int = 20) -> List[HistoryEntry]:
+    def get_history(self, count: int = 20) -> list[HistoryEntry]:
         """Get recent execution history."""
         return self.history.get_recent(count)
 
-    def search_history(self, query: str) -> List[HistoryEntry]:
+    def search_history(self, query: str) -> list[HistoryEntry]:
         """Search execution history."""
         return self.history.search(query)
 
@@ -337,8 +335,8 @@ class TerminalInterface:
         self,
         command: str,
         result: ExecutionResult,
-        verification_spec: Dict,
-    ) -> tuple[bool, Optional[Dict]]:
+        verification_spec: dict,
+    ) -> tuple[bool, dict | None]:
         """Verify an execution result."""
         req_dict = {"command": command, "verification": verification_spec}
         return self.engine.verification_engine.verify(req_dict, result.dict())
@@ -352,11 +350,10 @@ class TerminalInterface:
     def unsubscribe(self, event: str, callback: Callable[[Any], None]):
         """Unsubscribe from terminal events."""
         # Note: event_bus doesn't have unsubscribe, but we can add it
-        pass
 
     # ── Status ──
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get overall terminal system status."""
         return {
             "shells": self.env.available_shells,

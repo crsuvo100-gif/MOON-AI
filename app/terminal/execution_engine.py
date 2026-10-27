@@ -18,26 +18,26 @@ from __future__ import annotations
 
 import time
 import uuid
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
-from .models import ExecutionRequest, ExecutionResult
-from .state_machine import ExecutionState, StateMachine
 from .event_bus import get_bus
 from .history_manager import history_manager
-from .environment_manager import environment_manager
+from .models import ExecutionRequest, ExecutionResult
+from .state_machine import ExecutionState, StateMachine
 
 
 class ExecutionEngine:
     """Orchestrates a single execution request through the full pipeline."""
 
     def __init__(self):
-        from .risk_engine import RiskEngine
-        from .permission_engine import PermissionEngine
-        from .verification_engine import VerificationEngine
         from .backend_manager import BackendManager
+        from .permission_engine import PermissionEngine
         from .recovery_engine import recovery_engine
+        from .risk_engine import RiskEngine
         from .session_manager import SessionManager
+        from .verification_engine import VerificationEngine
 
         self.risk_engine = RiskEngine()
         self.permission_engine = PermissionEngine()
@@ -47,7 +47,7 @@ class ExecutionEngine:
         self.bus = get_bus()
         self.session_manager = SessionManager()
 
-    def _emit(self, topic: str, payload: Dict[str, Any]):
+    def _emit(self, topic: str, payload: dict[str, Any]):
         try:
             self.bus.emit(topic, payload)
         except Exception:
@@ -56,8 +56,8 @@ class ExecutionEngine:
     def execute(
         self,
         req: ExecutionRequest,
-        session_id: Optional[str] = None,
-        on_output: Optional[Callable[[str], None]] = None,
+        session_id: str | None = None,
+        on_output: Callable[[str], None] | None = None,
     ) -> ExecutionResult:
         """Execute a request through the full pipeline.
 
@@ -355,7 +355,7 @@ class ExecutionEngine:
     def execute_streaming(
         self,
         req: ExecutionRequest,
-        session_id: Optional[str] = None,
+        session_id: str | None = None,
     ) -> tuple[str, Callable[[Callable[[str], None]], ExecutionResult]]:
         """Execute with streaming, returning (execution_id, subscribe_fn).
 
@@ -363,7 +363,7 @@ class ExecutionEngine:
         This allows the caller to set up the callback before execution starts.
         """
         execution_id = str(uuid.uuid4())
-        callback_holder: List[Optional[Callable[[str], None]]] = [None]
+        callback_holder: list[Callable[[str], None] | None] = [None]
 
         def _on_output(text: str):
             if callback_holder[0]:

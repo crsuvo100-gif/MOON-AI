@@ -1,11 +1,12 @@
 # Backend manager – resolves backend name to concrete implementation and executes.
 
 from typing import Literal
-from .models import ExecutionRequest, ExecutionResult
-from .backends.local import LocalBackend
+
 # future imports placeholder
 from .backends.docker import DockerBackend
+from .backends.local import LocalBackend
 from .backends.ssh import SSHBackend
+from .models import ExecutionRequest, ExecutionResult
 
 _BACKENDS = {
     "local": LocalBackend,

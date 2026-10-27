@@ -97,4 +97,4 @@ class Verifier:
         )
 
 
-__all__ = ["Verifier", "VerificationResult"]
+__all__ = ["VerificationResult", "Verifier"]

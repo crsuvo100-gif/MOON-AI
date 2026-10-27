@@ -39,7 +39,7 @@ class ConversationTurn:
         }
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "ConversationTurn":
+    def from_dict(cls, d: dict[str, Any]) -> ConversationTurn:
         msg = d["message"]
         if isinstance(msg, dict):
             msg = Message(**msg)

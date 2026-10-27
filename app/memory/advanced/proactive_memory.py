@@ -19,11 +19,11 @@ Key features:
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from app.config.logging import get_logger
-from app.memory.advanced.unified_search import UnifiedSearcher, UnifiedResult
+from app.memory.advanced.unified_search import UnifiedResult, UnifiedSearcher
 
 logger = get_logger(__name__)
 

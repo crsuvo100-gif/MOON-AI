@@ -13,7 +13,8 @@ tests mock the client so no network/token is required to validate the logic.
 
 from __future__ import annotations
 
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from app.config.logging import get_logger
 from app.config.settings import get_settings

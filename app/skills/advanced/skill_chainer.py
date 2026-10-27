@@ -7,8 +7,9 @@ skill becomes the input context for the next.
 from __future__ import annotations
 
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable
+from typing import Any
 
 
 @dataclass
@@ -140,11 +141,7 @@ class SkillChainer:
             chain_skills = []
             for s in available_skills:
                 s_lower = s.lower()
-                if "research" in s_lower or "search" in s_lower:
-                    chain_skills.append(s)
-                elif "analy" in s_lower:
-                    chain_skills.append(s)
-                elif "writ" in s_lower or "report" in s_lower:
+                if "research" in s_lower or "search" in s_lower or "analy" in s_lower or "writ" in s_lower or "report" in s_lower:
                     chain_skills.append(s)
             if len(chain_skills) >= 2:
                 return SkillChain(
@@ -158,13 +155,7 @@ class SkillChainer:
             chain_skills = []
             for s in available_skills:
                 s_lower = s.lower()
-                if "plan" in s_lower or "design" in s_lower:
-                    chain_skills.append(s)
-                elif "code" in s_lower or "implement" in s_lower:
-                    chain_skills.append(s)
-                elif "test" in s_lower or "verify" in s_lower:
-                    chain_skills.append(s)
-                elif "review" in s_lower:
+                if "plan" in s_lower or "design" in s_lower or "code" in s_lower or "implement" in s_lower or "test" in s_lower or "verify" in s_lower or "review" in s_lower:
                     chain_skills.append(s)
             if len(chain_skills) >= 2:
                 return SkillChain(
@@ -178,11 +169,7 @@ class SkillChainer:
             chain_skills = []
             for s in available_skills:
                 s_lower = s.lower()
-                if "recon" in s_lower or "scan" in s_lower:
-                    chain_skills.append(s)
-                elif "analy" in s_lower or "vuln" in s_lower:
-                    chain_skills.append(s)
-                elif "report" in s_lower or "write" in s_lower:
+                if "recon" in s_lower or "scan" in s_lower or "analy" in s_lower or "vuln" in s_lower or "report" in s_lower or "write" in s_lower:
                     chain_skills.append(s)
             if len(chain_skills) >= 2:
                 return SkillChain(

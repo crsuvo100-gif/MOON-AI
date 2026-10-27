@@ -3,6 +3,6 @@
 Re-exports the real GoalManager/Goal from app.runtime.goal_manager.
 """
 
-from app.runtime.goal_manager import GoalManager, Goal  # noqa: F401
+from app.runtime.goal_manager import Goal, GoalManager
 
-__all__ = ["GoalManager", "Goal"]
+__all__ = ["Goal", "GoalManager"]

@@ -92,8 +92,7 @@ def _parse_repo_url(url: str) -> tuple[str, str]:
     for sep in ("https://github.com/", "git@github.com:"):
         if u.startswith(sep):
             body = u[len(sep):]
-            if body.endswith(".git"):
-                body = body[: -len(".git")]
+            body = body.removesuffix(".git")
             owner, _, repo = body.partition("/")
             return owner, repo
     return "", u

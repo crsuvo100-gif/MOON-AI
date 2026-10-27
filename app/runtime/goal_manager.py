@@ -54,11 +54,11 @@ class GoalManager:
             return getattr(self, "_kb_lazy", None)
         self._kb_built = True
         try:
+            from app.config.model_config import build_embedding_config
+            from app.config.settings import get_settings
             from app.memory.knowledge_base import KnowledgeBase
             from app.memory.vector_store import InMemoryVectorStore
             from app.services.embedding_service import EmbeddingService
-            from app.config.model_config import build_embedding_config
-            from app.config.settings import get_settings
             ecfg = build_embedding_config(get_settings())
             store = InMemoryVectorStore()
             embeddings = EmbeddingService(

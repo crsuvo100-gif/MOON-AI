@@ -16,9 +16,10 @@ from __future__ import annotations
 import asyncio
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 from app.config.logging import get_logger
 
@@ -88,7 +89,7 @@ class AgentMessage:
         }
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "AgentMessage":
+    def from_dict(cls, d: dict[str, Any]) -> AgentMessage:
         known = {f.name for f in cls.__dataclass_fields__.values()}
         valid = {k: v for k, v in d.items() if k in known}
         if "message_type" in valid and isinstance(valid["message_type"], str):
@@ -246,6 +247,9 @@ def new_task_id() -> str:
 
 
 __all__ = [
-    "MessageType", "AgentMessage", "AgentCommunicationBus",
-    "get_bus", "new_task_id",
+    "AgentCommunicationBus",
+    "AgentMessage",
+    "MessageType",
+    "get_bus",
+    "new_task_id",
 ]

@@ -10,8 +10,10 @@ Provides:
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Dict, List
+from typing import Any
+
 
 # Re‑use the same event names as the runtime event system.
 class Event(Enum):
@@ -47,8 +49,8 @@ class Event(Enum):
 class _EventBus:
     def __init__(self) -> None:
         # Store subscribers keyed by Event enum members; also support legacy string events.
-        self._subscribers: Dict[Event, List[Callable[[Any], None]]] = {}
-        self._legacy_subscribers: Dict[str, List[Callable[[Any], None]]] = {}
+        self._subscribers: dict[Event, list[Callable[[Any], None]]] = {}
+        self._legacy_subscribers: dict[str, list[Callable[[Any], None]]] = {}
 
     def _resolve_event(self, ev: Event | str) -> Event | str:
         """Return an Event enum if possible, otherwise keep the original string.

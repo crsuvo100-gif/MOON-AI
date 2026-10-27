@@ -8,21 +8,21 @@ Orchestrator can use.
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import time
 from typing import Any
 
-from app.agents.advanced.pipeline import AgentPipeline, PipelineResult
 from app.agents.advanced.blackboard import Blackboard
+from app.agents.advanced.context_sharing import ContextSharing
+from app.agents.advanced.coordination import CoordinationMode, CoordinationProtocol
+from app.agents.advanced.error_recovery import ErrorCategory, ErrorRecovery, ErrorSeverity
+from app.agents.advanced.learning import AgentLearning
 from app.agents.advanced.lifecycle import AgentLifecycle, AgentState, StateTransition
 from app.agents.advanced.performance import PerformanceTracker, TaskExecution
-from app.agents.advanced.learning import AgentLearning, LearningRecord
-from app.agents.advanced.coordination import CoordinationProtocol, CoordinationMode
-from app.agents.advanced.context_sharing import ContextSharing
-from app.agents.advanced.error_recovery import ErrorRecovery, ErrorCategory, ErrorSeverity
+from app.agents.advanced.pipeline import AgentPipeline, PipelineResult
+from app.agents.advanced.state_manager import AgentState as PersistedState
+from app.agents.advanced.state_manager import AgentStateManager
 from app.agents.advanced.tool_optimizer import ToolOptimizer
-from app.agents.advanced.state_manager import AgentStateManager, AgentState as PersistedState
 
 logger = logging.getLogger(__name__)
 

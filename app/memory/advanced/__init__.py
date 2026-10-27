@@ -14,59 +14,68 @@ validate quality, and deduplicate.
 Additive only -- never replaces existing modules.
 """
 
-from app.memory.advanced.reasoning import MemoryReasoningEngine, ReasoningResult, ReasoningChain
-from app.memory.advanced.conflict_resolver import ConflictResolver, Conflict, Resolution
-from app.memory.advanced.importance_scorer import ImportanceScorer, ImportanceScore
-from app.memory.advanced.temporal_reasoning import TemporalReasoner, TemporalFact, TemporalDiff
-from app.memory.advanced.lifecycle import LifecycleManager, LifecycleAction, LifecycleReport
-from app.memory.advanced.summarization import MemorySummarizer, MemorySummary
-from app.memory.advanced.clustering import MemoryClustering, MemoryCluster
-from app.memory.advanced.recommendation import MemoryRecommender, MemoryRecommendation
-from app.memory.advanced.forgetting_curve import ForgettingCurveManager, ForgettingCurve, ReviewSchedule
-from app.memory.advanced.association_engine import AssociationEngine, Association, AssociationPath
-from app.memory.advanced.query_planner import QueryPlanner, QueryPlan, SubQuery, PlannedResult
-from app.memory.advanced.memory_exporter import MemoryExporter, ExportResult
+from app.memory.advanced.association_engine import Association, AssociationEngine, AssociationPath
+from app.memory.advanced.clustering import MemoryCluster, MemoryClustering
+from app.memory.advanced.conflict_resolver import Conflict, ConflictResolver, Resolution
+from app.memory.advanced.deduplication import (
+    DeduplicationReport,
+    DuplicateGroup,
+    MemoryDeduplicator,
+    MergeResult,
+)
+from app.memory.advanced.forgetting_curve import (
+    ForgettingCurve,
+    ForgettingCurveManager,
+    ReviewSchedule,
+)
+from app.memory.advanced.importance_scorer import ImportanceScore, ImportanceScorer
+from app.memory.advanced.lifecycle import LifecycleAction, LifecycleManager, LifecycleReport
+from app.memory.advanced.memory_exporter import ExportResult, MemoryExporter
 from app.memory.advanced.memory_validator import MemoryValidator, ValidationIssue, ValidationReport
-from app.memory.advanced.deduplication import MemoryDeduplicator, DuplicateGroup, DeduplicationReport, MergeResult
+from app.memory.advanced.query_planner import PlannedResult, QueryPlan, QueryPlanner, SubQuery
+from app.memory.advanced.reasoning import MemoryReasoningEngine, ReasoningChain, ReasoningResult
+from app.memory.advanced.recommendation import MemoryRecommendation, MemoryRecommender
+from app.memory.advanced.summarization import MemorySummarizer, MemorySummary
+from app.memory.advanced.temporal_reasoning import TemporalDiff, TemporalFact, TemporalReasoner
 
 __all__ = [
-    "MemoryReasoningEngine",
-    "ReasoningResult",
-    "ReasoningChain",
-    "ConflictResolver",
+    "Association",
+    "AssociationEngine",
+    "AssociationPath",
     "Conflict",
-    "Resolution",
-    "ImportanceScorer",
+    "ConflictResolver",
+    "DeduplicationReport",
+    "DuplicateGroup",
+    "ExportResult",
+    "ForgettingCurve",
+    "ForgettingCurveManager",
     "ImportanceScore",
-    "TemporalReasoner",
-    "TemporalFact",
-    "TemporalDiff",
-    "LifecycleManager",
+    "ImportanceScorer",
     "LifecycleAction",
+    "LifecycleManager",
     "LifecycleReport",
+    "MemoryCluster",
+    "MemoryClustering",
+    "MemoryDeduplicator",
+    "MemoryExporter",
+    "MemoryReasoningEngine",
+    "MemoryRecommendation",
+    "MemoryRecommender",
     "MemorySummarizer",
     "MemorySummary",
-    "MemoryClustering",
-    "MemoryCluster",
-    "MemoryRecommender",
-    "MemoryRecommendation",
-    "ForgettingCurveManager",
-    "ForgettingCurve",
-    "ReviewSchedule",
-    "AssociationEngine",
-    "Association",
-    "AssociationPath",
-    "QueryPlanner",
-    "QueryPlan",
-    "SubQuery",
-    "PlannedResult",
-    "MemoryExporter",
-    "ExportResult",
     "MemoryValidator",
+    "MergeResult",
+    "PlannedResult",
+    "QueryPlan",
+    "QueryPlanner",
+    "ReasoningChain",
+    "ReasoningResult",
+    "Resolution",
+    "ReviewSchedule",
+    "SubQuery",
+    "TemporalDiff",
+    "TemporalFact",
+    "TemporalReasoner",
     "ValidationIssue",
     "ValidationReport",
-    "MemoryDeduplicator",
-    "DuplicateGroup",
-    "DeduplicationReport",
-    "MergeResult",
 ]

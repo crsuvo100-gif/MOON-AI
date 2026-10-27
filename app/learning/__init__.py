@@ -71,12 +71,12 @@ class FailureClassifier:
     """Classify failures and suggest a safe alternative (spec 25)."""
 
     _PATTERNS = [
-        ("timeout", re.compile(r"timeout|timed out", re.I)),
-        ("permission", re.compile(r"permission|denied|unauthorized|403|401", re.I)),
-        ("not_found", re.compile(r"not found|no such|missing", re.I)),
-        ("syntax", re.compile(r"syntax error|traceback|nameerror|typeerror", re.I)),
-        ("network", re.compile(r"connection|network|dns|refused", re.I)),
-        ("resource", re.compile(r"memory|oom|resource|disk full", re.I)),
+        ("timeout", re.compile(r"timeout|timed out", re.IGNORECASE)),
+        ("permission", re.compile(r"permission|denied|unauthorized|403|401", re.IGNORECASE)),
+        ("not_found", re.compile(r"not found|no such|missing", re.IGNORECASE)),
+        ("syntax", re.compile(r"syntax error|traceback|nameerror|typeerror", re.IGNORECASE)),
+        ("network", re.compile(r"connection|network|dns|refused", re.IGNORECASE)),
+        ("resource", re.compile(r"memory|oom|resource|disk full", re.IGNORECASE)),
     ]
 
     @classmethod
@@ -125,4 +125,4 @@ class Reflector:
         }
 
 
-__all__ = ["Lesson", "Learner", "FailureClassifier", "Reflector"]
+__all__ = ["FailureClassifier", "Learner", "Lesson", "Reflector"]

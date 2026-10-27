@@ -53,7 +53,7 @@ class ChangeEntry:
         return d
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "ChangeEntry":
+    def from_dict(cls, d: dict[str, Any]) -> ChangeEntry:
         op = d.get("operation", "create")
         return cls(operation_id=d.get("operation_id", uuid.uuid4().hex),
                    memory_id=d.get("memory_id", ""),
@@ -414,7 +414,14 @@ class SyncEngine:
 
 
 __all__ = [
-    "SyncEngine", "ChangeLog", "ChangeEntry", "Operation", "payload_hash",
-    "CloudMemoryProvider", "NullCloudProvider", "ConflictEngine", "Conflict",
+    "ChangeEntry",
+    "ChangeLog",
+    "CloudMemoryProvider",
+    "Conflict",
+    "ConflictEngine",
     "ConflictType",
+    "NullCloudProvider",
+    "Operation",
+    "SyncEngine",
+    "payload_hash",
 ]

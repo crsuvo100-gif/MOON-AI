@@ -18,9 +18,10 @@ from __future__ import annotations
 
 import asyncio
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Awaitable, Callable
+from typing import Any
 
 from app.config.logging import get_logger
 
@@ -362,6 +363,11 @@ async def _await_deps(graph: TaskGraph, sub: SubTask) -> None:
 
 
 __all__ = [
-    "ExecutionMode", "SubTask", "TaskGraph", "Supervisor", "AgentWatch",
-    "choose_mode", "execute_graph",
+    "AgentWatch",
+    "ExecutionMode",
+    "SubTask",
+    "Supervisor",
+    "TaskGraph",
+    "choose_mode",
+    "execute_graph",
 ]

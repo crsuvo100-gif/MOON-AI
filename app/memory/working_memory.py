@@ -173,7 +173,7 @@ class WorkingMemory:
         query_words = set(q.split())
         results: list[tuple[str, Any, float]] = []
         for k, item in self._items.items():
-            text = f"{k} {str(item.value)}".lower()
+            text = f"{k} {item.value!s}".lower()
             overlap = sum(1 for w in query_words if w and w in text)
             if overlap > 0:
                 score = overlap * item.effective_salience

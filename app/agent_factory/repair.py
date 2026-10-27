@@ -6,6 +6,6 @@ component layout is satisfied without duplicating logic.
 
 from __future__ import annotations
 
-from app.agent_factory.reviewer import RepairAgent  # noqa: F401
+from app.agent_factory.reviewer import RepairAgent
 
 __all__ = ["RepairAgent"]

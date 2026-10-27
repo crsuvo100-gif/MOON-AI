@@ -10,7 +10,6 @@ and reports exactly what happened.
 """
 from __future__ import annotations
 
-import asyncio
 import time
 from dataclasses import dataclass, field
 from enum import Enum
@@ -215,7 +214,7 @@ class E2EVerificationPipeline:
         # Stage 6: Result aggregation
         stage = self._start_stage("result_aggregation")
         try:
-            from app.brain.aggregator import ResultAggregator, AgentEnvelope
+            from app.brain.aggregator import AgentEnvelope, ResultAggregator
             # Create mock envelopes for testing
             envelopes = [
                 AgentEnvelope(
@@ -329,6 +328,8 @@ class E2EVerificationPipeline:
 
 
 __all__ = [
-    "PipelineStageStatus", "PipelineStageResult", "E2EVerificationResult",
     "E2EVerificationPipeline",
+    "E2EVerificationResult",
+    "PipelineStageResult",
+    "PipelineStageStatus",
 ]

@@ -29,17 +29,16 @@ Usage:
 
 from __future__ import annotations
 
-import asyncio
 import time
 from typing import Any
 
 from app.config.logging import get_logger
-from app.memory.advanced.unified_search import UnifiedSearcher, UnifiedResult
-from app.memory.advanced.consolidation import ConsolidationPipeline
-from app.memory.advanced.proactive_memory import ProactiveMemory, ProactiveContext
-from app.memory.advanced.session_continuity import SessionContinuity
-from app.memory.advanced.compaction import MemoryCompactor, CompactionResult
 from app.memory.advanced.analytics import MemoryAnalytics, MemoryHealthReport
+from app.memory.advanced.compaction import MemoryCompactor
+from app.memory.advanced.consolidation import ConsolidationPipeline
+from app.memory.advanced.proactive_memory import ProactiveContext, ProactiveMemory
+from app.memory.advanced.session_continuity import SessionContinuity
+from app.memory.advanced.unified_search import UnifiedResult, UnifiedSearcher
 
 logger = get_logger(__name__)
 

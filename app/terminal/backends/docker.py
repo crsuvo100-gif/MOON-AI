@@ -8,18 +8,18 @@ Docker is optional — MOON-AI works without it.
 
 from __future__ import annotations
 
-import os
 import shlex
 import shutil
 import subprocess
 import threading
 import time
 import uuid
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, cast
+from typing import cast
 
-from ..models import ExecutionRequest, ExecutionResult
 from ..event_bus import get_bus
+from ..models import ExecutionRequest, ExecutionResult
 
 
 class DockerBackend:
@@ -28,9 +28,9 @@ class DockerBackend:
     def __init__(self):
         self.bus = get_bus()
         self.available = shutil.which("docker") is not None
-        self._active_containers: Dict[str, str] = {}  # execution_id → container_id
+        self._active_containers: dict[str, str] = {}  # execution_id → container_id
 
-    def _build_docker_args(self, request: ExecutionRequest) -> List[str]:
+    def _build_docker_args(self, request: ExecutionRequest) -> list[str]:
         """Build docker run arguments from an ExecutionRequest."""
         args = ["docker", "run", "--rm"]
 
@@ -74,8 +74,8 @@ class DockerBackend:
     def run(
         self,
         request: ExecutionRequest,
-        on_output: Optional[Callable[[str], None]] = None,
-    ) -> Dict:
+        on_output: Callable[[str], None] | None = None,
+    ) -> dict:
         """Execute a command in a Docker container."""
         if not self.available:
             return {
@@ -93,8 +93,8 @@ class DockerBackend:
         try:
             if on_output:
                 # Streaming mode
-                stdout_parts: List[str] = []
-                stderr_parts: List[str] = []
+                stdout_parts: list[str] = []
+                stderr_parts: list[str] = []
 
                 proc = subprocess.Popen(
                     args,
@@ -211,4 +211,3 @@ class DockerBackend:
     def cleanup(self):
         """Clean up any remaining containers."""
         # With --rm flag, containers are auto-removed
-        pass

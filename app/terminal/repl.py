@@ -33,17 +33,13 @@ from __future__ import annotations
 import asyncio
 import os
 import readline
-import shutil
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 from app.config.logging import get_logger
 from app.config.settings import get_settings
 from app.terminal.terminal_interface import terminal_interface
-from app.terminal.environment_manager import environment_manager
-from app.terminal.history_manager import history_manager
 
 logger = get_logger(__name__)
 
@@ -141,7 +137,7 @@ def _print_status(orchestrator) -> None:
             tool_names = [t.name for t in tools.all()]
             print(f"  Tools:      {len(tool_names)} available")
         else:
-            print(f"  Tools:      not loaded")
+            print("  Tools:      not loaded")
     print()
 
 

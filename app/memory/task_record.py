@@ -15,10 +15,10 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from app.memory.record import Scope
 from app.memory.factory import memory_store_factory
+from app.memory.record import Scope
 
 if TYPE_CHECKING:
     from app.memory.store import MemoryStore
@@ -95,7 +95,7 @@ class TaskRecord:
         self.updated_at = time.time()
 
     @classmethod
-    def from_task(cls, task: "TaskRecord") -> "TaskRecord":  # noqa: F821
+    def from_task(cls, task: TaskRecord) -> TaskRecord:
         """Reconstruct a :class:`TaskRecord` from a :class:`Task` model."""
         return cls(
             task_id=getattr(task, "id", ""),
@@ -174,7 +174,7 @@ class TaskStore:
     # -- introspection ------------------------------------------------------
 
     @property
-    def store(self) -> "MemoryStore":  # noqa: F821
+    def store(self) -> MemoryStore:
         return self._store
 
     def stats(self) -> dict[str, Any]:
