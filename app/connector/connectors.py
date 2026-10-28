@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from contextlib import AsyncExitStack
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -127,9 +128,9 @@ class MCPConnector:
       - sse         Server-Sent Events HTTP endpoint
       - streamable  Streamable-HTTP endpoint (HTTP POST + SSE resumption)
 
-    All transports are real outbound calls; nothing is mocked. Best-effort
-    cleanup on failure so a dead server can never hang the caller. The connector
-    behaves as an async context manager so it closes cleanly.
+    All transports are real outbound calls; nothing is mocked. Each transport
+    and session stays open for the connector lifetime and is closed on failure
+    or when the async context manager exits.
 
     Example (async):
         async with MCPConnector(record) as conn:
@@ -166,87 +167,116 @@ class MCPConnector:
             elif self._url or not self._url and not self._command:
                 self._transport = "sse"
         self._session: Any = None
-        self._read: Any = None
-        self._write: Any = None
+        self._stack: AsyncExitStack | None = None
         self._connect_lock = asyncio.Lock()
 
     # ------------------------------------------------------------------ impl
     async def connect(self) -> CallResult:
         """Open the underlying MCP transport. Real call, dispatches on transport."""
-        transport = self._transport
-        if transport not in self._SUPPORTED_TRANSPORTS:
-            return CallResult(ok=False, status=0,
-                              error=f"unsupported MCP transport: {transport!r}")
-        if self._session is not None:
-            return CallResult(ok=True, status=200,
-                              data={"transport": self._transport, "mcp": "already connected"})
-        try:
-            if transport == "stdio":
-                from mcp.client.stdio import StdioServerParameters, stdio_client
-                server = StdioServerParameters(
-                    command=self._command or "npx",
-                    args=self._args or ["-y", "@modelcontextprotocol/server-everything"],
-                    env=self._env,
-                    cwd=self._cwd,
-                )
-                stdio = stdio_client(server)
-                read, write = await stdio.__aenter__()
-                self._stdio = stdio  # keep the context manager alive for the
-                self._read, self._write = read, write  # connector's lifetime
+        async with self._connect_lock:
+            transport = self._transport
+            if transport not in self._SUPPORTED_TRANSPORTS:
+                return CallResult(ok=False, status=0,
+                                  error=f"unsupported MCP transport: {transport!r}")
+            if self._session is not None:
+                return CallResult(ok=True, status=200,
+                                  data={"transport": transport, "mcp": "already connected"})
+            if transport == "stdio" and not self._command:
+                return CallResult(ok=False, status=0,
+                                  error="MCP stdio transport requires an explicitly configured command")
+            if transport != "stdio" and not self._url:
+                return CallResult(ok=False, status=0,
+                                  error=f"MCP {transport} transport requires a URL")
+
+            stack = AsyncExitStack()
+            try:
+                if transport == "stdio":
+                    from mcp.client.stdio import StdioServerParameters, stdio_client
+
+                    server = StdioServerParameters(
+                        command=self._command,
+                        args=self._args,
+                        env=self._env,
+                        cwd=self._cwd,
+                    )
+                    read, write = await asyncio.wait_for(
+                        stack.enter_async_context(stdio_client(server)),
+                        timeout=self._to,
+                    )
+                elif transport == "sse":
+                    from mcp.client.sse import sse_client
+
+                    read, write = await asyncio.wait_for(
+                        stack.enter_async_context(
+                            sse_client(self._url, timeout=self._to, sse_read_timeout=self._to)
+                        ),
+                        timeout=self._to,
+                    )
+                else:
+                    from importlib import import_module
+
+                    streamable_module = import_module("mcp.client.streamable_http")
+                    streamable_client = (
+                        getattr(streamable_module, "streamable_http_client", None)
+                        or getattr(streamable_module, "streamablehttp_client", None)
+                    )
+                    if streamable_client is None:
+                        raise RuntimeError("installed MCP SDK has no streamable-HTTP client")
+                    streams = await asyncio.wait_for(
+                        stack.enter_async_context(streamable_client(self._url)),
+                        timeout=self._to,
+                    )
+                    read, write = streams[0], streams[1]
+
                 from mcp.client.session import ClientSession
-                self._session = ClientSession(read, write)
+
+                session = ClientSession(read, write)
+                await asyncio.wait_for(stack.enter_async_context(session), timeout=self._to)
+                initialized = await asyncio.wait_for(session.initialize(), timeout=self._to)
+            except ModuleNotFoundError as exc:
+                await stack.aclose()
+                if exc.name == "mcp" or (exc.name and exc.name.startswith("mcp.")):
+                    return CallResult(
+                        ok=False, status=0,
+                        error="MCP support is optional; install the project 'mcp' extra",
+                    )
+                return CallResult(ok=False, status=0,
+                                  error=f"MCP {transport} connect failed ({type(exc).__name__})")
+            except Exception as exc:  # noqa: BLE001
                 try:
-                    await self._session.__aenter__()
+                    await stack.aclose()
                 except Exception:
-                    await self._close_cleans(1)
-                    self._stdio = None
-                    self._session = None
-                    self._read = None
-                    self._write = None
-                    raise
-                try:
-                    await self._session.initialize()
-                except Exception:
-                    self._session.close()
-                    self._session = None
-                    self._stdio = None
-                    self._read = None
-                    self._write = None
-                    raise
-            elif transport == "sse":
-                from mcp.client.sse import sse_client
-                async with sse_client(self._url) as (read, write):
-                    self._read, self._write = read, write
-                    from mcp.client.session import ClientSession
-                    self._session = ClientSession(read, write)
-                    await self._session.initialize()
-            else:  # streamable
-                from mcp.client.streamable_http import streamablehttp_client
-                async with streamablehttp_client(self._url) as (read, write, _gsid):
-                    self._read, self._write = read, write
-                    from mcp.client.session import ClientSession
-                    self._session = ClientSession(read, write)
-                    await self._session.initialize()
-        except Exception as exc:  # noqa: BLE001
-            # Ensure partial state is cleaned so the next call re-connects.
-            await self._close_cleans(1)
-            err = exc
-            if hasattr(exc, "args") and exc.args:
-                err = exc.args[0]
-            return CallResult(ok=False, status=0,
-                              error=f"MCP {transport} connect failed: {err}")
-        return CallResult(ok=True, status=200,
-                          data={"transport": self._transport, "mcp": "connected"})
+                    logger.debug("MCP transport cleanup failed", exc_info=True)
+                reason = "configured command was not found" if isinstance(exc, FileNotFoundError) else type(exc).__name__
+                return CallResult(
+                    ok=False, status=0,
+                    error=f"MCP {transport} connect failed ({reason})",
+                )
+
+            self._stack = stack
+            self._session = session
+            details = {"transport": transport, "mcp": "connected"}
+            if hasattr(initialized, "protocolVersion"):
+                details["protocol_version"] = initialized.protocolVersion
+            return CallResult(ok=True, status=200, data=details)
 
     async def __aenter__(self) -> MCPConnector:
-        await self.connect()
+        result = await self.connect()
+        if not result.ok:
+            raise ConnectionError(result.error or "MCP connection failed")
         return self
 
     async def __aexit__(self, *exc) -> None:
         await self.close()
 
     async def close(self) -> None:
-        await self._close_cleans(0)
+        stack, self._stack = self._stack, None
+        self._session = None
+        if stack is not None:
+            try:
+                await stack.aclose()
+            except Exception:  # noqa: BLE001
+                logger.exception("MCPConnector close failed")
 
     # ------------------------------------------------------------- protocol
     async def list_tools(self, cursor: str | None = None) -> CallResult:
@@ -273,57 +303,48 @@ class MCPConnector:
     async def list_roots(self) -> CallResult:
         return await self._call("list_roots")
 
+    async def ping(self) -> CallResult:
+        return await self._call("ping")
+
     # ----------------------------------------------------------------- low
     async def _call(self, method: str, *args, **kwargs) -> CallResult:
+        allowed_methods = {
+            "list_tools", "call_tool", "list_prompts", "get_prompt",
+            "list_resources", "read_resource", "list_resource_templates",
+            "list_roots", "ping",
+        }
+        if method not in allowed_methods:
+            return CallResult(ok=False, status=0, error=f"unsupported MCP operation: {method}")
         if self._session is None:
-            return CallResult(ok=False, status=0, error="MCP transport not connected; call connect() first")
+            connected = await self.connect()
+            if not connected.ok:
+                return connected
         try:
             method_fn = getattr(self._session, method)
-            result = await method_fn(*args, **kwargs)
-            try:
-                return CallResult(ok=True, status=200,
-                                  data=result.model_dump(mode="json") if hasattr(result, "model_dump") else result)
-            except Exception:
-                return CallResult(ok=True, status=200, data=result)
+            result = await asyncio.wait_for(method_fn(*args, **kwargs), timeout=self._to)
+            data = result.model_dump(mode="json") if hasattr(result, "model_dump") else result
+            return CallResult(ok=True, status=200, data=data)
+        except asyncio.TimeoutError:
+            await self.close()
+            return CallResult(
+                ok=False, status=0,
+                error=f"MCP {method} timed out after {self._to:g}s; connection closed",
+            )
         except Exception as exc:  # noqa: BLE001
-            return CallResult(ok=False, status=0, error=f"MCP {method} failed: {exc}")
-
-    async def _close_cleans(self, silent: int) -> None:
-        """Close streams + session, guarded so a second close is a no-op."""
-        try:
-            # Close the stdio context manager first (tears down its task
-            # group and closes the underlying streams).
-            if getattr(self, "_stdio", None) is not None:
-                try:
-                    await self._stdio.__aexit__(None, None, None)
-                except Exception:
-                    pass
-                self._stdio = None
-            if self._session is not None:
-                try:
-                    self._session.close()
-                except Exception:
-                    pass
-                self._session = None
-            for attr in ("_read", "_write"):
-                st = getattr(self, attr, None)
-                if st is not None:
-                    try:
-                        st.aclose()
-                    except Exception:
-                        pass
-                    setattr(self, attr, None)
-        except Exception:
-            if not silent:
-                logger.exception("MCPConnector close failed (best-effort)")
+            return CallResult(
+                ok=False, status=0,
+                error=f"MCP {method} failed ({type(exc).__name__})",
+            )
 
     async def health(self) -> CallResult:
-        """Probe the endpoint for REAL reachability (not a stub)."""
-        try:
-            if self._transport == "stdio":
-                return CallResult(ok=bool(self._command), status=0,
-                                  data={"mcp": "stdio", "server": self._command})
-            return CallResult(ok=True, status=200,
-                              data={"transport": self._transport, "mcp": "reachable"})
-        except Exception as exc:  # noqa: BLE001
-            return CallResult(ok=False, status=0, error=str(exc))
+        """Initialize the configured endpoint to verify actual protocol reachability."""
+        was_connected = self._session is not None
+        result = await self.connect()
+        if result.ok and not was_connected:
+            await self.close()
+        if result.ok:
+            return CallResult(
+                ok=True, status=200,
+                data={"transport": self._transport, "mcp": "initialized"},
+            )
+        return result

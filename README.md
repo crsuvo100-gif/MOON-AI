@@ -37,16 +37,13 @@ The default entry point for the interactive terminal UI is:
 python -m moon terminal
 ```
 
-**Alternative entry point** (direct module invocation):
+Compatibility alias for older launch scripts and docs:
 
 ```bash
 python -m moon_terminal
 ```
 
-Both commands launch the same Textual TUI.
-
-
-Running `python -m moon` without arguments also launches the terminal, as it is the default sub‑command. Use this command to open the Textual TUI, issue commands, and interact with MOON’s agents.
+Both commands launch the same terminal experience. Running `python -m moon` without arguments also launches the terminal, as it is the default sub-command. Use this command to open the terminal, issue commands, and interact with MOON’s agents.
 
 
 ```bash

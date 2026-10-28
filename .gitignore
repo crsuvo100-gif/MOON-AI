@@ -47,6 +47,8 @@ env/
 .env
 .env.*
 node_modules/
+CYCLONE_TERMINAL_AI_V10/node_modules/
+CYCLONE_TERMINAL_AI_V10/package-lock.json
 moon_ai_agent.egg-info/
 .pytest_cache/
 .mypy_cache/

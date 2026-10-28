@@ -54,7 +54,7 @@ moon = "main:main"
 moon-terminal = "main:main"
 
 [tool.setuptools]
-py-modules = ["main"]
+py-modules = ["main", "moon_terminal"]
 
 [tool.setuptools.packages.find]
 include = ["app*", "plugins*", "scripts*", "moon*"]
