@@ -114,6 +114,15 @@ class ConnectionGateway:
             rec.last_checked = time.time()
             self._save()
 
+    def set_enabled(self, name: str, enabled: bool) -> bool:
+        """Enable/disable an existing connection record (mute / unmute)."""
+        rec = self._conns.get(name)
+        if rec is not None:
+            rec.enabled = enabled
+            self._save()
+            return True
+        return False
+
     @staticmethod
     def host_of(url: str) -> str:
         try:

@@ -106,10 +106,24 @@ class GlobalConnectorTool(BaseTool):
                     f"({reason}). Re-issue with confirmed=true if Psycho approves.")
         conn = self._gw.build_connector(rec)
         try:
+
             if rec.kind == "agent":
                 res = await conn.ask(kw.get("message", ""), system=kw.get("system", ""))
-            elif rec.kind in ("websocket", "mcp"):
-                res = await conn.health()
+            elif rec.kind == "websocket":
+                # REAL websocket: open and send a message (was a no-op health() call).
+                res = await conn.send_recv(kw.get("message", ""))
+            elif rec.kind == "mcp":
+                # REAL MCP: dispatch an RPC method through the connector session.
+                mcp_method = (kw.get("method") or "list_tools").lower()
+                mcp_params = {}
+                if mcp_method == "call_tool":
+                    # Tool spec uses "tool" for the tool name; gateway uses "name".
+                    mcp_params["name"] = kw.get("tool") or kw.get("name") or ""
+                    mcp_params["arguments"] = kw.get("arguments") or {}
+                else:
+                    mcp_params = {k: v for k, v in kw.items()
+                                  if k not in ("method", "message", "confirmed")}
+                res = await conn._call(mcp_method, **mcp_params)
             else:
                 method = (kw.get("method") or "GET").upper()
                 res = await conn.call(method, kw.get("path", ""), json_body=kw.get("json"),

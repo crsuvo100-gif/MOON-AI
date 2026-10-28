@@ -22,4 +22,5 @@ exclude = [
     "**/.moon_sessions.json",
     "**/.moon_workflow_logs",
     "**/moon_ai_agent.egg-info",
+    "**/moon/libnode",
 ]

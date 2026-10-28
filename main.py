@@ -455,6 +455,13 @@ def _cmd_build(args) -> int:
     out_dir = Path(args.out).resolve() if args.out else project_dir
     lang = args.lang or build_mod.detect_language(str(project_dir))
 
+    # Expand short language aliases (py, js, rs) to canonical dict keys.
+    # Canonical keys matching _COMMANDS in moon/build.py are:
+    # python, node, rust, go, cpp, java, generic.
+    _LANG_ALIASES = {"py": "python", "js": "node", "ts": "node", "rs": "rust"}
+    if lang:
+        lang = _LANG_ALIASES.get(lang, lang)
+
     result = build_mod.scaffold(
         project_dir=project_dir,
         lang=lang or None,
@@ -493,7 +500,11 @@ def main() -> int:
     sub.add_parser("version", help="Print MOON-AI version")
     build_p = sub.add_parser("build", help="Scaffold a complete project (VS Code + Makefile + Dockerfile + hermes-acp)")
     build_p.add_argument("project_dir", nargs="?", default=".", help="Project directory to scaffold (default: current dir)")
-    build_p.add_argument("--lang", default=None, help="Override language detection (python|node|rust|go|cpp|java)")
+    build_p.add_argument(
+        "--lang",
+        default=None,
+        help="Override language detection (py|js|rs|cpp|go|java|generic)",
+    )
     build_p.add_argument("--out", default=None, help="Output directory (default: project dir)")
     build_p.add_argument("--force", action="store_true", help="Overwrite existing generated files")
 
