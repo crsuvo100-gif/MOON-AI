@@ -32,12 +32,14 @@ All secrets are redacted on read; writes only accept an approved diff token.
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 import shutil
 import threading
 import uuid
 from datetime import datetime
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
 
@@ -54,6 +56,14 @@ from app.tools.base import BaseTool
 from app.memory.knowledge_base import KnowledgeBase
 
 logger = logging.getLogger(__name__)
+
+
+def _version() -> str:
+    try:
+        return version("moon-ai-agent")
+    except PackageNotFoundError:
+        return "0.1.0"
+
 
 _WORKSPACE_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 # Terminal interface mounts the CYCLONE-compatible router at /api; the router
@@ -265,10 +275,6 @@ def get_cyclone_compatible_router() -> APIRouter:
     # ---- GET /health ---------------------------------------------------------
 
     async def health_handler(request: Request) -> dict[str, Any]:
-        try:
-            proc = shutil.cpu_count()
-        except Exception:
-            proc = 0
         return {
             "ok": True,
             "node": "python-" + __import__("sys").version.split()[0],

@@ -691,16 +691,16 @@ def install_service() -> None:
     units_to_write = {
         "moon-terminal.service": SYSTEMD_UNITS["moon-terminal.service"]
         .replace("%u", os.environ.get("USER", ""))
-        .replace("%s", MOON-AI_terminal_path)
+        .replace("%s", MOON_AI_terminal_path)
         .replace("%s/.venv/bin/python", python_path),
         "moon-monitor.service": SYSTEMD_UNITS["moon-monitor.service"]
         .replace("%u", os.environ.get("USER", ""))
-        .replace("%s", MOON-AI_terminal_path)
+        .replace("%s", MOON_AI_terminal_path)
         .replace("%s/.venv/bin/python", python_path),
         "moon-monitor.timer": SYSTEMD_UNITS["moon-monitor.timer"],
         "moon-hud.service": SYSTEMD_UNITS["moon-hud.service"]
         .replace("%u", os.environ.get("USER", ""))
-        .replace("%s", MOON-AI_terminal_path)
+        .replace("%s", MOON_AI_terminal_path)
         .replace("%s/.venv/bin/python", python_path),
     }
 

@@ -14,12 +14,15 @@ import asyncio
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from app.config.settings import get_settings
 from app.memory.conversation_history import ConversationHistory
 from app.memory.working_memory import WorkingMemory
 from app.services.llm_service import ChatMessage, LLMService
+
+if TYPE_CHECKING:
+    from app.brain.agent_model_manager import AgentModelManager
 
 logger = logging.getLogger(__name__)
 

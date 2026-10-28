@@ -13,6 +13,8 @@ Entry point (CLI):  moon build scaffold <dir> [--lang py|js|rs|cpp|go|generic]
 
 from __future__ import annotations
 
+import argparse
+import json
 import os
 import platform
 import shutil
@@ -653,8 +655,7 @@ def build_main(argv=None) -> int:
     sp = sub.add_parser("scaffold", help="Scaffold a new project (.vscode, Makefile, Dockerfile, tests)")
     sp.add_argument("dir", help="Project directory to generate config into")
     sp.add_argument("--lang", choices=_LANGS, help="Force a language (auto-detected by default)")
-    sub.add_parser("verify", help="Run the project's live build/test command")
-    sp2 = sub.add_parser("verify")
+    sp2 = sub.add_parser("verify", help="Run the project's live build/test command")
     sp2.add_argument("dir", help="Project directory to verify")
     sp2.add_argument("--lang", choices=_LANGS, help="Force a language")
     args = ap.parse_args(argv)

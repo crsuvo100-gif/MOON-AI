@@ -20,11 +20,12 @@ import time
 import uuid
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from .event_bus import get_bus
 from .history_manager import history_manager
 from .models import ExecutionRequest, ExecutionResult
+from .permission_engine import Denied, PermissionEngine, PermissionRequired
 from .state_machine import ExecutionState, StateMachine
 
 
@@ -33,7 +34,6 @@ class ExecutionEngine:
 
     def __init__(self):
         from .backend_manager import BackendManager
-        from .permission_engine import PermissionEngine
         from .recovery_engine import recovery_engine
         from .risk_engine import RiskEngine
         from .session_manager import SessionManager
@@ -100,7 +100,7 @@ class ExecutionEngine:
         sm.transition_to(ExecutionState.WAITING_PERMISSION, "checking permissions")
         try:
             self.permission_engine.check(req, risk_level)
-        except PermissionEngine.PermissionRequired as e:
+        except PermissionRequired as e:
             self._emit("terminal.permission.required", {
                 "execution_id": execution_id,
                 "command": req.command,
@@ -123,7 +123,7 @@ class ExecutionEngine:
                 verification_result=None,
                 error=f"Permission required: {e}",
             )
-        except PermissionEngine.Denied as e:
+        except Denied as e:
             self._emit("terminal.execution.denied", {
                 "execution_id": execution_id,
                 "reason": str(e),
@@ -223,7 +223,9 @@ class ExecutionEngine:
                 # Foreground execution with optional streaming
                 resp = backend.run(req, on_output=on_output)
                 exit_code = resp.get("exit_code", -1)
-                status = "success" if exit_code == 0 else "failed"
+                status: Literal["success", "failed", "timed_out"] = (
+                    "success" if exit_code == 0 else "failed"
+                )
                 if resp.get("timed_out"):
                     status = "timed_out"
 
@@ -298,7 +300,9 @@ class ExecutionEngine:
                     backend = self.backend_manager.get_backend(r.backend)
                     resp = backend.run(r, on_output=on_output)
                     exit_code = resp.get("exit_code", -1)
-                    status = "success" if exit_code == 0 else "failed"
+                    status: Literal["success", "failed", "timed_out"] = (
+                        "success" if exit_code == 0 else "failed"
+                    )
                     if resp.get("timed_out"):
                         status = "timed_out"
                     return ExecutionResult(

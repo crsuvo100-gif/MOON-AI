@@ -1,23 +1,43 @@
 """Tests for MOON-AI terminal system."""
 
-import time
-import pytest
 from pathlib import Path
 
+import pytest
+
 from app.terminal import (
-    terminal_interface,
+    ExecutionEngine,
     ExecutionRequest,
     ExecutionResult,
     ExecutionState,
     StateMachine,
-    history_manager,
     environment_manager,
+    history_manager,
+    terminal_interface,
 )
-from app.terminal.permission_engine import PermissionRequired, Denied
+from app.terminal.permission_engine import Denied, PermissionRequired
 
 
 class TestExecutionEngine:
     """Test core execution engine."""
+
+    @pytest.mark.parametrize(
+        ("permission_error", "expected_error"),
+        [
+            (PermissionRequired("approval required"), "Permission required: approval required"),
+            (Denied("blocked by policy"), "blocked by policy"),
+        ],
+    )
+    def test_permission_errors_are_handled(self, monkeypatch, permission_error, expected_error):
+        engine = ExecutionEngine()
+
+        def reject_request(request, risk_level=None):
+            raise permission_error
+
+        monkeypatch.setattr(engine.permission_engine, "check", reject_request)
+        result = engine.execute(ExecutionRequest(command="echo protected"))
+
+        assert result.status == "denied"
+        assert result.error == expected_error
 
     def test_basic_execution(self):
         result = terminal_interface.execute("echo hello world")
