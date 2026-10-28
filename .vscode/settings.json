@@ -23,7 +23,11 @@
     "hermes-agent": {
       "type": "custom",
       "command": "hermes",
-      "args": ["acp"]
+      "args": [
+        "acp"
+      ]
     }
-  }
+  },
+  "workbench.editor.wrapTabs": true,
+  "python.defaultInterpreterPath": ".venv/bin/python"
 }
