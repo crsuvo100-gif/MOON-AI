@@ -27,6 +27,7 @@ numpy>=1.26
 python-dotenv>=1.0
 rich>=13.7
 tenacity>=8.2
+PyYAML>=6.0
 
 # Testing / quality
 pytest>=8.0
