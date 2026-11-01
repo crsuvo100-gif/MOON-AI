@@ -195,5 +195,9 @@ Every gate below was re-run on the final tree (after all repairs) with real exec
 
 ## Git state
 - Branch: `feat/repl-version-command`; remote `origin https://github.com/crsuvo100-gif/MOON-AI.git`.
-- The 2026-11-01 completion pass is committed and pushed by the Lead (see commit above this line).
+- The 2026-11-01 completion pass is committed and pushed by the Lead:
+  commit `e4be8e8` — "build: complete launch verification — green CI gates, runtime fixes,
+  VS Code/scaffold repairs" (135 files) → `origin/feat/repl-version-command`.
+  Pushed over SSH because the HTTPS OAuth app token lacks the `workflow` scope
+  (GitHub refuses workflow-file updates from OAuth App tokens).
 
