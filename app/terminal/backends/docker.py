@@ -12,7 +12,6 @@ import shlex
 import shutil
 import subprocess
 import threading
-import time
 import uuid
 from collections.abc import Callable
 from pathlib import Path
@@ -86,9 +85,7 @@ class DockerBackend:
                 "timed_out": False,
             }
 
-        cwd = request.cwd or Path.cwd()
         args = self._build_docker_args(request)
-        start_time = time.time()
 
         try:
             if on_output:
@@ -110,7 +107,7 @@ class DockerBackend:
                         assert stdout is not None
                         for line in stdout:
                             stdout_parts.append(line)
-                            if on_output:
+                            if on_output is not None:
                                 try:
                                     on_output(line)
                                 except Exception:
@@ -124,7 +121,7 @@ class DockerBackend:
                         assert stderr is not None
                         for line in stderr:
                             stderr_parts.append(line)
-                            if on_output:
+                            if on_output is not None:
                                 try:
                                     on_output(line)
                                 except Exception:
@@ -156,16 +153,16 @@ class DockerBackend:
                 }
             else:
                 # Capture mode
-                proc = subprocess.run(
+                completed = subprocess.run(
                     args,
                     capture_output=True,
                     text=True,
                     timeout=request.timeout,
                 )
                 return {
-                    "exit_code": proc.returncode,
-                    "stdout": proc.stdout,
-                    "stderr": proc.stderr,
+                    "exit_code": completed.returncode,
+                    "stdout": completed.stdout,
+                    "stderr": completed.stderr,
                     "pid": None,
                     "timed_out": False,
                 }

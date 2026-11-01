@@ -6,13 +6,12 @@ network calls except a loopback/localhost health check that genuinely binds.
 """
 
 import asyncio
-import json
 import tempfile
 from pathlib import Path
 
 import pytest
 
-from app.connector.permission import ConnectorPermissionManager, EgressDecision
+from app.connector.permission import ConnectorPermissionManager
 from app.connector.gateway import ConnectionGateway, ConnectionRecord
 from app.connector.connectors import HTTPConnector, AgentConnector, MCPConnector
 from app.connector.tool import GlobalConnectorTool
@@ -79,8 +78,6 @@ def test_gateway_host_of():
 @pytest.mark.asyncio
 async def test_http_connector_real_loopback():
     # Spin a tiny real HTTP server on loopback, then call it for real.
-    import httpx
-    from httpx import AsyncClient
 
     # Use a public, always-up allowlisted host's schema via a local echo using
     # httpbin is flaky offline; instead validate the client against a local

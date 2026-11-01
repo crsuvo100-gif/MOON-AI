@@ -140,11 +140,12 @@ class MCPConnector:
 
     _SUPPORTED_TRANSPORTS = ("stdio", "sse", "streamable")
 
-    def __init__(self, base_url: str | Any, timeout: float = 30.0) -> None:
+    def __init__(self, base_url: Any, timeout: float = 30.0) -> None:
+        self._record: Any = None
         # Accept either a plain URL string (backward compat) or a
         # ConnectionRecord (full transport metadata).
         if hasattr(base_url, "kind") and hasattr(base_url, "transport"):
-            self._record = base_url  # type: ignore[assignment]
+            self._record = base_url
             self._transport = str(self._record.transport or "").lower()
             self._url = str(self._record.url or "").rstrip("/")
             self._command = str(self._record.command or "")
@@ -152,7 +153,7 @@ class MCPConnector:
             self._cwd = self._record.cwd
             self._env = self._record.env
         else:
-            self._record = None  # type: ignore[assignment]
+            self._record = None
             self._url = str(base_url).rstrip("/")
             self._transport = "http"
             self._command = ""

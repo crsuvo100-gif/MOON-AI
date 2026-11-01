@@ -36,7 +36,7 @@ class HardeningAuditTool(BaseTool):
                 return f"[hardening_audit] cannot read {path}: {exc}"
         if not material:
             # audit local host basics
-            findings = []
+            findings: list[str] = []
             sshd = "/etc/ssh/sshd_config"
             if os.path.isfile(sshd):
                 material = open(sshd, errors="replace").read()

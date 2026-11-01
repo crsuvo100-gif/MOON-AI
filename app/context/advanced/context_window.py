@@ -174,7 +174,7 @@ class ContextWindow:
         if not self._items:
             return ""
         target = target_tokens or self.available_tokens
-        parts = []
+        parts: list[str] = []
         current = 0
         for item in self._items:
             if current + item.tokens > target and parts:

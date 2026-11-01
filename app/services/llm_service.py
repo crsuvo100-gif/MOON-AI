@@ -158,6 +158,10 @@ class LLMService:
             return CompletionResult(content=None, has_tool_calls=False, tool_calls=[])
 
 
+    async def teardown(self) -> None:
+        await self._client.aclose()
+
+
 def _extract_answer_from_reasoning(reasoning: str) -> str:
     """Pull the final, substantive answer out of a thinking-model trace.
 
@@ -170,17 +174,14 @@ def _extract_answer_from_reasoning(reasoning: str) -> str:
         return ""
     # Strip common XML-ish thinking wrappers if present.
     txt = _re.sub(r"</?think>", "", txt, flags=_re.IGNORECASE).strip()
-    lines = [l.strip() for l in txt.splitlines() if l.strip()]
+    lines = [line.strip() for line in txt.splitlines() if line.strip()]
     if not lines:
         return txt
     # The answer is typically the longest / last confident statement. Prefer the
     # final non-boilerplate line; if it looks like a question echo, back up.
-    for l in reversed(lines):
-        low = l.lower()
+    for line in reversed(lines):
+        low = line.lower()
         if low.startswith(("okay,", "so i", "let me", "hmm", "wait,", "i need to", "first,")):
             continue
-        return l
+        return line
     return lines[-1]
-
-    async def teardown(self) -> None:
-        await self._client.aclose()

@@ -15,13 +15,15 @@
       "label": "MOON: Test",
       "type": "shell",
       "command": "make test",
-      "group": "test"
+      "group": "test",
+      "problemMatcher": []
     },
     {
       "label": "MOON: Verify",
       "type": "shell",
       "command": "make live",
-      "group": "test"
+      "group": "test",
+      "problemMatcher": []
     },
     {
       "label": "hermes build",
@@ -29,6 +31,7 @@
       "command": "hermes acp",
       "args": [],
       "group": "none",
+      "problemMatcher": [],
       "detail": "Start hermes ACP server for VS Code integration"
     }
   ]

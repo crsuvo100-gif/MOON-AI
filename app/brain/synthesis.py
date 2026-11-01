@@ -194,7 +194,6 @@ def detect_conflicts(ctx: dict[str, Any]) -> dict[str, Any]:
 def verify_results(ctx: dict[str, Any]) -> dict[str, Any]:
     """Stage 4: Verify results (placeholder for LLM-based verification)."""
     normalized = ctx.get("normalized_results", [])
-    evidence = ctx.get("evidence", [])
     conflicts = ctx.get("conflicts", [])
 
     if not normalized:
@@ -216,7 +215,6 @@ def synthesize_final(ctx: dict[str, Any]) -> dict[str, Any]:
     normalized = ctx.get("normalized_results", [])
     evidence = ctx.get("evidence", [])
     conflicts = ctx.get("conflicts", [])
-    query = ctx.get("query", "")
 
     if not normalized:
         return {"final_response": "No results to synthesize."}

@@ -99,11 +99,10 @@ def main() -> int:
           "Orchestrator OK" if orch_ok else ("Orch type=%s" % type(orch).__name__ if orch else "n/a"))
 
     # ---- 5. Capability registry importable from the real source ----
-    reg = None
     reg_ok = False
     try:
         from app.capability.registry import CapabilityRegistry  # noqa: F401
-        reg = CapabilityRegistry()
+        CapabilityRegistry()
         reg_ok = True
     except Exception:  # noqa: BLE001
         reg_ok = False
@@ -168,9 +167,9 @@ def main() -> int:
 
             t = json.loads(tsk.read_text())
             labels = [x.get("label", "") for x in t.get("tasks", [])]
-            low = [l.lower() for l in labels]
+            low = [label.lower() for label in labels]
             check("VS Code: 4 task templates",
-                  all(any(k in l for l in low) for k in ("verify", "build", "test", "hermes build")),
+                  all(any(k in label for label in low) for k in ("verify", "build", "test", "hermes build")),
                   ", ".join(labels))
         except Exception:  # noqa: BLE001
             check("tasks.json parse", False)

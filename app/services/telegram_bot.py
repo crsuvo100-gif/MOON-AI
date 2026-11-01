@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+from typing import Any
 
 from app.config.logging import get_logger
 from app.config.settings import get_settings
@@ -38,8 +39,8 @@ class TelegramBot:
             except Exception:  # noqa: BLE001
                 pass
         self.poll_timeout = int(os.environ.get("TELEGRAM_POLL_TIMEOUT", "30"))
-        self.orchestrator = None
-        self._bot = None  # python-telegram-bot Bot, lazy
+        self.orchestrator: Any = None
+        self._bot: Any = None  # python-telegram-bot Bot, lazy
 
     @property
     def available(self) -> bool:

@@ -5,9 +5,7 @@ sessions. Uses the in‑memory manager; persistence is exercised via temporary
 JSON file which is cleaned up after the test.
 """
 
-import app.terminal.session_manager as sm_module
 import os
-import json
 import pytest
 from app.terminal.session_manager import SessionManager
 

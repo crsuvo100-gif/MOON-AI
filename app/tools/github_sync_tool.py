@@ -96,7 +96,7 @@ class GitHubSyncTool(BaseTool):
             self._unstage_secrets(root)
         status = self._run(["git", "status", "--porcelain"], root, env=auth_env).stdout
         if not status.strip():
-            return self._report(root, rem, changed=0, push="Nothing to commit (already in sync).", env=auth_env)
+            return self._report(root, rem, push="Nothing to commit (already in sync).", env=auth_env)
         msg = self._smart_message(root, status)
         self._run(["git", "commit", "-m", msg], root, env=auth_env)
         branch = self._run(["git", "branch", "--show-current"], root, env=auth_env).stdout.strip() or "master"
@@ -204,11 +204,11 @@ class GitHubSyncTool(BaseTool):
                 pass
 
     def _smart_message(self, root: Path, status: str) -> str:
-        files = [l.split()[1] if len(l.split()) > 1 else l for l in status.splitlines()]
+        files = [part.split()[1] if len(part.split()) > 1 else part for part in status.splitlines()]
         kinds = {"A": "add", "M": "update", "D": "delete", "R": "rename", "?": "add", "U": "update"}
-        counts = {}
-        for l in status.splitlines():
-            counts[kinds.get(l[0], "change")] = counts.get(kinds.get(l[0], "change"), 0) + 1
+        counts: dict[str, int] = {}
+        for line in status.splitlines():
+            counts[kinds.get(line[0], "change")] = counts.get(kinds.get(line[0], "change"), 0) + 1
         summary = ", ".join(f"{v} {k}" for k, v in counts.items())
         sample = ", ".join(Path(f).name for f in files[:5])
         return f"sync: {summary} ({sample})"[:200]
@@ -223,7 +223,7 @@ class GitHubSyncTool(BaseTool):
         if self._patched_remote:
             shown = shown.replace(self._patched_remote, "[origin with token]")
         url = shown.split()[1] if shown.strip() else "(none)"
-        changed = len([l for l in status.splitlines() if l.strip()]) if status else 0
+        changed = len([line for line in status.splitlines() if line.strip()]) if status else 0
         return (
             "=== GitHub Sync Report ===\n"
             f"Remote URL : {url}\n"

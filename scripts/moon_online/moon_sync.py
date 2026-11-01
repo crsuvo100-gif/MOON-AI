@@ -14,11 +14,8 @@ Always free tier: 10GB storage, 10M requests/month.
 
 import argparse
 import hashlib
-import json
 import os
 import sys
-import tempfile
-import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -179,7 +176,6 @@ class MoonSync:
 
     def _compute_checksum(self, file_path: Path) -> Optional[str]:
         """Compute MD5 checksum of a file."""
-        import hashlib
         hash_md5 = hashlib.md5()
         with open(file_path, "rb") as f:
             for chunk in iter(lambda: f.read(8192), b""):
@@ -374,14 +370,14 @@ class MoonSync:
     def generate_report(self, sync_result: dict) -> str:
         """Generate a human-readable sync report."""
         lines = [
-            f"MOON Online Sync Report",
+            "MOON Online Sync Report",
             f"Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}",
-            f"",
+            "",
             f"Status: {sync_result['status']}",
             f"Total files: {sync_result['total_files']}",
             f"Total bytes: {sync_result['total_bytes']} ({sync_result['total_bytes'] / 1024 / 1024:.2f} MB)",
-            f"",
-            f"Directory breakdown:",
+            "",
+            "Directory breakdown:",
         ]
         for dir_name, result in sync_result.get("directories", {}).items():
             lines.append(f"  {dir_name}: {result['status']} ({result.get('files', 0)} files, {result.get('bytes', 0)} bytes)")

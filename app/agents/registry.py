@@ -66,7 +66,6 @@ class AgentMetadata:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> AgentMetadata:
-        known = {f.name for f in cls.__dataclass_fields__.values()} if False else None
         valid = {k: v for k, v in d.items() if k in cls.__dataclass_fields__}
         return cls(**valid)
 
@@ -217,7 +216,7 @@ class AgentRegistry:
         return out
 
     def to_report(self) -> dict[str, Any]:
-        by_source = {}
+        by_source: dict[str, int] = {}
         for m in self._agents.values():
             by_source[m.source] = by_source.get(m.source, 0) + 1
         return {"total": len(self._agents), "by_source": by_source,

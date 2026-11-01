@@ -1,6 +1,11 @@
+import glob
+import os
+import sys
 import unittest
 from pathlib import Path
-import os, sys, glob
+
+from app.terminal.models import ExecutionRequest
+from app.terminal.backend_manager import BackendManager
 
 # Ensure hermes_tools package is discoverable – it lives in the Hermes cache directory.
 if "~/.hermes/cache/scratch" not in sys.path:
@@ -8,9 +13,6 @@ if "~/.hermes/cache/scratch" not in sys.path:
 for p in glob.glob(os.path.expanduser('~/.hermes/cache/scratch/*/hermes_tools.py')):
     sys.path.append(os.path.dirname(p))
     break
-
-from app.terminal.models import ExecutionRequest
-from app.terminal.backend_manager import BackendManager
 
 class TestLocalBackend(unittest.TestCase):
     def setUp(self):

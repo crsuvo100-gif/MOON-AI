@@ -188,8 +188,7 @@ class AssociationEngine:
             "tag": tag_score,
             "temporal": temporal_score,
         }
-        best_type = max(scores, key=scores.get)
-        best_score = scores[best_type]
+        best_type = max(scores, key=lambda k: scores[k])
 
         # Combined score: weighted combination
         combined = 0.4 * kw_score + 0.3 * tag_score + 0.3 * temporal_score

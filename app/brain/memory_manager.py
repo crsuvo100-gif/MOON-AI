@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from app.config.logging import get_logger
 from app.memory.episodic_memory import EpisodicMemory
@@ -103,7 +103,8 @@ class MemoryManager:
             self._stm.add(content)
         if self._ltm is not None and long_term:
             if hasattr(self._ltm, '_enhanced_entries'):
-                await self._ltm.store({"content": content, "tags": tags or []}, importance=importance)
+                enhanced_ltm = cast("EnhancedLongTermMemory", self._ltm)
+                await enhanced_ltm.store({"content": content, "tags": tags or []}, importance=importance)
             else:
                 await self._ltm.store({"content": content, "tags": tags or []})
         if self._graph is not None:
@@ -115,7 +116,8 @@ class MemoryManager:
         """Consolidate ``content`` into MOON-AI's durable brain."""
         if self._ltm is not None:
             if hasattr(self._ltm, '_enhanced_entries'):
-                await self._ltm.store({"content": content, "tags": tags or []}, importance=importance)
+                enhanced_ltm = cast("EnhancedLongTermMemory", self._ltm)
+                await enhanced_ltm.store({"content": content, "tags": tags or []}, importance=importance)
             else:
                 await self._ltm.store({"content": content, "tags": tags or []})
         else:

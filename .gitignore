@@ -60,8 +60,13 @@ moon_ai_agent.egg-info/
 .claude-plugin/
 .gitnexus/
 .hermes/
+.qwen/
+.continue/
 .pytest_cache/
+# Nested/generated scaffold copies of .vscode stay ignored, but the project's
+# own workspace config ships (it is part of the deliverable).
 .vscode/
+!/.vscode/
 
 # Diagnostic / probe scripts (not part of the project)
 _proof_system_info.py

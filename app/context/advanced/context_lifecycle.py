@@ -86,7 +86,6 @@ class ContextLifecycle:
         Returns:
             List of lifecycle events that occurred during this update.
         """
-        now = current_time or time.time()
         ages = item_ages or {}
         events: list[LifecycleEvent] = []
 

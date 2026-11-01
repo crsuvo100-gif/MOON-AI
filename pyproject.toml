@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "moon-ai-agent"
 version = "0.1.0"
 description = "MOON -- self-hosted autonomous AI agent with its own brain, connected agent brains, and a Neural Brain Command Center UI."
+readme = "README.md"
 requires-python = ">=3.10"
 # Keep in sync with requirements.txt. Listed here so `pip install .` works on
 # any machine without first reading requirements.txt.
@@ -23,8 +24,6 @@ dependencies = [
     "rich>=13.7",
     "tenacity>=8.2",
     "PyYAML>=6.0",
-    "flask",
-    "flask-socketio",
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
 ]
@@ -76,7 +75,16 @@ filterwarnings = ["ignore::DeprecationWarning"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
-lint.ignore = ["E501", "B008"]
+
+[tool.ruff.lint]
+# Explicit rule selection. This project was authored against ruff's historic
+# default rule set (E4/E7/E9 + F). Newer ruff releases enable a far wider
+# default set (~1,000 extra findings from RUF/UP/TRY/B/etc.), so we pin the
+# original intent here to keep CI honest and stable across ruff upgrades.
+select = ["E4", "E7", "E9", "F"]
+# E501: line length is intentionally not enforced (long inline data/templates).
+# B008: FastAPI dependencies are called in default arguments by design.
+ignore = ["E501", "B008"]
 
 [tool.mypy]
 python_version = "3.10"

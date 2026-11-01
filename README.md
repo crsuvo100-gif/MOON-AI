@@ -6,26 +6,29 @@ Brain Command Center at `http://127.0.0.1:8777`.
 
 ## Features
 - **Main brain (LongTermMemory + KnowledgeBase)** -- durable, survives restarts.
-- **Per-agent brains** -- 39 specialist agents, each with its own isolated memory connected to the main brain.
+- **Per-agent brains** -- 41 specialist agents, each with its own isolated memory connected to the main brain.
 - **Autonomous self-learning** -- every interaction's facts, tool outcomes, and lessons are consolidated into the durable brain (`enable_auto_learning`).
-- **Neural Brain Command Center** -- Three.js visualization of the brain mesh, connected-agent mesh, and live cognition channel over WebSocket.
+- **Neural Brain Command Center** -- live canvas visualization of the brain mesh, connected-agent mesh, and live cognition channel over WebSocket.
 - **Always-connected GitHub** -- MOON autonomously pulls needed tools/plugins/skills from the connected repo on demand.
 
 ## Female Voice & Dictation
 
 MOON speaks with a warm, clearly-FEMALE voice (espeak female voice `f5` + a SoX
 timbre chain: pitch lift, body/bass, air/treble, subtle chorus + reverb for an
-intimate, attractive tone). Presets: `default`, `seductive`, `warm`, `crystal`.
+intimate, attractive tone; Kokoro-ONNX is used automatically when installed).
+Presets: `default`, `seductive`, `warm`, `crystal`.
 
 ```bash
-make voice-install          # install espeak + sox (+ optional vosk for mic)
-make voice                  # companion loop: type/talk -> MOON -> female voice
-make voice-test             # generate a sample female-voice WAV
+make serve                    # API + HUD; replies are spoken automatically
+make install-optional         # optional heavy audio extras (Kokoro, torch/F5-TTS, vosk)
+curl -s localhost:8777/api/voice/status   # active backend + available voices
 ```
 
-With a microphone + vosk (`VOSK_MODEL_DIR` set), use `make voice -- --mic` for
-true speech dictation. Without vosk it runs in typed mode but still replies in
-MOON's female voice. The voice module is `app/voice.py`.
+The voice APIs are `GET /api/voice/status`, `POST /api/voice/set` (select a
+preset) and `POST /api/voice/clone` (register a voice sample). For speech
+*dictation* install `vosk` + `pyaudio` (`make install-optional`) and set
+`VOSK_MODEL_DIR`. The voice module is `app/voice.py`; the premium/cloning engine
+is `app/voice_engine.py`. System fallback binaries: `sudo apt install espeak-ng sox`.
 
 ## Quick start
 
@@ -59,11 +62,11 @@ make serve          # MOON Neural Command Center at http://127.0.0.1:8777
 > repo owner can change on GitHub. Nothing in MOON controls it. To clone from
 > GitHub with no (or minimal) friction, pick ONE:
 > 1. **Make the repo PUBLIC** (GitHub → repo Settings → Danger Zone → Change
->    visibility → Public). Then `git clone https://github.com/crsuvo100-gif/MOON.git`
+>    visibility → Public). Then `git clone https://github.com/crsuvo100-gif/MOON-AI.git`
 >    works with **no credentials at all**. This is the only way to get a truly
 >    password-free install.
 > 2. **Use SSH** (recommended for private repos): `git clone
->    git@github.com:crsuvo100-gif/MOON.git`. Add your SSH key to GitHub
+>    git@github.com:crsuvo100-gif/MOON-AI.git`. Add your SSH key to GitHub
 >    (Settings → SSH and GPG keys) — no password needed afterward.
 > 3. **Use HTTPS + a PAT**: username = your GitHub login (`meow`); password =
 >    a **Personal Access Token** (GitHub disabled account-password git auth in
@@ -72,10 +75,10 @@ make serve          # MOON Neural Command Center at http://127.0.0.1:8777
 | Key | Default | Purpose |
 |-----|---------|---------|
 | `MODEL_BASE_URL` | `http://127.0.0.1:11434/v1` | OpenAI-compatible local endpoint |
-| `MODEL_NAME` | `qwen3:0.6b` | model id |
+| `MODEL_NAME` | `qwen2.5:1.5b` | model id |
 | `ENABLE_AUTO_LEARNING` | `true` | MOON learns from every interaction |
 | `ENABLE_AGENT_VALIDATION` | `true` | two-phase main-brain validation |
-| `GITHUB_REPO` | `https://github.com/crsuvo100-gif/MOON` | connected repo for auto tool-pull |
+| `GITHUB_REPO` | `https://github.com/crsuvo100-gif/MOON-AI` | connected repo for auto tool-pull |
 
 ## Tests
 ```bash
@@ -95,7 +98,7 @@ wrappers only** — the real application is always launched through Python.
 ### Requirements
 | Requirement | Minimum | Recommended |
 |-------------|---------|-------------|
-| Python | 3.10 | 3.11+ (3.13 tested) |
+| Python | 3.10 | 3.11–3.14 (3.14 tested) |
 | OS | Linux, macOS, Windows | Linux (Debian/Ubuntu/Kali), macOS, Windows 10+ |
 | CPU arch | x86_64, arm64 | x86_64 or arm64 |
 | RAM | 4 GB | 8 GB+ |
@@ -119,8 +122,8 @@ MOON talks to an **OpenAI-compatible** endpoint. Options:
 
 ### Install (Python)
 ```bash
-git clone git@github.com:crsuvo100-gif/MOON.git
-cd MOON
+git clone git@github.com:crsuvo100-gif/MOON-AI.git
+cd MOON-AI
 python -m venv .venv && .venv/bin/pip install -e .
 cp .env.example .env          # then fill in secrets (NEVER commit .env)
 python -m moon install        # bootstrap venv + deps + (best-effort) models
@@ -129,7 +132,7 @@ python -m moon install        # bootstrap venv + deps + (best-effort) models
 ### Commands (all Python — `python -m moon <cmd>`)
 | Command | Purpose |
 |---------|---------|
-| `python -m moon` | Launch the default Terminal/Neural Command Center UI |
+| `python -m moon` | Launch the interactive terminal (REPL) — web UI is `make serve` |
 || `python -m moon run "task"` | Run a single task and exit (or launch CLI terminal if no task) |
 || `python -m moon doctor` | Health check (Python/deps/config/DB/agents/tools/model/git) → PASS/WARN/FAIL |
 || `python -m moon status` | Check the live backend `/api/health` |
@@ -146,8 +149,8 @@ python -m moon install        # bootstrap venv + deps + (best-effort) models
 
 ### Recovery workflow (clean compatible machine)
 ```bash
-git clone git@github.com:crsuvo100-gif/MOON.git
-cd MOON
+git clone git@github.com:crsuvo100-gif/MOON-AI.git
+cd MOON-AI
 python -m venv .venv && .venv/bin/pip install -e .
 cp .env.example .env            # supply real secrets
 python -m moon install          # venv + dependencies (+ local models if Ollama present)

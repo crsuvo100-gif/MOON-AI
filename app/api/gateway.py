@@ -25,7 +25,7 @@ try:  # same gate as every /api endpoint
     from app.terminal_interface import TERMINAL_TOKEN, _token_ok
 except Exception:  # pragma: no cover - fallback guard
     TERMINAL_TOKEN = ""
-    def _token_ok(ws_or_headers):  # noqa: F811
+    def _token_ok(ws_or_headers: Any) -> bool:  # noqa: F811
         return bool(TERMINAL_TOKEN)
 
 logger = logging.getLogger(__name__)
@@ -86,7 +86,7 @@ def get_gateway_router() -> APIRouter:
             name=name, kind=kind, url=url,
             model=str(body.get("model", "")),
             scope=str(body.get("scope", "network.egress")),
-            permissions=list(body.get("permissions", [])),
+            permissions=tuple(str(p) for p in (body.get("permissions") or [])),
             credential_ref=str(body.get("credential_ref", "")),
             enabled=bool(body.get("enabled", True)),
         )
@@ -128,8 +128,8 @@ def get_gateway_router() -> APIRouter:
             return JSONResponse({"error": "invalid JSON body"}, status_code=400)
         status = str(body.get("status") or "unknown")
         gw.set_status(conn_id, status)
-        return JSONResponse({"name": conn_id, "status": gw.get(conn_id).last_status
-                             if gw.get(conn_id) else None})
+        rec = gw.get(conn_id)
+        return JSONResponse({"name": conn_id, "status": rec.last_status if rec else None})
 
     @router.post("/connections/{conn_id}/check")
     async def check_connection(request: Request, conn_id: str):
@@ -163,8 +163,9 @@ def get_gateway_router() -> APIRouter:
             gw.set_status(conn_id, "ok" if res.ok else f"error:{res.error or res.status}")
             detail = (res.data if isinstance(res.data, str)
                       else json.dumps(res.data, default=str)[:160])
+            rec = gw.get(conn_id)
             return JSONResponse({"name": conn_id, "ok": res.ok,
-                                 "detail": detail, "status": gw.get(conn_id).last_status})
+                                 "detail": detail, "status": rec.last_status if rec else None})
         except Exception as exc:  # noqa: BLE001
             gw.set_status(conn_id, f"error:{exc}")
             return JSONResponse({"name": conn_id, "ok": False,

@@ -22,6 +22,7 @@ import threading
 import time
 import uuid
 from pathlib import Path
+from typing import Literal
 
 from .event_bus import get_bus
 from .models import ExecutionRequest, ExecutionResult
@@ -154,7 +155,9 @@ class PythonExecutor:
             stderr_thread.join(timeout=1.0)
 
             duration = time.time() - start_time
-            status = "success" if exit_code == 0 else "failed"
+            status: Literal["success", "failed", "cancelled", "timed_out", "denied"] = (
+                "success" if exit_code == 0 else "failed"
+            )
 
             return ExecutionResult(
                 execution_id=execution_id,

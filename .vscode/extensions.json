@@ -9,9 +9,7 @@
     "ms-python.black-formatter",
     "ms-python.debugpy",
     "jagreehal.rundebug",
-    "omercnet.vscode-acp"
-  ],
-  "languages": [
-    "Python"
+    "omercnet.vscode-acp",
+    "qwenlm.qwen-code-vscode-ide-companion"
   ]
 }

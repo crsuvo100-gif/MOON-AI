@@ -1,12 +1,11 @@
 {
   "version": "0.2.0",
   "configurations": [
-    
     {
-      "name": "Run application",
+      "name": "MOON: Run",
       "type": "python",
       "request": "launch",
-      "program": "main.py",
+      "program": "${workspaceFolder}/main.py",
       "args": [
         "run"
       ],
@@ -14,6 +13,8 @@
       "env": {
         "PYTHONPATH": "${workspaceFolder}"
       },
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "console": "integratedTerminal",
       "purpose": [
         "debug"
       ]
@@ -22,11 +23,12 @@
       "name": "Run tests",
       "type": "python",
       "request": "launch",
-      "program": "pytest",
+      "module": "pytest",
       "args": [
         "-q"
       ],
       "cwd": "${workspaceFolder}",
+      "python": "${workspaceFolder}/.venv/bin/python",
       "console": "integratedTerminal",
       "purpose": [
         "debug"

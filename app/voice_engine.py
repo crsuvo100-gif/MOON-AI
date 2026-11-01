@@ -79,9 +79,9 @@ class VoiceEngine:
         self.voices_dir = VOICES_DIR
         self.voices_dir.mkdir(parents=True, exist_ok=True)
         self._cloned: dict[str, str] = self._load_registry()
-        self._xtts = None
-        self._kokoro = None
-        self._f5 = None
+        self._xtts: bool | None = None
+        self._kokoro: bool | None = None
+        self._f5: bool | None = None
         self._openai_key = (getattr(settings, "openai_api_key", "") or "") if settings else ""
         # Session breaker for cloud backends that are configured but dead
         # (e.g. quota-exhausted OpenAI key). Avoids a network round-trip on
@@ -193,9 +193,22 @@ class VoiceEngine:
 
     # -- registry -----------------------------------------------------------
     def _load_registry(self) -> dict[str, str]:
+        """Load cloned-voice names -> WAV paths.
+
+        Paths stored relative to ``voices/`` are resolved there, so a registry
+        committed in the repo stays valid after the project is cloned or moved
+        (a stale absolute path previously pointed at an old checkout).
+        """
         try:
             if VOICE_REGISTRY.exists():
-                return {k: v for k, v in json.loads(VOICE_REGISTRY.read_text()).items()}
+                raw = json.loads(VOICE_REGISTRY.read_text())
+                out: dict[str, str] = {}
+                for name, value in raw.items():
+                    path = Path(value)
+                    if not path.is_absolute():
+                        path = (VOICES_DIR / path).resolve()
+                    out[name] = str(path)
+                return out
         except Exception as exc:  # noqa: BLE001
             logger.warning("voice registry load failed: %s", exc)
         return {}
@@ -320,36 +333,6 @@ class VoiceEngine:
         # --- fallback: English espeak (writes something rather than nothing) ---
         logger.warning("no TTS backend for language '%s'; falling back to English", lang)
         return await self._espeak_speak(text, "en")
-
-    # -- backends ------------------------------------------------------------
-    def clone_voice(self, name: str, sample_b64: str, transcript: str = "") -> str:
-        """Store a user's voice sample and register it as a clone.
-
-        F5-TTS / XTTS use the sample as the speaker embedding for zero-shot
-        cloning. `transcript` is the text spoken in the reference sample
-        (improves F5-TTS clone fidelity; optional -- F5 tolerates an empty
-        transcript, XTTS does not require it).
-        """
-        if not name:
-            return "clone requires a name."
-        try:
-            raw = base64.b64decode(sample_b64)
-        except Exception:
-            return "Invalid audio sample (expected base64 WAV)."
-        path = self.voices_dir / f"{name}.wav"
-        path.write_bytes(raw)
-        self._cloned[name] = str(path)
-        # Persist the optional transcript so F5-TTS cloning is high-fidelity.
-        if transcript:
-            (self.voices_dir / f"{name}.txt").write_text(transcript, encoding="utf-8")
-        self._save_registry()
-        if self._f5_available() or self._xtts_available():
-            engine = "F5-TTS" if self._f5_available() else "XTTS-v2"
-            return (f"Cloned voice '{name}' from your sample using {engine}. "
-                    f"Moon can now speak using your voice (set 'voice set {name}').")
-        return (f"Stored voice sample for '{name}'. Cloning activates with a "
-                f"cloning engine installed (pip install f5-tts on Python 3.13+, "
-                f"or TTS on <3.12); sample saved at {path}.")
 
     # -- backends ------------------------------------------------------------
     def clone_voice(self, name: str, sample_b64: str, transcript: str = "") -> str:

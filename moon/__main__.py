@@ -155,8 +155,15 @@ def _cmd_build(args) -> int:
     project_dir = args.project_dir
     if project_dir is None:
         project_dir = "."
-    lang = args.lang or build_mod.detect_language(project_dir)
-    result = build_mod.scaffold(project_dir, lang)
+    # detect_language() raises on a non-existent path, so let scaffold() create
+    # the target first and detect the language itself when --lang is absent.
+    lang = args.lang or None
+    result = build_mod.scaffold(
+        project_dir,
+        lang,
+        out_dir=getattr(args, "out", None),
+        force=bool(getattr(args, "force", False)),
+    )
     print(f"[MOON-AI] built '{result.language}' project in {result.project}")
     print(f"[MOON-AI] generated {result.num_files} file(s)")
     if result.notes:

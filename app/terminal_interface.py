@@ -23,17 +23,19 @@ import subprocess
 import time
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any
-
-_START_TIME = time.time()
 from collections import deque
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware as _CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 from app.brain.orchestrator import Task
+from app.config.settings import get_settings as _get_settings
+
+_START_TIME = time.time()
 
 SETTINGS_JSON = None  # web/ removed; settings persistence removed with it
 
@@ -51,11 +53,6 @@ def _load_settings() -> dict:
     return dict(_DEFAULT_SETTINGS)
 
 app = FastAPI(title="MOON-AI Terminal", version="1.0.0")
-
-# CORS middleware — restrict to configured origins
-from fastapi.middleware.cors import CORSMiddleware as _CORSMiddleware
-
-from app.config.settings import get_settings as _get_settings
 
 app.add_middleware(
     _CORSMiddleware,
@@ -124,6 +121,16 @@ async def hud_alt():
 @app.get("/hud.{ext}")
 async def hud_catch(ext: str):
     return await ui_hud()
+
+# JSON theme tokens referenced by hud.html (`<link rel="stylesheet" href="/theme.json">`).
+# Served from the same apps/moon_ui dir as the HUD so the two always ship together.
+_THEME_PATH = _HUD_PATH.parent / "theme.json"
+
+@app.get("/theme.json")
+async def hud_theme():
+    if not _THEME_PATH.is_file():
+        return JSONResponse({"error": "theme.json not deployed"}, status_code=404)
+    return JSONResponse(json.loads(_THEME_PATH.read_text(encoding="utf-8")))
 
 # --- Remote-access authorization gate ----------------------------------------
 # When MOON-AI_TERMINAL_TOKEN / settings.terminal_access_token is set, the Terminal
@@ -205,9 +212,9 @@ async def _get_orchestrator():
 
 
 # ---- Live telemetry ring buffer + structured log sink (advanced HUD) ----
-_TELEM = deque(maxlen=240)          # rolling {t, cpu, ram, net, load}
+_TELEM: deque = deque(maxlen=240)          # rolling {t, cpu, ram, net, load}
 _LOG_FILE = Path(os.environ.get("MOON-AI_TERMINAL_LOG", "/tmp/moon_terminal.log"))
-_LOG_BUF = deque(maxlen=400)        # rolling backend log lines for the HUD
+_LOG_BUF: deque = deque(maxlen=400)        # rolling backend log lines for the HUD
 _telem_t = 0.0
 
 def _push_telemetry(orch):
@@ -904,6 +911,15 @@ async def api_health(request: Request):
     }, status_code=200 if all_ok else 503)
 
 
+# /health is advertised as a public health path (see _PUBLIC_PATHS) and used by
+# external probes/load balancers; alias it to the same handler as /api/health so
+# the documented probe URL does not 404.
+@app.get("/health")
+async def health_alias(request: Request):
+    """Alias of /api/health (public, documented health endpoint)."""
+    return await api_health(request)
+
+
 @app.get("/api/supervision")
 async def api_supervision(request: Request):
     """Spec 31/41: live agent supervision + execution states for the UI.
@@ -1197,7 +1213,6 @@ async def api_agent_run(agent_id: str, request: Request):
         # the real orchestrator so it uses MOON-AI's brain + tools + memory.
         orch = await _get_orchestrator()
         if agent_id in getattr(orch, "_agents", {}):
-            from app.models.task import Task
             t = Task.create(task or "hello", agent_name=agent_id)
             t = await orch.run_task(t)
             return JSONResponse({
@@ -1789,11 +1804,10 @@ async def ws_endpoint(ws: WebSocket):
                 # MOON-AI is always unlocked (lock mode removed). observe() is a
                 # no-op and orch._lock.locked is always False, so we skip the
                 # locked-branch entirely and run the real brain on every message.
-                unlock_notice = None
                 try:
-                    unlock_notice = orch._lock.observe(text)
+                    orch._lock.observe(text)
                 except Exception:
-                    unlock_notice = None
+                    pass
                 await send(type="assistant_start")
                 t0 = time.time()
                 # Always unlocked — run the real brain on the text.
@@ -1904,7 +1918,6 @@ async def ws_endpoint(ws: WebSocket):
                     return
                 _stop_requested = False
                 await send(type="assistant_start")
-                from app.models.task import Task
                 task = Task.create(data.get("command") or "", agent_name="auto")
                 t0 = time.time()
                 try:
@@ -1929,7 +1942,8 @@ async def ws_endpoint(ws: WebSocket):
                 await send(type="assistant_start")
                 await send(type="workflow", stage="tools", detail="linking agent brains")
                 ags = getattr(orch, "_agents", {})
-                names = [getattr(v, "name", k) for k, v in ags.items()] if isinstance(ags, dict) else list(ags)
+                names: list[Any] = (list(getattr(v, "name", k) for k, v in ags.items())
+                                    if isinstance(ags, dict) else list(ags))
                 names = [str(n) for n in names][:40]
                 out = (f"Connected {len(names)} agent brains to MOON-AI's main cortex:\n"
                        + ", ".join(names))
@@ -1954,8 +1968,8 @@ async def ws_endpoint(ws: WebSocket):
                 await send(type="assistant_start")
                 await send(type="workflow", stage="tools", detail="enumerating tools")
                 reg = getattr(orch._tools, "_registry", None)
-                names = reg.tool_names if reg and hasattr(reg, "tool_names") else []
-                out = f"{len(names)} tools registered:\n" + ", ".join(names)
+                names = list(reg.tool_names) if reg and hasattr(reg, "tool_names") else []
+                out = f"{len(names)} tools registered:\n" + ", ".join(str(n) for n in names)
                 _stream = _stream_text(out, yield_every=9999 if len(out) > 300 else 1)
                 for chunk in _stream:
                     await send(type="assistant_chunk", content=chunk)
@@ -2137,7 +2151,9 @@ async def ws_endpoint(ws: WebSocket):
                     parts = payload.split(None, 1)
                     cmd = parts[0].lower() if parts else ""
                     arg = parts[1].strip() if len(parts) > 1 else ""
-                    f = AgentFactory(); st = AgentStore(); ss = SkillSystem()
+                    f = AgentFactory()
+                    st = AgentStore()
+                    ss = SkillSystem()
                     if action == "agents":
                         if cmd in ("list", "ls", ""):
                             ags = f.list_agents()
@@ -2185,10 +2201,10 @@ async def ws_endpoint(ws: WebSocket):
                                 # Prefer the LIVE orchestrator registry (real tool count).
                                 orch = await _get_orchestrator()
                                 reg = getattr(getattr(orch, "_tools", None), "_registry", None)
-                                names = reg.tool_names if reg is not None else []
+                                names = list(reg.tool_names) if reg is not None else []
                                 if not names:
                                     from app.tools.registry import ToolRegistry
-                                    names = ToolRegistry().tool_names
+                                    names = list(ToolRegistry().tool_names)
                                 out = f"TOOLS ({len(names)} registered): " + (", ".join(names[:30]) or "none")
                             except Exception as e:  # noqa: BLE001
                                 out = f"TOOLS: registry unavailable ({e})."
@@ -2242,7 +2258,8 @@ async def ws_endpoint(ws: WebSocket):
                     parts = payload.split(None, 1)
                     cmd = parts[0].lower() if parts else "status"
                     arg = parts[1].strip() if len(parts) > 1 else ""
-                    f = AgentFactory(); lc = AgentLifecycle()
+                    f = AgentFactory()
+                    lc = AgentLifecycle()
                     if cmd == "create":
                         if not arg:
                             out = "[factory] usage: factory create \"<capability>\""
@@ -2567,7 +2584,7 @@ try:
     )
 
     _CYCLONE_OK = True
-    _CYCLONE_DIR = str(_resolve_cyclone_dir())
+    _CYCLONE_DIR: str | None = str(_resolve_cyclone_dir())
     app.include_router(get_cyclone_router(), prefix="/cyclone")
     app.mount("/cyclone", get_cyclone_static_files())
     # Route CYCLONE's /api/moon/* surface into MOON's own FastAPI runtime, so

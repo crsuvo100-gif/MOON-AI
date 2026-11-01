@@ -8,11 +8,8 @@ Telegram + terminal authz tests remain.
 from __future__ import annotations
 
 import asyncio
-import importlib
-import os
 import types
 
-import pytest
 
 
 # --------------------------------------------------------------------------- #
@@ -66,7 +63,6 @@ def _make_bot():
     # Inject fake telegram lib
     fake_telegram = types.ModuleType("telegram")
     fake_telegram.Bot = lambda token=None: _FakeBot()
-    import sys
     monkeypatch_telegram = fake_telegram
     return bot, monkeypatch_telegram
 

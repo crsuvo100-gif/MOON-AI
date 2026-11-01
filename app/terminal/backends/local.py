@@ -10,7 +10,6 @@ import os
 import shlex
 import subprocess
 import threading
-import time
 import uuid
 from collections.abc import Callable
 from pathlib import Path
@@ -51,8 +50,6 @@ class LocalBackend:
                 cmd = shlex.split(request.command)
             except ValueError:
                 cmd = ["/bin/sh", "-c", request.command]
-
-        start_time = time.time()
 
         if on_output:
             # Streaming mode

@@ -26,7 +26,7 @@ class BrowserTool(BaseTool):
             # Prevent GLib/GObject errors on Linux: force X11 backend instead of GTK.
             # Chromium's GTK integration emits "instance '0x... has no handler with id"
             # when launched on Linux without a compatible GTK stack; X11 avoids it.
-            env = {
+            env: dict[str, str | float | bool] = {
                 "GDK_BACKEND": "x11",
                 "GTK_BACKEND": "x11",
                 "MOZ_ENABLE_WAYLAND": "0",

@@ -160,7 +160,7 @@ class DeepReflection:
         """Retrieve learned lessons, optionally filtered by task type."""
         lessons = self._lessons
         if task_type:
-            lessons = [l for l in lessons if task_type in l.get("task", "")]
+            lessons = [lesson for lesson in lessons if task_type in lesson.get("task", "")]
         return lessons[-limit:]
 
     def clear_lessons(self) -> None:

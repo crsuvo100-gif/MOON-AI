@@ -33,18 +33,15 @@ from app.agents.professional.self_healing import (
 from app.agents.professional.proactive_suggestions import (
     ProactiveSuggestions,
     SuggestionType,
-    SuggestionPriority,
 )
 from app.agents.professional.multi_model_consensus import (
     MultiModelConsensus,
-    ModelResponse,
     ConsensusStrategy,
     ConfidenceLevel,
 )
 from app.agents.professional.execution_analytics import (
     ExecutionAnalytics,
     ExecutionRecord,
-    MetricType,
 )
 from app.agents.professional.adaptive_prompts import (
     AdaptivePrompts,
@@ -166,7 +163,7 @@ async def test_task_queue_deduplication():
 @pytest.mark.asyncio
 async def test_task_queue_retry():
     queue = TaskQueue()
-    task_id = await queue.submit("test")
+    await queue.submit("test")
     task = await queue.get_next(timeout=1.0)
     assert task is not None
     await queue.fail(task.task_id, "error")
@@ -504,7 +501,7 @@ async def test_session_handoff():
 @pytest.mark.asyncio
 async def test_session_cleanup_expired():
     sc = SessionContinuity(storage_path="/tmp/test_sessions", ttl=0.01)
-    session = await sc.create_session()
+    await sc.create_session()
     await asyncio.sleep(0.02)
     removed = await sc.cleanup_expired()
     assert removed >= 1

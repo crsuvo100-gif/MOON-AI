@@ -5,7 +5,6 @@ from app.agents.supervision_dashboard import (
     AgentDashboardEntry,
     AgentStatus,
     AgentSupervisionDashboard,
-    DashboardState,
     get_dashboard,
 )
 

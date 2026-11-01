@@ -1,10 +1,10 @@
 """Tests for expanded agent roster + per-agent brains + advanced workflow."""
 
+import asyncio
+
 import pytest
 
 pytestmark = pytest.mark.live  # requires a live model backend (Ollama)
-
-import asyncio
 
 
 async def _make_orch():

@@ -140,26 +140,29 @@ class Orchestrator:
         self._agents: dict[str, AgentCard] = {}
         self._agent_brains: dict[str, Any] = {}
         self._agent_model_overrides: dict[str, str | None] = {}
-        self._consolidator = None
-        self._advanced_memory = None
-        self._advanced_memory_maintenance_task = None
-        self._advanced_agents = None
-        self._advanced_brain = None
-        self._cognitive_loop = None
-        self._agent_workflow = None
-        self._skill_orchestrator = None
-        self._context_orchestrator = None
-        self._professional_orchestrator = None
+        # Lazily imported optional subsystems: their concrete classes are
+        # imported inside setup()/lazily to avoid import cycles, so they are
+        # annotated as Any here (the class identity is only known at runtime).
+        self._consolidator: Any = None
+        self._advanced_memory: Any = None
+        self._advanced_memory_maintenance_task: Any = None
+        self._advanced_agents: Any = None
+        self._advanced_brain: Any = None
+        self._cognitive_loop: Any = None
+        self._agent_workflow: Any = None
+        self._skill_orchestrator: Any = None
+        self._context_orchestrator: Any = None
+        self._professional_orchestrator: Any = None
         # Cognitive memory infrastructure (spec 28/61/62)
-        self._cognitive_memory = None
-        self._context_engine = None
-        self._sync_engine = None
-        self._memory_health = None
+        self._cognitive_memory: Any = None
+        self._context_engine: Any = None
+        self._sync_engine: Any = None
+        self._memory_health: Any = None
         # spec 17/18/19/37: provider-independent brain routing + recorded fallback
-        self._brain_router = None
+        self._brain_router: Any = None
         # spec 31/36: live agent supervision + bounded recovery decisions
-        self._supervisor = None
-        self._recovery_policy = None
+        self._supervisor: Any = None
+        self._recovery_policy: Any = None
         # Shared lock state across CLI + web backend + WebSocket so an unlock
         # in ANY surface (HUD, `moon run`, voice, TUI) persists for ALL others.
         if lock_state_file is None:
@@ -241,7 +244,6 @@ class Orchestrator:
         # Tried after the local endpoint and the primary OpenAI fallback. OpenRouter
         # is OpenAI-compatible, so it reuses the LLMService client shape. Key comes
         # from OPENROUTER_API_KEY (gitignored .env, never logged).
-        self._llm_fallback2: LLMService | None = None
         if self._settings.openrouter_api_key.strip():
             self._llm_fallback2 = LLMService(
                 base_url=self._settings.openrouter_base_url.strip() or "https://openrouter.ai/api/v1",
@@ -259,7 +261,6 @@ class Orchestrator:
         # Tried after local, OpenAI, and OpenRouter. Hugging Face's router speaks
         # the OpenAI-compatible /v1/chat/completions shape. Key from
         # HUGGINGFACE_API_KEY (gitignored .env, never logged).
-        self._llm_fallback3: LLMService | None = None
         if self._settings.huggingface_api_key.strip():
             self._llm_fallback3 = LLMService(
                 base_url=self._settings.huggingface_base_url.strip() or "https://router.huggingface.co",
@@ -805,6 +806,7 @@ class Orchestrator:
             return
         try:
             self._settings.model_name = model_name
+            assert self._llm is not None
             self._llm.model_name = model_name  # type: ignore[attr-defined]
             logger.info("main model switched -> %s", model_name)
         except Exception as e:  # noqa: BLE001
@@ -1093,6 +1095,7 @@ class Orchestrator:
         # build() returns a list[Message]; _complete_with_fallback accepts a
         # list[Message]/list[ChatMessage] or a plain string. (Passing ctx.prompt
         # was a bug -- the list has no .prompt attribute and crashed the path.)
+        assert self._context is not None
         ctx = await self._context.build(task=task, history=self._history, system_override=sys_p)
         # spec 49: the fast path must respect the context budget too.
         try:
@@ -1306,9 +1309,10 @@ class Orchestrator:
         # --- Advanced: parallel fan-out for coordinator on multi-part goals ---
         if agent.name == "coordinator":
             try:
+                assert self._planner is not None
                 planned = await self._planner.plan(task.prompt)
                 if planned:
-                    task._decomposition = planned  # store for transparency
+                    setattr(task, "_decomposition", planned)  # store for transparency
             except Exception:  # noqa: BLE001
                 pass
         if agent.name == "coordinator" and len(self._split_subtasks(task.prompt)) > 1:
@@ -1474,6 +1478,7 @@ class Orchestrator:
                 _emit("VERIFICATION_STARTED", execution_id=task.id, agent_id=agent.name)
             except Exception:  # noqa: BLE001
                 pass
+            assert self._validator is not None
             validation = await self._validator.validate(task.prompt, final_text)
             try:
                 _emit("VERIFICATION_PASSED" if validation.valid else "VERIFICATION_FAILED",
@@ -1494,6 +1499,7 @@ class Orchestrator:
                     )
                 except Exception:  # noqa: BLE001
                     pass
+            assert self._reflection is not None
             reflection = await self._reflection.reflect(task.prompt, final_text)
             if on_event:
                 try:
@@ -1527,6 +1533,7 @@ class Orchestrator:
                     logger.info("self-consistency skipped: %s", exc)
             try:
                 lesson = "; ".join(reflection.improvements) if reflection.improvements else ""
+                assert self._memory is not None
                 self._memory.episodic.record(
                     goal=task.prompt, outcome=final_text[:1000], lesson=lesson, success=reflection.satisfactory,
                 )
@@ -1566,6 +1573,7 @@ class Orchestrator:
                 except Exception as exc:  # noqa: BLE001
                     logger.warning("agent brain remember failed: %s", exc)
 
+            assert self._formatter is not None
             clean = self._formatter.format(final_text)
             # --- spec 26/27/28/39/40: aggregate + conflict-check + SYNTHESIZE ---
             # The Main Brain must never report a single agent's raw text as if it
@@ -1604,6 +1612,7 @@ class Orchestrator:
             except Exception as exc:  # noqa: BLE001
                 logger.info("result aggregation skipped: %s", exc)
             task.complete(clean, data={"tokens_used": tokens, "issues": validation.issues, "agent": agent.name}, tokens_used=tokens)
+            assert self._memory is not None
             await self._memory.remember(clean, long_term=False)
             # --- Cognitive memory: store task result (spec 61/62) ---
             if self._cognitive_memory is not None:
@@ -1915,13 +1924,11 @@ class Orchestrator:
         assert self._llm is not None and self._tools is not None and self._context is not None
         retrieved = await self._memory.semantic_recall(task.prompt) if self._memory else []
         # Cognitive memory retrieval (spec 20/21/22/24)
-        cog_hit_count = 0
         if self._cognitive_memory is not None:
             try:
                 cog_hits = self._cognitive_memory.search(
                     task.prompt, top_k=8, agent_id=agent.name,
                 )
-                cog_hit_count = len(cog_hits)
                 # spec 24/25: use ContextEngine to build a budgeted context block
                 if self._context_engine is not None and cog_hits:
                     try:
@@ -2067,7 +2074,7 @@ class Orchestrator:
                     })
             except Exception as exc:  # noqa: BLE001
                 logger.debug("Context self-function failed (skipped): %s", exc)
-        messages = await self._context.build(
+        messages: list[Any] = await self._context.build(
             task=task, history=self._history, retrieved=retrieved, agent=agent,
             system_override=system_override,
         )
@@ -2159,7 +2166,6 @@ class Orchestrator:
             except Exception as exc:
                 logger.debug("Cognitive loop failed (continuing with standard loop): %s", exc)
 
-        resp: Any = None
         for _ in range(_MAX_TOOL_ITERATIONS):
             # Prefer the agent's OWN model (per-agent models) for its function;
             # fall back to the shared/strong routing otherwise.
@@ -2556,6 +2562,7 @@ class Orchestrator:
             _emit("TOOL_STARTED", execution_id=task.id, agent_id=agent.name, detail=chosen)
         except Exception:  # noqa: BLE001
             pass
+        assert self._tools is not None
         result = await self._tools.run(chosen, args, agent=agent)
         out = str(result.output)
         try:

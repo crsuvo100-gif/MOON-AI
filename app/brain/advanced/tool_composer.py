@@ -78,8 +78,8 @@ class ToolComposer:
             ToolChainResult with all intermediate results.
         """
         if isinstance(chain, str):
-            chain = self._chains.get(chain)
-            if chain is None:
+            found = self._chains.get(chain)
+            if found is None:
                 return ToolChainResult(
                     chain_name="unknown",
                     success=False,
@@ -87,6 +87,7 @@ class ToolComposer:
                     final_output=f"Chain '{chain}' not found",
                     execution_time=0.0,
                 )
+            chain = found
 
         start_time = asyncio.get_event_loop().time()
         results: list[dict[str, Any]] = []

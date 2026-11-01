@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-import time
 
 import pytest
 
@@ -11,17 +9,14 @@ from app.memory import backup as B
 from app.memory.context_engine import (
     ContextEngine,
     MEMORY_BLOCK_HEADER,
-    dedupe_items,
     estimate_tokens,
 )
 from app.memory.health import MemoryHealthService
 from app.memory.record import (
     Importance,
     MemoryRecord,
-    MemoryType,
     Scope,
     SourceType,
-    SyncStatus,
 )
 from app.memory.store import LocalMemoryStore
 from app.memory.sync import (
@@ -111,7 +106,7 @@ def test_backup_rotation(store, tmp_path, monkeypatch) -> None:
     """spec 47: rotation must bound storage."""
     monkeypatch.setenv("MOON-AI_BACKUP_PATH", str(tmp_path / "bk"))
     for i in range(5):
-        p = B.create_backup(store, name=f"moon_memory_test_{i:02d}", keep=3)
+        B.create_backup(store, name=f"moon_memory_test_{i:02d}", keep=3)
     backups = B.list_backups()
     assert len(backups) <= 3, f"rotation failed: {len(backups)} kept"
 

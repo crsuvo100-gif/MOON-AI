@@ -28,13 +28,11 @@ from __future__ import annotations
 
 import json
 import time
-from pathlib import Path
 
 import pytest
 
 from app.memory.backup import create_backup, export_json, export_jsonl, import_records, list_backups, restore_backup
 from app.memory.candidate import (
-    CandidatePipeline,
     MemoryPolicyEngine,
     classify,
     detect_candidate,
@@ -55,13 +53,10 @@ from app.memory.record import (
     SyncStatus,
 )
 from app.memory.retrieval import HybridRetriever, RetrievalCache, keyword_score, recency_score, rewrite_query, scope_score
-from app.memory.security import detect_secret, is_secret, sanitize
-from app.memory.store import LocalMemoryStore, MemoryStore, default_db_path
+from app.memory.security import detect_secret, sanitize
+from app.memory.store import LocalMemoryStore
 from app.memory.sync import (
-    ChangeEntry,
     ChangeLog,
-    CloudMemoryProvider,
-    Conflict,
     ConflictEngine,
     ConflictType,
     NullCloudProvider,

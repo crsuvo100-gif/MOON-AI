@@ -81,12 +81,15 @@ class Voice:
             return None
 
     async def _female_speak(self, text: str) -> str:
+        espeak = self._espeak
+        if not espeak:
+            raise RuntimeError("espeak not available")
         fd, raw = tempfile.mkstemp(suffix=".wav")
         os.close(fd)
         # 1) espeak with explicit FEMALE voice + raised pitch + softer intonation
         subprocess.run(
             [
-                self._espeak,
+                espeak,
                 "-v", self.espeak_voice,
                 "-s", str(self.rate),
                 "-p", "60",          # higher pitch baseline (espeak 0-99)
@@ -158,9 +161,13 @@ class Voice:
             frames = []
             for _ in range(int(16000 / 8000 * seconds)):
                 frames.append(stream.read(8000, exception_on_overflow=False))
-            stream.stop_stream(); stream.close(); pa.terminate()
+            stream.stop_stream()
+            stream.close()
+            pa.terminate()
             with wave.open(rec, "wb") as wf:
-                wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(16000)
+                wf.setnchannels(1)
+                wf.setsampwidth(2)
+                wf.setframerate(16000)
                 wf.writeframes(b"".join(frames))
             recog = vosk.KaldiRecognizer(vosk.Model(self._vosk_model), 16000)
             with wave.open(rec, "rb") as wf:

@@ -212,8 +212,6 @@ class ContextCompressor:
         target_tokens: int | None,
         original_tokens: int,
     ) -> CompressionResult:
-        """Compress old items first, keep recent items intact."""
-        target = target_tokens or int(original_tokens * self._target_ratio)
 
         # Split into recent (keep) and old (compress)
         mid = len(items) // 2
@@ -239,7 +237,7 @@ class ContextCompressor:
 
     def _get_content(self, item: Any) -> str:
         if isinstance(item, dict):
-            return item.get("content", item.get("chunk", ""))
+            return str(item.get("content", item.get("chunk", "")))
         return getattr(item, "content", "")
 
     def _get_relevance(self, item: Any) -> float:

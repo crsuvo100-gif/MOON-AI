@@ -10,8 +10,13 @@ from __future__ import annotations
 from app.brain.orchestrator import Orchestrator
 from app.config import settings
 
+from typing import Any
+
+integration: Any
 try:
-    from app.runtime import integration  # type: ignore
+    from app.runtime import integration as _integration  # type: ignore
+
+    integration = _integration
 except Exception:  # noqa: BLE001
     integration = None
 

@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from app.memory.task_record import TaskRecord, TaskStatus
+from app.memory.task_record import TaskRecord
 
 # Canonical project root (MOON source folder).  All local task JSONs land here.
 _DEFAULT_PROJECT_ROOT = Path("/home/meow/Projects/MOON")

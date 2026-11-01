@@ -131,11 +131,13 @@ class CapabilityManager:
         while self.repair.should_retry(attempt):
             attempt += 1
             if spec is not None:
-                # Route installs through sandbox when possible
+                # Best-effort sandbox install; capability outcomes are recorded
+                # through the Installer (the sandbox result has its own shape).
                 try:
-                    res = await self.sandbox.install(spec)
-                except Exception:
-                    res = self.installer.install(spec)
+                    self.sandbox.install(spec)
+                except Exception:  # noqa: BLE001
+                    pass
+                res = self.installer.install(spec)
                 last_err = res.detail
                 if res.ok:
                     vr = self.verifier.verify(spec["type"], spec["verify"])
@@ -151,9 +153,10 @@ class CapabilityManager:
                     pkg = plan.action.split(":", 1)[1]
                     if pkg and pkg != "unknown":
                         try:
-                            await self.sandbox.install_pip(pkg)
-                        except Exception:
-                            self.installer.install_pip(pkg)
+                            self.sandbox.install_pip(pkg)
+                        except Exception:  # noqa: BLE001
+                            pass
+                        self.installer.install_pip(pkg)
                         await self.repair.backoff(attempt)
                         continue
                 if plan.action == "retry":
@@ -177,8 +180,9 @@ class CapabilityManager:
     # ------------------------------------------------------------------
     async def _acquire_from_github(self, name: str) -> AcquisitionResult | None:
         # Does an equivalent tool already exist in the live registry/tool set?
-        if self.registry.has(name):
-            return AcquisitionResult(name, "cached", self.registry.get(name).source)
+        existing = self.registry.get(name)
+        if existing is not None:
+            return AcquisitionResult(name, "cached", existing.source)
         try:
             from app.tools.registry import ToolRegistry
         except Exception:  # noqa: BLE001

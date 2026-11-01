@@ -1,4 +1,4 @@
-import os
+import asyncio
 import sys
 
 sys.path.insert(0, '.')
@@ -22,5 +22,4 @@ async def main():
     await o.teardown()
     sys.exit(0 if ok else 1)
 
-import asyncio
 asyncio.run(main())

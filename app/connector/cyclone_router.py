@@ -34,7 +34,6 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 import shutil
 import threading
 import uuid
@@ -49,11 +48,9 @@ from pydantic import BaseModel, Field
 from app.config.settings import get_settings
 from app.agents.registry import get_registry
 from app.runtime.task_analyzer import TaskAnalyzer
-from app.runtime.goal_manager import Goal, GoalManager
+from app.runtime.goal_manager import GoalManager
 from app.runtime.agent_router import AgentRouter
 from app.tools.registry import ToolRegistry
-from app.tools.base import BaseTool
-from app.memory.knowledge_base import KnowledgeBase
 
 logger = logging.getLogger(__name__)
 
@@ -178,9 +175,8 @@ def get_cyclone_compatible_router() -> APIRouter:
     registry = get_registry()
     tool_registry = ToolRegistry()
     analyzer = TaskAnalyzer()
-    goal_manager = GoalManager()
+    GoalManager()
     agent_router = AgentRouter()
-    knowledge_base = KnowledgeBase()
 
     state_store = _StateStore("workflows.json")
     bindings_store = _StateStore("bindings.json")
@@ -208,11 +204,10 @@ def get_cyclone_compatible_router() -> APIRouter:
              "huggingface_model", "huggingface_base_url", "huggingface_api_key"),
         ]
         presets: list[dict[str, str]] = []
-        config: dict[str, str] = {}
+        config: dict[str, Any] = {}
         for ptype, label, model_f, base_f, key_f in fields:
             model = getattr(settings, model_f, "")
             base = getattr(settings, base_f, "")
-            key = getattr(settings, key_f, "")
             if model or base:
                 presets.append({
                     "id": ptype,
@@ -274,7 +269,7 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     # ---- GET /health ---------------------------------------------------------
 
-    async def health_handler(request: Request) -> dict[str, Any]:
+    async def health_handler(request: Request) -> Any:
         return {
             "ok": True,
             "node": "python-" + __import__("sys").version.split()[0],
@@ -291,12 +286,12 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     # ---- GET /providers -------------------------------------------------------
 
-    async def providers_handler(request: Request) -> dict[str, Any]:
+    async def providers_handler(request: Request) -> Any:
         return _provider_config()
 
     # ---- POST /providers ------------------------------------------------------
 
-    async def providers_save_handler(payload: ProviderConfig) -> dict[str, Any]:
+    async def providers_save_handler(payload: ProviderConfig) -> Any:
         # Only in-memory: MOON never persists secrets to disk.
         for p in _provider_presets():
             if p["id"] == payload.provider:
@@ -314,7 +309,7 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     # ---- GET /agent-bindings ---------------------------------------------------
 
-    async def agent_bindings_handler(request: Request) -> dict[str, Any]:
+    async def agent_bindings_handler(request: Request) -> Any:
         return _bindings_persisted()
 
     # ---- POST /agent-bindings ---------------------------------------------------
@@ -322,7 +317,7 @@ def get_cyclone_compatible_router() -> APIRouter:
     async def agent_bindings_save_handler(
         request: Request,
         payload: list[AgentBindingRole] = Body(..., embed=True),
-    ) -> dict[str, Any]:
+    ) -> Any:
         return _bindings_from_request(payload)
 
     # ---------------------------------------------------------------------------
@@ -331,14 +326,13 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     # ---- POST /agents ---------------------------------------------------------
 
-    async def agents_handler(payload: AgentsRequest) -> dict[str, Any]:
+    async def agents_handler(payload: AgentsRequest) -> Any:
         goal = payload.goal or "Investigate the workspace and report findings."
         agents_out: list[dict[str, str]] = []
         try:
             spec = analyzer.analyze(goal)
             selected = agent_router.route(spec)
             for agent_name in selected[:4]:
-                persona = _WORKSPACE_ROOT / "app" / "agents" / "persona.py"
                 model = settings.openai_model or "gpt-4o-mini"
                 result = f"[CYCLONE] {agent_name} ran on {model} for: {goal[:80]}"
                 # Tie into real MOON agent dispatch where available.
@@ -365,7 +359,7 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     async def workflows_create_handler(
         payload: WorkflowCreate,
-    ) -> dict[str, Any]:
+    ) -> Any:
         workflow_id = "wf_" + uuid.uuid4().hex[:10]
         steps = payload.steps or [
             WorkflowStep(id="s1", title="Clarify scope and success criteria"),
@@ -389,7 +383,7 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     # ---- GET /workflows -------------------------------------------------------
 
-    async def workflows_list_handler(request: Request) -> dict[str, Any]:
+    async def workflows_list_handler(request: Request) -> Any:
         items = state_store.get("workflows", {})
         return {"workflows": list(items.values())}
 
@@ -397,7 +391,7 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     async def workflows_action_handler(
         workflow_id: str, payload: WorkflowAction
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | responses.JSONResponse:
         wf = _workflows.get(workflow_id)
         if not wf:
             return responses.JSONResponse(
@@ -446,7 +440,7 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     # ---- GET /fs ---------------------------------------------------------------
 
-    async def fs_list_handler(request: Request) -> dict[str, Any]:
+    async def fs_list_handler(request: Request) -> Any:
         path = request.query_params.get("path", ".")
         try:
             root = _resolve_safe_path(path)
@@ -464,7 +458,7 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     # ---- GET /read --------------------------------------------------------------
 
-    async def read_file_handler(request: Request) -> dict[str, Any]:
+    async def read_file_handler(request: Request) -> Any:
         path = request.query_params.get("path", "")
         try:
             root = _resolve_safe_path(path)
@@ -477,7 +471,7 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     # ---- GET /search -------------------------------------------------------------
 
-    async def search_handler(request: Request) -> dict[str, Any]:
+    async def search_handler(request: Request) -> Any:
         query = request.query_params.get("q", "")
         if not query:
             return {"query": "", "count": 0, "results": []}
@@ -502,13 +496,13 @@ def get_cyclone_compatible_router() -> APIRouter:
                             "text": line.strip(),
                         })
                         break  # de-dupe per file (first hit)
-        except Exception as exc:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             logger.exception("search failed")
         return {"query": query, "count": len(results), "results": results[:500]}
 
     # ---- POST /diff --------------------------------------------------------------
 
-    async def diff_handler(payload: DiffRequest) -> dict[str, Any]:
+    async def diff_handler(payload: DiffRequest) -> Any:
         try:
             root = _resolve_safe_path(payload.path)
         except ValueError as exc:
@@ -534,7 +528,7 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     # ---- POST /write ---------------------------------------------------------------
 
-    async def write_handler(payload: DiffRequest) -> dict[str, Any]:
+    async def write_handler(payload: DiffRequest) -> Any:
         try:
             root = _resolve_safe_path(payload.path)
         except ValueError as exc:
@@ -552,7 +546,7 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     # ---- POST /rollback --------------------------------------------------------------
 
-    async def rollback_handler(payload: RollbackRequest) -> dict[str, Any]:
+    async def rollback_handler(payload: RollbackRequest) -> Any:
         try:
             root = _resolve_safe_path(payload.path)
         except ValueError as exc:
@@ -579,7 +573,7 @@ def get_cyclone_compatible_router() -> APIRouter:
 
     # ---- GET /persistence -------------------------------------------------------
 
-    async def persistence_handler(request: Request) -> dict[str, Any]:
+    async def persistence_handler(request: Request) -> Any:
         backup_limit = 10
         try:
             backup_dir = _WORKSPACE_ROOT / "backups"

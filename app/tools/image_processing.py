@@ -23,7 +23,7 @@ class ImageProcessingTool(BaseTool):
         try:
             from PIL import Image
 
-            img = Image.open(path)
+            img: Any = Image.open(path)
             if action == "info":
                 return f"size={img.size} mode={img.mode}"
             if action == "resize":

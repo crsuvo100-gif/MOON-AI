@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from app.runtime.event_bus import bus, EventType
+from app.runtime.event_bus import bus
 from app.runtime.integration import emit
 
 

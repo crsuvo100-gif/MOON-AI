@@ -127,7 +127,7 @@ def _build_capability_registry():
     # Models (real model manager)
     try:
         from app.brain.agent_model_manager import AgentModelManager
-        mgr = AgentModelManager(
+        AgentModelManager(
             base_url=get_settings().model_base_url,
             api_key=get_settings().model_api_key,
             default_model=get_settings().model_name,
@@ -292,23 +292,18 @@ def get_interface_router():
     async def diagnostics(request: Request):
         if not _auth_ok(dict(request.headers)):
             return JSONResponse({"detail": "Unauthorized"}, status_code=401)
-        try:
-            from app.terminal_interface import _diagnostics_snapshot
-            return JSONResponse(_diagnostics_snapshot())
-        except Exception:
-            # Fallback: build diagnostics from real pieces so the endpoint never
-            # returns a 500 merely because one snapshot helper is unavailable.
-            from app.memory.health import MemoryHealthService
-            mgr = MemoryHealthService()
-            report = mgr.check()
-            return JSONResponse({
-                "version": _load_version(),
-                "memory": report.to_dict(),
-                "settings": {
-                    "model_base_url": get_settings().model_base_url,
-                    "model_name": get_settings().model_name,
-                },
-            })
+        # Build diagnostics from real pieces so the endpoint never returns a 500.
+        from app.memory.health import MemoryHealthService
+        mgr = MemoryHealthService()
+        report = mgr.check()
+        return JSONResponse({
+            "version": _load_version(),
+            "memory": report.to_dict(),
+            "settings": {
+                "model_base_url": get_settings().model_base_url,
+                "model_name": get_settings().model_name,
+            },
+        })
 
     # GET /version
     @router.get("/version")

@@ -12,7 +12,6 @@ import os
 import shutil
 import subprocess
 import threading
-import time
 import uuid
 from collections.abc import Callable
 from pathlib import Path
@@ -100,8 +99,6 @@ class SSHBackend:
                 "timed_out": False,
             }
 
-        start_time = time.time()
-
         try:
             if on_output:
                 # Streaming mode
@@ -122,7 +119,7 @@ class SSHBackend:
                         assert stdout is not None
                         for line in stdout:
                             stdout_parts.append(line)
-                            if on_output:
+                            if on_output is not None:
                                 try:
                                     on_output(line)
                                 except Exception:
@@ -136,7 +133,7 @@ class SSHBackend:
                         assert stderr is not None
                         for line in stderr:
                             stderr_parts.append(line)
-                            if on_output:
+                            if on_output is not None:
                                 try:
                                     on_output(line)
                                 except Exception:
@@ -168,16 +165,16 @@ class SSHBackend:
                 }
             else:
                 # Capture mode
-                proc = subprocess.run(
+                completed = subprocess.run(
                     args,
                     capture_output=True,
                     text=True,
                     timeout=request.timeout,
                 )
                 return {
-                    "exit_code": proc.returncode,
-                    "stdout": proc.stdout,
-                    "stderr": proc.stderr,
+                    "exit_code": completed.returncode,
+                    "stdout": completed.stdout,
+                    "stderr": completed.stderr,
                     "pid": None,
                     "timed_out": False,
                 }

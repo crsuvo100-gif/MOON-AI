@@ -29,5 +29,21 @@
     }
   },
   "workbench.editor.wrapTabs": true,
-  "python.defaultInterpreterPath": ".venv/bin/python"
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "workbench.editor.enablePreviewFromCodeNavigation": true,
+  "workbench.editor.enablePreviewFromQuickOpen": true,
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.editor.limit.enabled": true,
+  "workbench.editor.limit.excludeDirty": true,
+  "workbench.editor.limit.perEditorGroup": true,
+  "workbench.editor.pinnedTabsOnSeparateRow": true,
+  "workbench.editor.preferHistoryBasedLanguageDetection": true,
+  "workbench.editor.revealIfOpen": true,
+  "workbench.editor.scrollToSwitchTabs": true,
+  "workbench.editor.sharedViewState": true,
+  "thunder-client.previewFeatures": true
 }

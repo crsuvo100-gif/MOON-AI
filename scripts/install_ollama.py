@@ -53,8 +53,8 @@ def ensure_binary():
     if path:
         print(f"[OK] ollama CLI on PATH: {path}")
         return True
-    print(f"[WARN] ollama CLI NOT on PATH. Install: apt install ollama (Debian) "
-          f"or https://ollama.com/download")
+    print("[WARN] ollama CLI NOT on PATH. Install: apt install ollama (Debian) "
+          "or https://ollama.com/download")
     return False
 
 
@@ -113,9 +113,9 @@ def ensure_model(model=DEFAULT_MODEL):
 def main():
     print("== MOON-AI OLLAMA BACKEND SERVICE INSTALL ==")
     binary_ok = ensure_binary()
-    running_ok = ensure_running()
-    path_ok = ensure_on_path()
-    model_ok = ensure_model(os.environ.get("OLLAMA_MODEL_DEFAULT", DEFAULT_MODEL))
+    ensure_running()
+    ensure_on_path()
+    ensure_model(os.environ.get("OLLAMA_MODEL_DEFAULT", DEFAULT_MODEL))
     print("== END ==")
     # Exit 0: this is best-effort infra; a warning above is not a hard failure.
     # Only hard-fail when the CLI itself is missing.

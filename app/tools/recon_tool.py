@@ -26,7 +26,7 @@ class ReconTool(BaseTool):
         # Passive DNS
         try:
             infos = socket.getaddrinfo(target, None)
-            ips = sorted({i[4][0] for i in infos})
+            ips = sorted({str(i[4][0]) for i in infos})
             out.append("A/AAAA: " + ", ".join(ips))
         except Exception as exc:  # noqa: BLE001
             out.append(f"DNS resolve failed: {exc}")
@@ -34,7 +34,7 @@ class ReconTool(BaseTool):
         if shutil.which("whois"):
             try:
                 r = subprocess.run(["whois", target], capture_output=True, text=True, timeout=20)
-                lines = [l for l in r.stdout.splitlines() if any(k in l for k in ("NetRange", "Organization", "OrgName", "Country", "Registrar"))]
+                lines = [line for line in r.stdout.splitlines() if any(k in line for k in ("NetRange", "Organization", "OrgName", "Country", "Registrar"))]
                 out.append("WHOIS: " + " | ".join(lines[:5]))
             except Exception as exc:  # noqa: BLE001
                 out.append(f"whois failed: {exc}")

@@ -345,7 +345,7 @@ class LocalMemoryStore(MemoryStore):
                 out[tid] = self._task_from_memory(rec)
         return out
 
-    def list_tasks(self, *, project_id: str = "MOON", status: TaskStatus | None = None, limit: int = 50, offset: int = 0) -> list[TaskRecord]:
+    def list_tasks(self, *, project_id: str = "MOON", status: str | TaskStatus | None = None, limit: int = 50, offset: int = 0) -> list[TaskRecord]:
         """List task records for a project, optionally filtered by status."""
         records = self.query(scope=Scope.TASK, project_id=project_id, include_deleted=True, limit=limit, offset=offset)
         out: list[TaskRecord] = []

@@ -9,7 +9,9 @@ Steps:
 5. Summarize results and exit with the final pytest status.
 """
 
-import subprocess, sys, json
+import subprocess
+import sys
+import json
 from pathlib import Path
 
 def run_pytest() -> subprocess.CompletedProcess:

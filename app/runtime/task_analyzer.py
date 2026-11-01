@@ -68,8 +68,13 @@ class TaskAnalyzer:
             if re.search(rf"\b{re.escape(kw)}\b", low):
                 caps.append(cap)
         # de-dupe preserve order
-        seen = set()
-        caps = [c for c in caps if not (c in seen or seen.add(c))]
+        seen: set[str] = set()
+        _deduped: list[str] = []
+        for c in caps:
+            if c not in seen:
+                seen.add(c)
+                _deduped.append(c)
+        caps = _deduped
 
         # requirements: verb phrases
         for verb in ("create", "build", "analyze", "fix", "test", "search",

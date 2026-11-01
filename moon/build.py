@@ -15,9 +15,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import platform
-import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -161,17 +158,6 @@ _COMMANDS: dict[str, dict[str, str]] = {
 # VS Code config generators (per language, plus a shared base)
 # ---------------------------------------------------------------------------
 
-def _base_settings() -> str:
-    return '''{
-  "editor.tabSize": 2,
-  "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true,
-  "git.autofetch": true,
-  "python.analysis.autoImportCompletions": true,
-  "python.linting.enabled": true
-}'''
-
-
 def _extensions_json(lang: str) -> str:
     base = [
         "formulahendry.acp-client",          # hermes ACP client (MOON + hermes)
@@ -180,9 +166,14 @@ def _extensions_json(lang: str) -> str:
         "eamodio.gitlens",                   # git history
     ]
     if lang == "python":
+        # Mirrors the corrected checked-in .vscode/extensions.json. No legacy
+        # top-level "languages" key: VS Code only reads recommendations /
+        # unwantedRecommendations, so extra keys are ignored (and misleading).
         base += [
             "ms-python.python", "ms-python.vscode-pylance",
             "ms-python.black-formatter", "ms-python.debugpy",
+            "jagreehal.rundebug", "omercnet.vscode-acp",
+            "qwenlm.qwen-code-vscode-ide-companion",
         ]
     elif lang == "node":
         base += [
@@ -199,28 +190,44 @@ def _extensions_json(lang: str) -> str:
                  "vahidhere.vscode-c-cpp-cli", "bitinerantstudios.vscode-arm-embedded"]
     elif lang == "java":
         base += ["redhat.java", "vscjava.vscode-java-pack", "vscjava.vscode-java-debug"]
-    return json_dumps({
-        "recommendations": base,
-        "languages": _lang_tags(lang),
-    })
+    return json_dumps({"recommendations": base})
 
 
 def _settings_json(lang: str) -> str:
-    """Workspace settings for VS Code. Base editor defaults + language."""
+    """Workspace settings for VS Code (schema-valid, no deprecated keys)."""
     base = {
         "editor.tabSize": 2,
         "files.trimTrailingWhitespace": True,
         "files.insertFinalNewline": True,
         "git.autofetch": True,
-        "python.analysis.autoImportCompletions": True,
-        "python.linting.enabled": True,
+        # Keep the explorer/search/watcher out of build + venv noise.
+        "observer.exclude": [
+            "node_modules", "**/node_modules",
+            ".venv", "**/.venv", "venv", "**/venv",
+            "__pycache__", "**/__pycache__",
+            ".git", "**/.git",
+            "dist", "**/dist", "build", "**/build",
+            ".output", "**/.output", "target", "**/target",
+        ],
+        # hermes ACP agent server (MOON + hermes integration wiring).
+        "agent_servers": {
+            "hermes-agent": {
+                "type": "custom",
+                "command": "hermes",
+                "args": ["acp"],
+            }
+        },
     }
     extra = {}
     if lang == "python":
+        # Modern equivalents of the removed python.linting.enabled /
+        # python.formatting.provider keys (deprecated since VS Code 1.85).
         extra = {
-            "python.defaultInterpreterPath": ".venv/bin/python",
-            "python.formatting.provider": "black",
+            "python.analysis.autoImportCompletions": True,
+            "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
             "python.testing.pytestEnabled": True,
+            "python.testing.pytestArgs": ["tests"],
+            "[python]": {"editor.defaultFormatter": "ms-python.black-formatter"},
         }
     elif lang == "node":
         extra = {
@@ -236,11 +243,20 @@ def _launch_json(lang: str) -> str:
     # hermes-acp compound is added by the MOON project template (see scaffold).
     configs = {
         "python": [
-            {"name": "Run application", "type": "python", "request": "launch",
-             "program": "main.py", "args": ["run"], "cwd": "${workspaceFolder}",
-             "env": {"PYTHONPATH": "${workspaceFolder}"}, "purpose": ["debug"]},
+            # The name below MUST match the compound reference at the bottom
+            # of this function, otherwise VS Code reports a dangling
+            # compound reference and the compound cannot be launched.
+            {"name": "MOON: Run", "type": "python", "request": "launch",
+             "program": "${workspaceFolder}/main.py", "args": ["run"],
+             "cwd": "${workspaceFolder}",
+             "env": {"PYTHONPATH": "${workspaceFolder}"},
+             "python": "${workspaceFolder}/.venv/bin/python",
+             "console": "integratedTerminal", "purpose": ["debug"]},
+            # pytest must run via the Python debugger's "module" launch, not a
+            # bogus "program": "pytest" file path.
             {"name": "Run tests", "type": "python", "request": "launch",
-             "program": "pytest", "args": ["-q"], "cwd": "${workspaceFolder}",
+             "module": "pytest", "args": ["-q"], "cwd": "${workspaceFolder}",
+             "python": "${workspaceFolder}/.venv/bin/python",
              "console": "integratedTerminal", "purpose": ["debug"]},
         ],
         "node": [
@@ -279,14 +295,20 @@ def _launch_json(lang: str) -> str:
              "command": "echo 'define your run command'", "console": "integratedTerminal"},
         ],
     }[lang]
-    return json_dumps({"version": "0.2.0", "configurations": configs,
-                       "compounds": [{"name": "MOON + hermes ACP",
-                                      "configurations": ["MOON: Run"],
-                                      "stopAll": True}] if lang in _COMMANDS else None})
+    return json_dumps({
+        "version": "0.2.0",
+        "configurations": configs,
+        # Reference a configuration that really exists in this file so the
+        # compound is never dangling for any language.
+        "compounds": [{
+            "name": "MOON + hermes ACP",
+            "configurations": [configs[0]["name"]],
+            "stopAll": True,
+        }],
+    })
 
 
 def _tasks_json(lang: str) -> str:
-    cmds = _COMMANDS[lang]
     tasks = {
         "python": [
             {"label": "MOON: Build & Run", "type": "shell", "command": "make run",
@@ -329,6 +351,10 @@ def _tasks_json(lang: str) -> str:
             {"label": "MOON: Test", "type": "shell", "command": "make test", "group": "test"},
         ],
     }[lang]
+    # Every task must declare problemMatcher (VS Code task schema): tasks that
+    # omit it are rejected by the schema validator as invalid.
+    for task in tasks:
+        task.setdefault("problemMatcher", [])
     return json_dumps({"version": "2.0.0", "tasks": tasks})
 
 
@@ -350,7 +376,6 @@ def _confirm_overwrite(project: Path) -> bool:
     return answer.strip().lower() == "y"
 
 def _makefile(lang: str) -> str:
-    cmds = _COMMANDS[lang]
     template = '''# MOON-AI Build — auto-generated for [LANG].
 # Targets: run test build serve clean install verify
 PY := env -u PYTHONPATH .venv/bin/python
@@ -449,45 +474,46 @@ def _parse_json(s: str) -> dict:
     return _json.loads(s)
 
 
-def _lang_tags(lang: str) -> list[str]:
-    return [_LANG_LABEL[lang]]
-
-
-_LANG_LABEL = {
-    "python": "Python",
-    "node": "JavaScript",
-    "rust": "Rust",
-    "go": "Go",
-    "cpp": "C++",
-    "java": "Java",
-    "generic": "Generic",
-}
-
-
 # ---------------------------------------------------------------------------
 # Scaffold (generate everything for a project dir)
 # ---------------------------------------------------------------------------
-def scaffold(project_dir: str | Path, lang: str | None = None) -> BuildResult:
+def scaffold(
+    project_dir: str | Path,
+    lang: str | None = None,
+    out_dir: str | Path | None = None,
+    force: bool = False,
+) -> BuildResult:
     """Generate a full VS Code + hermes-acp + Makefile + Dockerfile + test
-    skeleton for *project_dir*, in the detected language."""
+    skeleton for *project_dir*, in the detected language.
+
+    ``project_dir`` is the directory used for language detection; generated
+    files are written to ``out_dir`` (defaults to ``project_dir``). ``force``
+    skips the interactive overwrite confirmation for a non-empty target.
+    """
     p = Path(project_dir)
+    out = Path(out_dir) if out_dir is not None else p
     if p.exists() and not p.is_dir():
         raise NotADirectoryError(f"Not a directory: {project_dir!r}")
+    if out.exists() and not out.is_dir():
+        raise NotADirectoryError(f"Not a directory: {str(out)!r}")
+    # Ensure the paths exist BEFORE language detection: a fresh (not yet
+    # created) target previously raised FileNotFoundError from
+    # detect_language(), which made `python -m moon build <new-dir>` crash.
     if not p.exists():
         p.mkdir(parents=True, exist_ok=True)
-    elif not any(p.iterdir()):
-        pass  # empty dir is fine
-    else:
-        if not _confirm_overwrite(p):
+    if not out.exists():
+        out.mkdir(parents=True, exist_ok=True)
+    if not force and any(out.iterdir()):
+        if not _confirm_overwrite(out):
             sys.exit(1)
     lang = lang or detect_language(p)
-    res = BuildResult(project=p, language=lang, out_dir=p)
+    res = BuildResult(project=out, language=lang, out_dir=out)
 
     res.add(".env", _env())
     res.add("Makefile", _makefile(lang))
     res.add("Dockerfile", _dockerfile(lang))
 
-    vs = p / ".vscode"
+    vs = out / ".vscode"
     vs.mkdir(exist_ok=True)
     res.add(".vscode/extensions.json", _extensions_json(lang))
     res.add(".vscode/settings.json", _settings_json(lang))

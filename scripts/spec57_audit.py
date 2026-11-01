@@ -7,11 +7,8 @@ as FAIL, never as "probably fine". Run:
 """
 from __future__ import annotations
 
-import asyncio
-import inspect
-import json
+import subprocess
 import sys
-import traceback
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -50,7 +47,7 @@ print("=" * 74)
 
 # --- 1/2/3/4: registries + brain router (static contract checks) -----------
 try:
-    from app.agents.registry import AgentRegistry, get_registry
+    from app.agents.registry import get_registry
     reg = get_registry()
     n = len(reg.all())
     ok, det = has_method(reg, "register", "get", "select", "to_report")
@@ -78,7 +75,6 @@ except Exception as e:
 
 # --- 6/7/8/9/10: brains, context, memory, comms ----------------------------
 try:
-    from app.brain.agent_brain import AgentBrain
     from app.brain.agent_model_manager import AgentModelManager
     from app.config.settings import get_settings
     s = get_settings()
@@ -97,7 +93,6 @@ try:
     from app.context.advanced.context_orchestrator import ContextOrchestrator
     co = ContextOrchestrator(max_tokens=8000, reserved_tokens=2000)
     ok, det = has_method(co, "get_snapshot")
-    from app.context.retriever import ContextRetriever
     rec("7. Agent-specific contexts work", ok and hasattr(ContextBuilder, "build"),
         f"ContextOrchestrator+ContextBuilder+ContextRetriever; {det}")
 except Exception as e:
@@ -120,8 +115,7 @@ except Exception as e:
     rec("9. Global memory works", False, f"{type(e).__name__}: {e}")
 
 try:
-    from app.runtime.messaging import MessageBus, MessageType, AgentMessage, get_bus
-    from app.agents.professional.communication_bus import CommunicationBus
+    from app.runtime.messaging import MessageBus, MessageType
     types = [t.name for t in MessageType]
     ok, det = has_method(MessageBus, "send", "post", "receive", "subscribe", "history")
     rec("10. Agent communication works", ok and len(types) >= 5,
@@ -131,7 +125,6 @@ except Exception as e:
 
 # --- 11: task graph -------------------------------------------------------
 try:
-    from app.brain.advanced.dag_planner import DAGPlanner  # may be named differently
     ok = True
     det = "DAGPlanner importable"
 except Exception:
@@ -157,7 +150,6 @@ rec("11. Task graph works", ok and used,
 # --- 12/13: tool registry + execution -------------------------------------
 try:
     from app.tools.registry import ToolRegistry
-    from app.brain.tool_manager import ToolManager
     ok, det = has_method(ToolRegistry, "register", "all", "get")
     rec("12. Tool registry works", ok, det)
 except Exception as e:
@@ -165,18 +157,16 @@ except Exception as e:
 
 # --- 14: permission system ------------------------------------------------
 try:
-    from app.capability.permission_manager import PermissionManager
     from app.connector.permission import PermissionPolicy  # noqa
     ok = True
     det = "PermissionManager + connector.permission"
 except Exception:
     try:
-        from app.capability.permission_manager import PermissionManager
         ok, det = True, "PermissionManager"
     except Exception as e:
         ok, det = False, f"{type(e).__name__}: {e}"
 try:
-    from app.runtime.integration import gate_action, autonomy_level
+    from app.runtime.integration import gate_action
     allowed, reason = gate_action("install_tool", high_risk=True)
     ok2 = isinstance(allowed, bool)
     det += f"; gate_action(high_risk) -> {allowed} ({reason})"
@@ -198,7 +188,7 @@ try:
     rec("15. Result aggregation works", ok, f"status={agg.status.value}, conflicts={len(agg.conflicts)}")
     rec("16. Conflict resolution works",
         any(c.kind == ConflictKind.FAILURE for c in agg.conflicts),
-        f"FAILURE conflict detected; not reported as success")
+        "FAILURE conflict detected; not reported as success")
 except Exception as e:
     rec("15. Result aggregation works", False, f"{type(e).__name__}: {e}")
     rec("16. Conflict resolution works", False, f"{type(e).__name__}: {e}")
@@ -226,7 +216,7 @@ except Exception as e:
 
 # --- 17: verification -----------------------------------------------------
 try:
-    from app.verification import Verifier, VerificationResult
+    from app.verification import Verifier
     v = Verifier()
     ok, det = has_method(v, "file_exists", "http_ok", "state_match", "result_ok")
     rec("17. Verification works", ok, det)
@@ -314,7 +304,6 @@ rec("24. Installation works", installer and uninstaller and wired and "moon =" i
     f"console_script={'moon =' in pkg}")
 
 # --- 25: tests pass -------------------------------------------------------
-import subprocess
 
 try:
     _p = subprocess.run(
@@ -347,7 +336,6 @@ try:
         pass
     _ui = any(p in ("/ui", "/hud") for p in _routes)
     try:
-        from app.voice_engine import VoiceEngine
         _voice = True
     except Exception:
         _voice = False
@@ -361,7 +349,7 @@ except Exception as e:
 # --- spec 17/18/19/37: brain provider abstraction + health + fallback -----
 try:
     from app.runtime.brain_provider import (BrainRouter, BrainSpec,
-                                            available_providers, provider_for)
+                                            available_providers)
     _provs = available_providers()
     _r = BrainRouter({"default": BrainSpec("m", est_ram_mb=900),
                       "strong": BrainSpec("b", est_ram_mb=8000)})

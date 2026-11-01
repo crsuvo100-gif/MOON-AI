@@ -126,12 +126,12 @@ def start_tunnel() -> int:
         cf = shutil.which("cloudflared")
         if cf:
             log("cloudflared found -- opening a secure tunnel to MOON-AI Terminal...")
-            tun = subprocess.Popen(
+            subprocess.Popen(
                 [cf, "tunnel", "--url", "http://127.0.0.1:8777"],
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             )
             log("Tunnel starting; your public URL will appear above. Connect with header:")
-            log(f"  Authorization: Bearer ***")
+            log("  Authorization: Bearer ***")
             try:
                 srv.wait()
             except KeyboardInterrupt:
@@ -139,7 +139,7 @@ def start_tunnel() -> int:
         else:
             log("cloudflared not installed -- Terminal is auth-gated on http://127.0.0.1:8777.")
             log("To expose remotely, install cloudflared and run this again, or port-forward 8777.")
-            log(f"Clients MUST send header: Authorization: Bearer ***")
+            log("Clients MUST send header: Authorization: Bearer ***")
             try:
                 srv.wait()
             except KeyboardInterrupt:

@@ -456,7 +456,7 @@ def ensure_env_file(interactive: bool = True) -> None:
     else:
         answers = run_wizard()
     env.write_text(build_env(answers), encoding="utf-8")
-    ok(f".env created with local-first defaults")
+    ok(".env created with local-first defaults")
 
 
 # ---------------------------------------------------------------------------
@@ -515,13 +515,12 @@ def install_ollama() -> bool:
     sysname = platform.system()
     log(f"Ollama not found -- installing on {sysname} ...")
 
-    installed = False
     if sysname == "Linux":
-        installed = _install_ollama_linux()
+        _install_ollama_linux()
     elif sysname == "Darwin":
-        installed = _install_ollama_macos()
+        _install_ollama_macos()
     elif sysname == "Windows":
-        installed = _install_ollama_windows()
+        _install_ollama_windows()
     else:
         warn(f"Unsupported platform: {sysname}")
 
@@ -858,7 +857,7 @@ examples:
           "╚══════════════════════════════════════════════════════════════════╝\033[0m\n")
 
     log("=== MOON-AI ONE-CLICK INSTALLER (deep-audit verified) ===")
-    py = check_python()
+    check_python()
     vpy = make_venv()
     ensure_env_file(interactive=not args.yes)
 

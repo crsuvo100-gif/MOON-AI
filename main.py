@@ -353,6 +353,26 @@ def _cmd_restore() -> int:
         return 1
 
 
+def _project_root() -> Path:
+    """Absolute path to the repository/install root (the directory holding main.py)."""
+    return Path(__file__).resolve().parent
+
+
+def _resolve_installer(name: str) -> Path | None:
+    """Locate an installer script that may live at the repo root or in scripts/.
+
+    The repository reorganization moved ``script.py`` and ``uninstall_moon.py``
+    into ``scripts/`` while the CLI still looked only at the root, which broke
+    ``moon install`` / ``moon setup`` / ``moon uninstall`` ("not found in project
+    root"). Resolve both locations so the commands keep working.
+    """
+    root = _project_root()
+    for candidate in (root / name, root / "scripts" / name):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
 def _cmd_setup() -> int:
     """First-run setup wizard (interactive config -> .env -> installer).
 
@@ -361,9 +381,9 @@ def _cmd_setup() -> int:
     """
     import importlib.util
 
-    installer = Path("script.py")
-    if not installer.is_file():
-        print("script.py (installer) not found in project root")
+    installer = _resolve_installer("script.py")
+    if installer is None:
+        print("script.py (installer) not found (looked in root and scripts/)")
         return 2
     spec = importlib.util.spec_from_file_location(
         "moon_installer", str(installer.resolve()))
@@ -384,12 +404,15 @@ def _cmd_setup() -> int:
 def _cmd_uninstall() -> int:
     """Native MOON-AI uninstaller (safe by default -- removes auto-start wiring)."""
     import importlib.util
-    import os
 
+    script = _resolve_installer("uninstall_moon.py")
+    if script is None:
+        print("uninstall_moon.py not found (looked in root and scripts/)")
+        return 2
     spec = importlib.util.spec_from_file_location(
-        "uninstall_moon", str(Path("uninstall_moon.py").resolve()))
+        "uninstall_moon", str(script.resolve()))
     if spec is None or spec.loader is None:
-        print("uninstall_moon.py not found in project root")
+        print("uninstall_moon.py could not be loaded")
         return 2
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -404,9 +427,9 @@ def _cmd_install() -> int:
     """
     import importlib.util
 
-    installer = Path("script.py")
-    if not installer.is_file():
-        print("script.py (installer) not found in project root")
+    installer = _resolve_installer("script.py")
+    if installer is None:
+        print("script.py (installer) not found (looked in root and scripts/)")
         return 2
     spec = importlib.util.spec_from_file_location(
         "moon_installer", str(installer.resolve()))
@@ -452,19 +475,21 @@ def _cmd_build(args) -> int:
     if not project_dir.exists():
         project_dir.mkdir(parents=True, exist_ok=True)
 
-    out_dir = Path(args.out).resolve() if args.out else project_dir
-    lang = args.lang or build_mod.detect_language(str(project_dir))
+    out_dir = Path(args.out).resolve() if args.out else None
 
     # Expand short language aliases (py, js, rs) to canonical dict keys.
     # Canonical keys matching _COMMANDS in moon/build.py are:
     # python, node, rust, go, cpp, java, generic.
     _LANG_ALIASES = {"py": "python", "js": "node", "ts": "node", "rs": "rust"}
+    lang = args.lang
     if lang:
         lang = _LANG_ALIASES.get(lang, lang)
 
     result = build_mod.scaffold(
         project_dir=project_dir,
         lang=lang or None,
+        out_dir=out_dir,
+        force=bool(getattr(args, "force", False)),
     )
     print(f"[MOON-AI] built '{result.language}' project in {result.project}")
     print(f"[MOON-AI] generated {result.num_files} file(s)")

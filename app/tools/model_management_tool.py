@@ -31,8 +31,8 @@ class ModelManagementTool(BaseTool):
     def _local_models(self) -> list[str]:
         try:
             out = subprocess.run(["ollama", "list"], capture_output=True, text=True).stdout
-            rows = [l for l in out.splitlines() if l.strip() and not l.startswith("NAME")]
-            return [l.split()[0] for l in rows]
+            rows = [line for line in out.splitlines() if line.strip() and not line.startswith("NAME")]
+            return [line.split()[0] for line in rows]
         except Exception:
             return []
 

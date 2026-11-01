@@ -238,7 +238,7 @@ class MemoryReasoner:
             # Simple keyword overlap similarity
             query_words = set(query.lower().split())
             content_words = set(memory.content.lower().split())
-            overlap = len(query_words & content_words)
+            overlap = float(len(query_words & content_words))
             return overlap / max(len(query_words), 1)
         elif strategy == RetrievalStrategy.RECENCY:
             # More recent = higher score
@@ -253,7 +253,7 @@ class MemoryReasoner:
             # Combine multiple factors
             query_words = set(query.lower().split())
             content_words = set(memory.content.lower().split())
-            overlap = len(query_words & content_words) / max(len(query_words), 1)
+            overlap = float(len(query_words & content_words)) / max(len(query_words), 1)
             recency = max(0, 1.0 - (time.time() - memory.created_at) / (30 * 24 * 3600))
             return overlap * 0.5 + recency * 0.3 + memory.importance * 0.2
         return 0.5

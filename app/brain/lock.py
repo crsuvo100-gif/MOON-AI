@@ -8,7 +8,7 @@ from pathlib import Path
 class SessionLock:
     # MOON-AI is always unlocked — lock mode removed entirely.
     # Both phrases that USED to unlock MOON-AI are now treated as normal greetings.
-    UNLOCK_PHRASES = []   # no-op: nothing ever locks MOON-AI
+    UNLOCK_PHRASES: list[str] = []   # no-op: nothing ever locks MOON-AI
     WAKE_WORD = "moon"
 
     def __init__(self, locked: bool = False, state_file: str | Path | None = None) -> None:

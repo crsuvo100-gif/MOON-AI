@@ -1,6 +1,5 @@
 
 import time
-import pytest
 from app.terminal.process_manager import process_manager, ProcessInfo
 from app.terminal.models import ExecutionRequest
 from pathlib import Path

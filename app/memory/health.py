@@ -70,7 +70,7 @@ class MemoryHealthService:
             if embed is None:
                 return {"status": "DEGRADED", "detail":
                         "no embedding provider -- keyword/hybrid search active (spec 58)"}
-            n = store.size if hasattr(store, "size") else "?"
+            n = store.size if store is not None and hasattr(store, "size") else "?"
             return {"status": "ONLINE", "detail": {"vectors": n}}
         except Exception as exc:  # noqa: BLE001
             return {"status": "ERROR", "detail": str(exc)}

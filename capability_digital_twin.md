@@ -33,12 +33,12 @@
 - .env.example — 4048 bytes environment template
 - .gitignore — excludes .venv/, capabilities/installed/, connections/registry.json, data/, dist/, deploy/, home/, plugins/, logs/, scripts/logs/, tasks/completed/, web/dist/
 - .env — environment configuration (gitignored)
-- .vscode/settings.json — modified: python.defaultInterpreterPath = .venv/bin/python
-- .vscode/extensions.json — 10 recommendations, 1 language
-- .vscode/launch.json — 2 configurations (Run application, Run tests)
+- .vscode/settings.json — python.defaultInterpreterPath = ${workspaceFolder}/.venv/bin/python; pytest wired
+- .vscode/extensions.json — 11 recommendations (schema-valid: recommendations only)
+- .vscode/launch.json — 2 configurations (`MOON: Run`, `Run tests`) + compound `MOON + hermes ACP`
 - .vscode/tasks.json — 4 tasks: MOON: Build & Run, MOON: Test, MOON: Verify, hermes build
 - tools/vscode/moon-vscode — bash launcher script (code-oss)
-- tools/vscode/settings.json — VS Code settings (old python.pythonPath = /usr/bin/python3)
+- tools/vscode/settings.json — portable VS Code settings (python.defaultInterpreterPath = ${workspaceFolder}/.venv/bin/python)
 
 ## Capabilities Map
 | Capability | Implementation | Agent | Tool | Model | Provider | Dependencies | Permissions | Health | Status |
@@ -46,12 +46,12 @@
 | Main brain (memory + knowledge) | LongTermMemory + KnowledgeBase | orchestrator | — | Ollama/cloud | local + cloud | — | network.agent | HEALTHY | WORKING |
 | Per-agent brains (39 agents) | Isolated memory per agent | orchestrator + agents | — | Ollama/cloud | local + cloud | — | network.agent | HEALTHY | WORKING |
 | Autonomous self-learning | enable_auto_learning | orchestrator | — | Ollama/cloud | local + cloud | — | — | HEALTHY | WORKING |
-| Neural Brain Command Center | Three.js web UI | — | — | — | — | — | — | HEALTHY | WORKING |
+| Neural Brain Command Center | single-file canvas HUD (apps/moon_ui/hud.html) | — | — | — | — | — | — | HEALTHY | WORKING |
 | Terminal UI (Textual) | Textual TUI | — | — | — | — | — | — | HEALTHY | WORKING |
 | GitHub auto-pull | connected repo | moon_local agent | — | — | — | — | network | HEALTHY | WORKING |
 | Female voice (espeak + sox) | voice module | — | — | — | — | espeak, sox | — | HEALTHY | WORKING |
 | FastAPI API | app/api/interface.py | — | — | — | — | fastapi, uvicorn | — | HEALTHY | WORKING |
-| WebSocket events | app/api/terminal.py | — | — | — | — | flask-socketio | — | HEALTHY | WORKING |
+| WebSocket events | FastAPI @app.websocket (/ws, /ws/agent/{id}, /ws/events) | — | — | — | — | fastapi/uvicorn | — | HEALTHY | WORKING |
 | Model routing (3-tier fallback) | llm_service + fallback | orchestrator | — | — | local + cloud | — | network | HEALTHY | WORKING |
 | Voice cloning (F5-TTS/kokoro) | voice module + torch | — | — | — | cloud | torch, torchaudio | — | HEALTHY | WORKING |
 | Tool acquisition | app/capability/installer.py | tool_acquisition agent | — | — | GitHub | — | network | HEALTHY | WORKING |

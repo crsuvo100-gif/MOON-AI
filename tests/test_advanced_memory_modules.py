@@ -48,22 +48,16 @@ from app.memory.advanced.recommendation import (
 from app.memory.advanced.forgetting_curve import (
     ForgettingCurveManager,
     ForgettingCurve,
-    ReviewSchedule,
 )
 from app.memory.advanced.association_engine import (
     AssociationEngine,
-    Association,
-    AssociationPath,
 )
 from app.memory.advanced.query_planner import (
     QueryPlanner,
-    QueryPlan,
     SubQuery,
-    PlannedResult,
 )
 from app.memory.advanced.memory_exporter import (
     MemoryExporter,
-    ExportResult,
 )
 from app.memory.advanced.memory_validator import (
     MemoryValidator,
@@ -72,9 +66,7 @@ from app.memory.advanced.memory_validator import (
 )
 from app.memory.advanced.deduplication import (
     MemoryDeduplicator,
-    DuplicateGroup,
     DeduplicationReport,
-    MergeResult,
 )
 
 

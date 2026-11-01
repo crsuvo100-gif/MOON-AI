@@ -1,8 +1,6 @@
 import subprocess
 import os
 import sys
-import signal
-import pytest
 
 # Helper to run a command with limited environment and timeout
 def run_cmd(cmd, timeout=5):
