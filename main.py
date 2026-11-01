@@ -96,7 +96,6 @@ async def _prefetch_models():
     import json
 
     from app.brain.agent_model_manager import AgentModelManager
-    from app.config.settings import get_settings
 
     settings = get_settings()
     mgr = AgentModelManager(
@@ -112,11 +111,9 @@ async def _prefetch_models():
 
 async def _run(task, agent):
     """Run a task through the full Orchestrator (advanced brain + agents + memory)."""
-    from app.brain.orchestrator import Orchestrator
     from app.config.settings import get_settings as _gs
     from app.models.task import Task
     import asyncio as _asyncio
-    import time as _time
 
     settings = _gs()
     orchestrator = Orchestrator(settings)
@@ -210,7 +207,6 @@ def _cmd_status() -> int:
 
 def _cmd_doctor() -> int:
     """Real health check (spec 10). Reports PASS / WARN / FAIL per subsystem."""
-    import importlib.util
     import platform
 
     checks: list[tuple[str, str, str]] = []
@@ -223,9 +219,16 @@ def _cmd_doctor() -> int:
     py_ok = sys.version_info >= (3, 10)
     add("Python version", py_ok, f"{platform.python_version()} (need >=3.10)")
 
-    # 2. Dependencies importable
+    # 2. Dependencies importable (each core dep checked individually so the
+    #    doctor reports the missing one instead of only the last import)
     try:
-        import fastapi, uvicorn, pydantic, pydantic_settings, openai, httpx  # noqa: F401
+        import fastapi  # noqa: F401
+        import uvicorn  # noqa: F401
+        import pydantic  # noqa: F401
+        import pydantic_settings  # noqa: F401
+        import openai  # noqa: F401
+        import httpx  # noqa: F401
+
         add("Core dependencies", True, "fastapi/uvicorn/pydantic/openai/httpx importable")
     except Exception as exc:  # noqa: BLE001
         add("Core dependencies", False, f"missing: {exc}")
@@ -546,8 +549,12 @@ def main() -> int:
         if task:
             asyncio.run(_run(task, args.agent))
         else:
-            print("No task given. Use: MOON-AI run \"<task>\" or MOON-AI <subcommand>")
-            return 1
+            # Documented behaviour (and the VS Code "MOON: Build & Run" task via
+            # `make run`): with no task, launch the interactive terminal instead
+            # of erroring out. Previously this printed a usage error and exited 1.
+            from app.terminal.repl import main as _repl_main
+            _repl_main()
+            return 0
     elif args.cmd == "models":
         asyncio.run(_prefetch_models())
     elif args.cmd == "terminal":
@@ -630,8 +637,10 @@ def main() -> int:
         raise SystemExit(_cmd_build(args))
 
     else:
-        # No subcommand -> show help
-        ap.print_help()
+        # No subcommand -> the terminal REPL is the documented default
+        # (`python -m moon` == `moon`), matching README and moon_terminal.
+        from app.terminal.repl import main as _repl_main
+        _repl_main()
         return 0
 
 

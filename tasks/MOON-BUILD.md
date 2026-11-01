@@ -191,6 +191,20 @@ Every gate below was re-run on the final tree (after all repairs) with real exec
   `qwen2.5:1.5b`, `GITHUB_REPO` default clarified as `.env`-driven, `.env.example` template corrected
   (MODEL_NAME + repo URL), capability twin counts refreshed (345 app .py / 60 tests .py / 275 skills /
   41 agents / current paths), Makefile target list updated.
+- **One CLI (no more drift):** `moon/__main__.py` now delegates to `main.py` instead of duplicating the
+  parser/dispatch (so `python -m moon`, `python -m moon_terminal`, `moon`, and `python main.py` all behave
+  identically — `integrations`/`work` were missing before). `python -m moon` / `moon` with **no
+  subcommand** now launches the documented terminal REPL, and `moon run` / `make run` **without a task**
+  also launches the REPL instead of printing a usage error and exiting 1 (this is what the VS Code
+  “MOON: Build & Run” task runs).
+- **CI lint scope widened:** `ruff check` now covers the real entry points too
+  (`app scripts tests main.py cli.py moon_terminal.py moon/`), which exposed and fixed 14 latent
+  findings in `main.py`/`cli.py` (unused imports, multi-import style). The doctor's per-dependency
+  import check was restored explicitly after the auto-fix collapsed it to a single import.
+- **`make verify` is self-contained:** `scripts/live_smoke_pipeline.py` now builds the local wheel
+  (`pip wheel --no-deps`) when `build/lib` is absent and runs with `cwd=ROOT`, so `make verify` passes
+  21/21 even on a fresh clone / after `rm -rf build dist` (previously it failed checks 6–7 with
+  `build/lib artifact present (MISSING)`).
 
 ### Known residual (non-blocking)
 - `apps/cyclone` source is not included in the wheel; a wheel-only install logs "Cyclone bridge
