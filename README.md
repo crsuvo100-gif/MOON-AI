@@ -78,7 +78,7 @@ make serve          # MOON Neural Command Center at http://127.0.0.1:8777
 | `MODEL_NAME` | `qwen2.5:1.5b` | model id |
 | `ENABLE_AUTO_LEARNING` | `true` | MOON learns from every interaction |
 | `ENABLE_AGENT_VALIDATION` | `true` | two-phase main-brain validation |
-| `GITHUB_REPO` | `https://github.com/crsuvo100-gif/MOON-AI` | connected repo for auto tool-pull |
+| `GITHUB_REPO` | _(empty; set in `.env`)_ | connected repo for auto tool-pull — see `.env.example` |
 
 ## Tests
 ```bash
@@ -107,16 +107,17 @@ wrappers only** — the real application is always launched through Python.
 | GPU | optional | optional (CPU works; GPU accelerates local models) |
 
 MOON uses `pathlib`, `platform`, and `sys` for portable paths/OS detection;
-there are **no hard-coded `/home/meow`, Kali, or Linux-only paths** in the core.
-The only OS-specific code is `app/capability/installer.py`, which is a
-**multi-platform package-manager abstraction** (apt/dnf/pacman/apk) — preserved
-exactly as designed.
+the core contains **no hard-coded `/home/meow`, Kali, or Linux-only paths**
+(override the project root with `MOON_PROJECT_ROOT` if needed). OS-specific
+behaviour is limited to a **multi-platform package-manager abstraction** in
+`app/capability/installer.py` (apt/dnf/pacman/apk) and the optional Linux
+`systemctl` auto-start wiring in `main.py`.
 
 ### Model dependencies
 MOON talks to an **OpenAI-compatible** endpoint. Options:
 - **Local** (default, CPU-friendly): [Ollama](https://ollama.com) serving
-  `qwen3:0.6b`, `qwen2.5:3b`, `qwen2.5-coder:1.5b`, etc. Start Ollama, then
-  `ollama pull qwen3:0.6b`.
+  `qwen2.5:1.5b` (the code default), `qwen2.5:3b`, `qwen2.5-coder:1.5b`, etc.
+  Start Ollama, then `ollama pull qwen2.5:1.5b`.
 - **Cloud**: set `OPENAI_API_KEY` / `OPENROUTER_API_KEY` / `HUGGINGFACE_API_KEY`
   in `.env` for the hosted fallback chain.
 
@@ -133,16 +134,16 @@ python -m moon install        # bootstrap venv + deps + (best-effort) models
 | Command | Purpose |
 |---------|---------|
 | `python -m moon` | Launch the interactive terminal (REPL) — web UI is `make serve` |
-|| `python -m moon run "task"` | Run a single task and exit (or launch CLI terminal if no task) |
-|| `python -m moon doctor` | Health check (Python/deps/config/DB/agents/tools/model/git) → PASS/WARN/FAIL |
-|| `python -m moon status` | Check the live backend `/api/health` |
-|| `python -m moon backup` | Snapshot runtime data into `backups/moon_<ts>/` (cross-platform) |
-|| `python -m moon restore <snapshot>` | Restore a backup over live data |
-|| `python -m moon install` | Python bootstrap installer (venv + deps + models) |
-|| `python -m moon update` | Safe update: `git pull --ff-only` + `pip install -e . --upgrade` |
-|| `python -m moon models` | Pre-pull per-agent preferred models |
-|| `python -m moon telegram` | Telegram bot listener |
-|| `python -m moon version` | Print version |
+| `python -m moon run "task"` | Run a single task and exit (or launch CLI terminal if no task) |
+| `python -m moon doctor` | Health check (Python/deps/config/DB/agents/tools/model/git) → PASS/WARN/FAIL |
+| `python -m moon status` | Check the live backend `/api/health` |
+| `python -m moon backup` | Snapshot runtime data into `backups/moon_<ts>/` (cross-platform) |
+| `python -m moon restore <snapshot>` | Restore a backup over live data |
+| `python -m moon install` | Python bootstrap installer (venv + deps + models) |
+| `python -m moon update` | Safe update: `git pull --ff-only` + `pip install -e . --upgrade` |
+| `python -m moon models` | Pre-pull per-agent preferred models |
+| `python -m moon telegram` | Telegram bot listener |
+| `python -m moon version` | Print version |
 
 > The installed `moon` console script (`pyproject.toml [project.scripts]`) also
 > works after `pip install -e .`.

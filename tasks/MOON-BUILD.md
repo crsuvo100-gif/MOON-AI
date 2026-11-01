@@ -82,9 +82,9 @@ Venv: `/home/meow/Projects/MOON/.venv`
 - Server :8777 → GET /api/interface/version, /api/interface/models,
   /api/terminal/agents, /api/capabilities, /api/tools → all exit 0.
 - `make run`  → 41 agent brains connected, real LLM call, RESULT correct. (exit 0)
-- `make test` → 98 tests, exit 0.
+- `make test` → full pytest suite green (795 passed, 1 skipped, 2026-11-01).
 - `make live` → 21/21 checks, exit 0.
-- `moon terminal` / `./venv/bin/python main.py terminal` → banner + prompt + real
+- `moon terminal` / `.venv/bin/python main.py terminal` → banner + prompt + real
   brain response + `/quit` clean exit. (entry points verified)
 - Unlock phrase `MOON love you 3000` confirmed for MOON desktop entry.
 
@@ -111,7 +111,7 @@ Venv: `/home/meow/Projects/MOON/.venv`
 | `make verify` / `make live` | PASS (contract) | both run `scripts/live_smoke_pipeline.py`; full run intentionally not executed here (owned by another agent) |
 | hermes ACP task runtime | PASS (fixed host-side) | `hermes acp --help` exit 0 (ACP usage printed); `hermes --version` v0.22.5 — see §2 |
 | secrets in VS Code files | PASS | no api-key/token/secret patterns in `.vscode/*.json` or `moon.code-workspace` |
-| README VS Code claims | PASS | README documents only `make test`; no VS Code task labels/commands claimed (nothing stale there) |
+| README VS Code claims | PASS | README documents run/test/serve commands but no VS Code task labels; VS Code wiring lives in `.vscode/` + `moon.code-workspace` (documented in this file) |
 | `.vscode` gitignore hygiene | PASS (fixed) | `.gitignore` now ignores only nested/generated `.vscode/` copies (`verify/`, `scaffold/`) and keeps the shipped root `.vscode/` trackable via `!/.vscode/` |
 
 ### Residual items / Lead decisions
@@ -184,6 +184,13 @@ Every gate below was re-run on the final tree (after all repairs) with real exec
 - **Repo hygiene:** `build/lib/` and `dist/` cleaned before the release wheel (stale `.pyc` no longer
   leaks into wheels); `.gitignore` updated for `.qwen/`, `.continue/` and nested scaffold `.vscode/`
   while keeping the shipped root `.vscode/` tracked; `dist/` contains only the fresh clean wheel.
+- **Portability:** removed the last hard-coded project root (`app/memory/task_ledger.py` used
+  `/home/meow/Projects/MOON`); it now honours `MOON_PROJECT_ROOT` or derives the repo root from the
+  installed file, so a clone/install works on any machine (README portability claim is now true).
+- **Docs accuracy:** README command table fixed (11 broken `||` rows), default model pull corrected to
+  `qwen2.5:1.5b`, `GITHUB_REPO` default clarified as `.env`-driven, `.env.example` template corrected
+  (MODEL_NAME + repo URL), capability twin counts refreshed (345 app .py / 60 tests .py / 275 skills /
+  41 agents / current paths), Makefile target list updated.
 
 ### Known residual (non-blocking)
 - `apps/cyclone` source is not included in the wheel; a wheel-only install logs "Cyclone bridge

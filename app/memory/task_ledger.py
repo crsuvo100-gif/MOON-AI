@@ -17,6 +17,7 @@ the local ledger stays readable offline and git-able.
 from __future__ import annotations
 
 import json
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,7 +26,11 @@ from typing import Any
 from app.memory.task_record import TaskRecord
 
 # Canonical project root (MOON source folder).  All local task JSONs land here.
-_DEFAULT_PROJECT_ROOT = Path("/home/meow/Projects/MOON")
+# Resolved at runtime so the project stays portable: MOON_PROJECT_ROOT wins,
+# otherwise derive the repo root from this file (app/memory/task_ledger.py).
+_DEFAULT_PROJECT_ROOT = Path(
+    os.environ.get("MOON_PROJECT_ROOT") or Path(__file__).resolve().parents[2]
+)
 
 # Local ledger index file (in-project JSON, human/grep-able).
 _LEGER_INDEX = "tasks/ledger.json"

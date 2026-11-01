@@ -5,17 +5,17 @@
 - **Branch**: feat/repl-version-command
 - **Package**: moon-ai-agent 0.1.0 (setuptools/pip)
 - **Entry**: main.py (CLI entrypoint)
-- **Build**: Makefile (run, test, build, serve, clean, install, verify, live)
+- **Build**: Makefile (run, test, build, serve, terminal, clean, install, install-optional, verify, live)
 - **Language**: Python 3.10+
-- **Runtime**: .venv/bin/python (virtual env, 7.1G, gitignored)
+- **Runtime**: .venv/bin/python (virtual env, 6.2G, gitignored)
 
 ## Component Inventory
 ### Directories
-- app/ (33 dirs) — 344 .py files; core runtime modules
-- tests/ (45 .py) — pytest suite
-- scripts/ (20 .py) — utility scripts
+- app/ (33 dirs) — 345 .py files; core runtime modules
+- tests/ (60 .py) — pytest suite (795 collected; 1 skipped)
+- scripts/ (23 .py) — utility scripts
 - skills/ (275 .md) — skill corpus
-- tools/ (37 .py) — command-line tools
+- tools/ (2 files) — VS Code launcher + settings (no .py); Python tools live in app/tools/ (40 tools registered)
 - apps/ (cyclone, moon_ui) — MI applications
 - connections/ — registry.json, README.md
 - .moon/ — knowledge_graph.json, sessions
@@ -27,11 +27,11 @@
 - dist/ — build artifact
 
 ### Key Files
-- main.py — CLI entrypoint (24470 bytes)
+- main.py — CLI entrypoint (25440 bytes)
 - Makefile — build targets
 - pyproject.toml — package config
 - .env.example — 4048 bytes environment template
-- .gitignore — excludes .venv/, capabilities/installed/, connections/registry.json, data/, dist/, deploy/, home/, plugins/, logs/, scripts/logs/, tasks/completed/, web/dist/
+- .gitignore — excludes .venv/, capabilities/, connections/, data/, dist/, build/, home/, plugins/generated/, logs/, .moon/, tool/IDE state (`.qwen/`, `.continue/`, `.hermes/`, `.claude/`), plus nested scaffold `.vscode/` (root `.vscode/` is tracked) — see `.gitignore` for the authoritative list
 - .env — environment configuration (gitignored)
 - .vscode/settings.json — python.defaultInterpreterPath = ${workspaceFolder}/.venv/bin/python; pytest wired
 - .vscode/extensions.json — 11 recommendations (schema-valid: recommendations only)
@@ -44,13 +44,13 @@
 | Capability | Implementation | Agent | Tool | Model | Provider | Dependencies | Permissions | Health | Status |
 |------------|---------------|-------|------|-------|----------|-------------|-------------|--------|--------|
 | Main brain (memory + knowledge) | LongTermMemory + KnowledgeBase | orchestrator | — | Ollama/cloud | local + cloud | — | network.agent | HEALTHY | WORKING |
-| Per-agent brains (39 agents) | Isolated memory per agent | orchestrator + agents | — | Ollama/cloud | local + cloud | — | network.agent | HEALTHY | WORKING |
+| Per-agent brains (41 agents) | Isolated memory per agent | orchestrator + agents | — | Ollama/cloud | local + cloud | — | network.agent | HEALTHY | WORKING |
 | Autonomous self-learning | enable_auto_learning | orchestrator | — | Ollama/cloud | local + cloud | — | — | HEALTHY | WORKING |
 | Neural Brain Command Center | single-file canvas HUD (apps/moon_ui/hud.html) | — | — | — | — | — | — | HEALTHY | WORKING |
 | Terminal UI (Textual) | Textual TUI | — | — | — | — | — | — | HEALTHY | WORKING |
 | GitHub auto-pull | connected repo | moon_local agent | — | — | — | — | network | HEALTHY | WORKING |
 | Female voice (espeak + sox) | voice module | — | — | — | — | espeak, sox | — | HEALTHY | WORKING |
-| FastAPI API | app/api/interface.py | — | — | — | — | fastapi, uvicorn | — | HEALTHY | WORKING |
+| FastAPI API | app/terminal_interface.py (+ app/api/* routers) | — | — | — | — | fastapi, uvicorn | — | HEALTHY | WORKING |
 | WebSocket events | FastAPI @app.websocket (/ws, /ws/agent/{id}, /ws/events) | — | — | — | — | fastapi/uvicorn | — | HEALTHY | WORKING |
 | Model routing (3-tier fallback) | llm_service + fallback | orchestrator | — | — | local + cloud | — | network | HEALTHY | WORKING |
 | Voice cloning (F5-TTS/kokoro) | voice module + torch | — | — | — | cloud | torch, torchaudio | — | HEALTHY | WORKING |
