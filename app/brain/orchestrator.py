@@ -94,6 +94,7 @@ from app.tools.registry import ToolRegistry
 from app.tools.self_evolve_tool import SelfEvolveTool
 from app.tools.system_command_tool import SystemCommandTool
 from app.tools.system_info_tool import SystemInfoTool
+from app.tools.xai_analysis_tool import XAIAnalysisTool
 from app.tools.telegram_tool import GoogleWorkspaceTool, TelegramTool
 from app.tools.terminal import TerminalTool
 from app.tools.utility_tools import IpGeolocationTool, TimezoneConverterTool, UnitConverterTool
@@ -564,6 +565,7 @@ class Orchestrator:
             GlobalConnectorTool(),
             HuggingFaceDeployTool(),
             HuggingFaceTool(),
+            XAIAnalysisTool(),
         ):
             registry.register(tool)
 
@@ -2169,6 +2171,7 @@ class Orchestrator:
         for _ in range(_MAX_TOOL_ITERATIONS):
             # Prefer the agent's OWN model (per-agent models) for its function;
             # fall back to the shared/strong routing otherwise.
+            llm: Any = self._pick_llm(task.prompt)
             if self._agent_models is not None:
                 try:
                     llm = await self._agent_models.get_llm(agent.name)

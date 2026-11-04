@@ -1,2 +1,5 @@
 [submodule "regexr"]
 	url = https://github.com/gskinner/regexr.git
+[submodule "app/xai"]
+	path = app/xai
+	url = https://github.com/EthicalML/xai.git

@@ -258,7 +258,7 @@ class MCPConnector:
             self._session = session
             details = {"transport": transport, "mcp": "connected"}
             if hasattr(initialized, "protocolVersion"):
-                details["protocol_version"] = initialized.protocolVersion
+                details["protocol_version"] = str(initialized.protocolVersion)
             return CallResult(ok=True, status=200, data=details)
 
     async def __aenter__(self) -> MCPConnector:

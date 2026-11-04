@@ -276,6 +276,7 @@ class E2EVerificationPipeline:
         # Stage 9: Final response
         stage = self._start_stage("final_response")
         try:
+            final_response = ""
             final_response = f"Task '{task}' completed with {len(agents)} agents."
             stage.result = final_response
             stage.status = PipelineStageStatus.COMPLETED

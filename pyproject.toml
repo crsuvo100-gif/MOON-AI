@@ -61,7 +61,7 @@ include = ["app*", "apps.moon_ui*", "plugins*", "scripts*", "moon*", "skills*", 
 exclude = ["tests*"]
 
 [tool.setuptools.package-data]
-app = ["config/*.json", "logs/lessons.jsonl", "prompts/templates/*.md", "terminal/*.yaml", "terminal/*.css"]
+app = ["config/*.json", "config/*.yaml", "logs/lessons.jsonl", "prompts/templates/*.md", "terminal/*.yaml", "terminal/*.css"]
 "apps.moon_ui" = ["*.html", "*.json"]
 skills = ["**/*.md"]
 voices = ["*.json", "*.txt", "*.wav"]
