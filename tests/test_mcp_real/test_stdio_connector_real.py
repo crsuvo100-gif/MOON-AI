@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from app.connector.connectors import MCPConnector  # noqa: E402
+from app.connector.connectors import MCPConnector
 
 
 @pytest.mark.asyncio
@@ -29,7 +29,7 @@ async def test_stdio_connector_real():
                 transport = "stdio"
                 url = ""
                 command = sys.executable
-                args = [str(server_script)]
+                args = (str(server_script),)
                 cwd = None
                 env = None
 
@@ -47,6 +47,10 @@ async def test_stdio_connector_real():
             assert c.ok, f"call_tool failed: {c.error}"
             content = (c.data or {}).get("content", [{}])[0].get("text", "")
             assert "MOON-AI接続は実動作!" in content, f"unexpected content: {content}"
+
+            health = await conn.health()
+            assert health.ok, f"MCP health check failed: {health.error}"
+            assert health.data["tools"] >= 1
         finally:
             try:
                 proc.kill()

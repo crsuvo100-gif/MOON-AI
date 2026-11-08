@@ -2203,6 +2203,7 @@ class Orchestrator:
                             await on_event({"stage": "tool_call", "detail": call.get("name", "tool")})
                         except Exception:  # noqa: BLE001
                             pass
+                    self._apply_task_confirmation(task, call["name"], args)
                     result = await self._tools.run(call["name"], args, agent=agent)
                     try:
                         _emit("TOOL_COMPLETED", execution_id=task.id, agent_id=agent.name,
@@ -2411,6 +2412,14 @@ class Orchestrator:
             pass
 
     # --- spec 6/17 explicit tool-intent fallback (additive) ----------------
+    @staticmethod
+    def _apply_task_confirmation(task: Task, tool_name: str, args: dict[str, Any]) -> None:
+        if (
+            tool_name == "global_connector"
+            and args.get("name") == task.data.get("confirmed_connection") == "moon_local"
+        ):
+            args["confirmed"] = True
+
     async def _try_explicit_tool(self, task, final_text: str, agent):
         """If the prompt explicitly asks for a known tool and the model did not
         call it, invoke the tool deterministically and fold the real result into
@@ -2526,6 +2535,22 @@ class Orchestrator:
                 args = {"code": code}
             elif chosen == "file_manager":
                 args = {"action": "list", "path": "."}
+            elif chosen == "unit_converter":
+                import re
+
+                match = re.search(
+                    r"\b(?:convert\s+)?([-+]?\d+(?:\.\d+)?)\s*([a-z]+)\s+"
+                    r"(?:to|into)\s+([a-z]+)\b",
+                    task.prompt,
+                    re.IGNORECASE,
+                )
+                if not match:
+                    return None
+                args = {
+                    "value": float(match.group(1)),
+                    "from_unit": match.group(2).lower(),
+                    "to_unit": match.group(3).lower(),
+                }
             elif chosen == "terminal":
                 import re as _re
                 p = task.prompt or ""
@@ -2556,6 +2581,7 @@ class Orchestrator:
             _emit("TOOL_STARTED", execution_id=task.id, agent_id=agent.name, detail=chosen)
         except Exception:  # noqa: BLE001
             pass
+        self._apply_task_confirmation(task, chosen, args)
         result = await self._tools.run(chosen, args, agent=agent)
         out = str(result.output)
         try:

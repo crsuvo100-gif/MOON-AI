@@ -24,6 +24,7 @@ dependencies = [
     "tenacity>=8.2",
     "flask",
     "flask-socketio",
+    "PyYAML>=6.0",
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
 ]
@@ -59,6 +60,14 @@ py-modules = ["main"]
 [tool.setuptools.packages.find]
 include = ["app*", "plugins*", "scripts*", "moon*"]
 exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+app = [
+    "config/agents.json",
+    "prompts/templates/moon_system.md",
+    "terminal/risk_policy.yaml",
+    "terminal/ui.css",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

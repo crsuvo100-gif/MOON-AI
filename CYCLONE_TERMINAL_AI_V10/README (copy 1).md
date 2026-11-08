@@ -1,0 +1,173 @@
+# MOON -- Neural Brain Command Center
+
+A self-hosted autonomous AI agent with its own "brain", connected per-agent
+brains, and continuous self-learning. The interface is the web-based Neural
+Brain Command Center at `http://127.0.0.1:8777`.
+
+## Features
+- **Main brain (LongTermMemory + KnowledgeBase)** -- durable, survives restarts.
+- **Per-agent brains** -- 41 specialist agents, each with its own isolated memory connected to the main brain.
+- **Autonomous self-learning** -- every interaction's facts, tool outcomes, and lessons are consolidated into the durable brain (`enable_auto_learning`).
+- **Neural Brain Command Center** -- live canvas visualization of the brain mesh, connected-agent mesh, and live cognition channel over WebSocket.
+- **Always-connected GitHub** -- MOON autonomously pulls needed tools/plugins/skills from the connected repo on demand.
+
+## Female Voice & Dictation
+
+MOON speaks with a warm, clearly-FEMALE voice (espeak female voice `f5` + a SoX
+timbre chain: pitch lift, body/bass, air/treble, subtle chorus + reverb for an
+intimate, attractive tone; Kokoro-ONNX is used automatically when installed).
+Presets: `default`, `seductive`, `warm`, `crystal`.
+
+```bash
+make serve                    # API + HUD; replies are spoken automatically
+make install-optional         # optional heavy audio extras (Kokoro, torch/F5-TTS, vosk)
+curl -s localhost:8777/api/voice/status   # active backend + available voices
+```
+
+The voice APIs are `GET /api/voice/status`, `POST /api/voice/set` (select a
+preset) and `POST /api/voice/clone` (register a voice sample). For speech
+*dictation* install `vosk` + `pyaudio` (`make install-optional`) and set
+`VOSK_MODEL_DIR`. The voice module is `app/voice.py`; the premium/cloning engine
+is `app/voice_engine.py`. System fallback binaries: `sudo apt install espeak-ng sox`.
+
+## Quick start
+
+### Starting the terminal UI
+
+The default entry point for the interactive terminal UI is:
+
+```bash
+python -m moon terminal
+```
+
+Compatibility alias for older launch scripts and docs:
+
+```bash
+python -m moon_terminal
+```
+
+Both commands launch the same terminal experience. Running `python -m moon` without arguments also launches the terminal, as it is the default sub-command. Use this command to open the terminal, issue commands, and interact with MOON’s agents.
+
+
+```bash
+python -m venv .venv && .venv/bin/pip install -r requirements.txt
+cp .env.example .env
+make serve          # MOON Neural Command Center at http://127.0.0.1:8777
+```
+
+> ### GitHub login prompt when cloning? (read this)
+> MOON has **no password or login screen**. If `git clone` asks for
+> `Username for 'https://github.com'` / `Password`, that is **Git/GitHub's own
+> credential prompt** — triggered by the repo's **visibility**, which only the
+> repo owner can change on GitHub. Nothing in MOON controls it. To clone from
+> GitHub with no (or minimal) friction, pick ONE:
+> 1. **Make the repo PUBLIC** (GitHub → repo Settings → Danger Zone → Change
+>    visibility → Public). Then `git clone https://github.com/crsuvo100-gif/MOON-AI.git`
+>    works with **no credentials at all**. This is the only way to get a truly
+>    password-free install.
+> 2. **Use SSH** (recommended for private repos): `git clone
+>    git@github.com:crsuvo100-gif/MOON-AI.git`. Add your SSH key to GitHub
+>    (Settings → SSH and GPG keys) — no password needed afterward.
+> 3. **Use HTTPS + a PAT**: username = your GitHub login (`meow`); password =
+>    a **Personal Access Token** (GitHub disabled account-password git auth in
+>    2021). Create one at GitHub → Settings → Developer settings → PATs.
+## Configuration (`.env`)
+| Key | Default | Purpose |
+|-----|---------|---------|
+| `MODEL_BASE_URL` | `http://127.0.0.1:11434/v1` | OpenAI-compatible local endpoint |
+| `MODEL_NAME` | `qwen2.5:1.5b` | model id |
+| `ENABLE_AUTO_LEARNING` | `true` | MOON learns from every interaction |
+| `ENABLE_AGENT_VALIDATION` | `true` | two-phase main-brain validation |
+| `GITHUB_REPO` | _(empty; set in `.env`)_ | connected repo for auto tool-pull — see `.env.example` |
+
+## Tests
+```bash
+make test
+```
+
+---
+
+## Python-First Architecture & Portability
+
+MOON is a **Python-first** application. The core (orchestrator, agents, tools,
+memory, model layer, services, terminal/UI, APIs) is implemented in Python and
+runs on any machine with a compatible Python. Shell scripts (`install.sh`,
+`start.sh`, `scripts/*.sh`, `Makefile`) are **optional convenience/bootstrap
+wrappers only** — the real application is always launched through Python.
+
+### Requirements
+| Requirement | Minimum | Recommended |
+|-------------|---------|-------------|
+| Python | 3.10 | 3.11–3.14 (3.14 tested) |
+| OS | Linux, macOS, Windows | Linux (Debian/Ubuntu/Kali), macOS, Windows 10+ |
+| CPU arch | x86_64, arm64 | x86_64 or arm64 |
+| RAM | 4 GB | 8 GB+ |
+| Storage | 2 GB (code + deps) | 10 GB+ (with models) |
+| Network | localhost model endpoint OR cloud API | both |
+| GPU | optional | optional (CPU works; GPU accelerates local models) |
+
+MOON uses `pathlib`, `platform`, and `sys` for portable paths/OS detection;
+the core contains **no hard-coded `/home/meow`, Kali, or Linux-only paths**
+(override the project root with `MOON_PROJECT_ROOT` if needed). OS-specific
+behaviour is limited to a **multi-platform package-manager abstraction** in
+`app/capability/installer.py` (apt/dnf/pacman/apk) and the optional Linux
+`systemctl` auto-start wiring in `main.py`.
+
+### Model dependencies
+MOON talks to an **OpenAI-compatible** endpoint. Options:
+- **Local** (default, CPU-friendly): [Ollama](https://ollama.com) serving
+  `qwen2.5:1.5b` (the code default), `qwen2.5:3b`, `qwen2.5-coder:1.5b`, etc.
+  Start Ollama, then `ollama pull qwen2.5:1.5b`.
+- **Cloud**: set `OPENAI_API_KEY` / `OPENROUTER_API_KEY` / `HUGGINGFACE_API_KEY`
+  in `.env` for the hosted fallback chain.
+
+### Install (Python)
+```bash
+git clone git@github.com:crsuvo100-gif/MOON-AI.git
+cd MOON-AI
+python -m venv .venv && .venv/bin/pip install -e .
+cp .env.example .env          # then fill in secrets (NEVER commit .env)
+python -m moon install        # bootstrap venv + deps + (best-effort) models
+```
+
+### Commands (all Python — `python -m moon <cmd>`)
+| Command | Purpose |
+|---------|---------|
+| `python -m moon` | Launch the interactive terminal (REPL) — web UI is `make serve` |
+| `python -m moon run "task"` | Run a single task and exit (or launch CLI terminal if no task) |
+| `python -m moon doctor` | Health check (Python/deps/config/DB/agents/tools/model/git) → PASS/WARN/FAIL |
+| `python -m moon status` | Check the live backend `/api/health` |
+| `python -m moon backup` | Snapshot runtime data into `backups/moon_<ts>/` (cross-platform) |
+| `python -m moon restore <snapshot>` | Restore a backup over live data |
+| `python -m moon install` | Python bootstrap installer (venv + deps + models) |
+| `python -m moon update` | Safe update: `git pull --ff-only` + `pip install -e . --upgrade` |
+| `python -m moon models` | Pre-pull per-agent preferred models |
+| `python -m moon telegram` | Telegram bot listener |
+| `python -m moon version` | Print version |
+
+> The installed `moon` console script (`pyproject.toml [project.scripts]`) also
+> works after `pip install -e .`.
+
+### Recovery workflow (clean compatible machine)
+```bash
+git clone git@github.com:crsuvo100-gif/MOON-AI.git
+cd MOON-AI
+python -m venv .venv && .venv/bin/pip install -e .
+cp .env.example .env            # supply real secrets
+python -m moon install          # venv + dependencies (+ local models if Ollama present)
+python -m moon doctor           # verify the machine is ready
+python -m moon                  # launch -> complete MOON (agents, tools, services, UI)
+```
+Runtime data (`data/`, `capabilities/`, `connections/`, `*.db`) is **not**
+committed to Git (see `.gitignore`); it is recreated on first run and can be
+restored from a `python -m moon backup` snapshot. Secrets (`.env`) and model
+files are never committed.
+
+### Backup / Restore
+```bash
+python -m moon backup           # -> backups/moon_YYYYMMDD_HHMMSS/
+python -m moon restore backups/moon_YYYYMMDD_HHMMSS
+```
+Backups capture agents, knowledge, memory, skills, evaluations, logs, the
+`agent_factory.db` and `executions.db`. They **exclude** `.env` (secrets) by
+design — back that up separately.

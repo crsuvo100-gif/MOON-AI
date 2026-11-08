@@ -51,7 +51,15 @@ class ToolManager:
                     specs.append({"name": t.name, "description": "", "parameters": {}})
         return specs
 
-    async def run(self, name: str, args: dict[str, Any], *, agent=None, timeout: float | None = None) -> ToolResult:
+    async def run(
+        self,
+        name: str,
+        args: dict[str, Any],
+        *,
+        agent=None,
+        timeout: float | None = None,
+        operator_confirmed: bool = False,
+    ) -> ToolResult:
         tool = self._registry.get(name)
         if tool is None or name not in self._enabled:
             return ToolResult(name=name, output=None, success=False, error="tool not available")
@@ -72,11 +80,16 @@ class ToolManager:
             logger.warning("tool %s blocked: dangerous tool not allowed", name)
             return ToolResult(name=name, output=None, success=False, error="tool requires explicit approval (dangerous)")
         try:
+            tool_args = dict(args or {})
+            if "confirmed" in tool_args:
+                # Tool arguments are model-controlled. Only a trusted caller may
+                # provide the separate operator_confirmed signal.
+                tool_args["confirmed"] = operator_confirmed is True
             to = timeout if timeout is not None else getattr(self, "_tool_timeout", None)
             if to:
-                result = await asyncio.wait_for(tool.execute(**(args or {})), timeout=to)
+                result = await asyncio.wait_for(tool.execute(**tool_args), timeout=to)
             else:
-                result = await tool.execute(**(args or {}))
+                result = await tool.execute(**tool_args)
             return ToolResult(name=name, output=result, success=True)
         except asyncio.TimeoutError:
             logger.warning("tool %s timed out after %ss", name, to)

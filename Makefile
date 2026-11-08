@@ -14,7 +14,8 @@ test:
 	$(PY) -m pytest tests -q
 
 build:
-	$(PY) -m pip install -e .
+	$(PY) -m pip uninstall -y moon-ai-agent 2>/dev/null || true
+	$(PY) -m pip install . --no-deps --force-reinstall
 
 serve:
 	python main.py terminal

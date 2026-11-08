@@ -182,13 +182,24 @@ class IntegrationHub:
         return False, f"unknown integration kind '{kind}'"
 
     # -- diagnostics / health -------------------------------------------------
-    async def health(self) -> dict[str, Any]:
+    async def health(self, *, confirmed: bool = False) -> dict[str, Any]:
         """Probe each connected integration for real reachability."""
         out: dict[str, Any] = {
             "checked_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "items": [],
         }
         for c in self.connection_gateway.list():
+            allowed, tier, reason = self.connection_gateway.authorize_egress(
+                c.url, c.scope, confirmed=confirmed
+            )
+            if not allowed:
+                out["items"].append({
+                    "name": c.name,
+                    "kind": c.kind,
+                    "status": "BLOCKED" if tier == "never" else "CONFIRMATION_REQUIRED",
+                    "detail": reason,
+                })
+                continue
             rec = self.connection_gateway.build_connector(c)
             try:
                 res = await rec.health()
@@ -207,39 +218,49 @@ class IntegrationHub:
         return out
 
     # -- execution ------------------------------------------------------------
-    async def execute_permitted_task(self, task: str, *, confirmed: bool = False) -> dict[str, Any]:
-        """Run an authorized task through the existing runtime tool layer.
+    async def execute_permitted_task(
+        self, task: str, *, confirmed: bool = False
+    ) -> dict[str, Any]:
+        """Run a task through MOON-AI's main brain and return its actual status.
 
-        This is the MOON-runtime ownership proof (spec 15): the hub hands the
-        task to the real orchestrator, which uses the real tool system, which
-        invokes the real connection gateway. MOON, not an active Hermes
-        session, owns this path.
+        Explicit confirmation is scoped to the configured ``moon_local`` peer.
         """
         from app.brain.orchestrator import Orchestrator
         from app.config.settings import get_settings
-        from app.connector.tool import GlobalConnectorTool
+        from app.models.task import Task
 
         settings = get_settings()
         orchestrator = Orchestrator(settings)
         try:
             await orchestrator.setup()
         except Exception as exc:  # noqa: BLE001
+            try:
+                await orchestrator.teardown()
+            except Exception:
+                logger.exception("orchestrator teardown failed after setup error")
             return {"ok": False, "error": f"orchestrator setup failed: {exc}"}
 
-        tool = GlobalConnectorTool()
         try:
-            res = await tool.execute(
-                action="call",
-                name="moon_local",
-                message=task,
-                confirmed=confirmed,
+            task_model = Task(
+                prompt=task,
+                agent_name="auto",
+                data={"confirmed_connection": "moon_local"} if confirmed else {},
             )
+            result = await orchestrator.run_task(task_model)
+            succeeded = result.status in {"completed", "done"} and bool(result.result)
             return {
-                "ok": True,
-                "action": "global_connector",
-                "result": str(res)[:2000],
-                "executed_via": "mock_orchestrator_task_dispatch",
+                "ok": succeeded,
+                "action": "orchestrator",
+                "status": result.status,
+                "result": str(result.result or "")[:2000],
+                "execution_id": result.id,
+                "agent": result.agent_name,
+                "executed_via": "moon_brain_orchestrator",
+                **({"error": str(result.result or "task produced no result")}
+                   if not succeeded else {}),
             }
+        except Exception as exc:  # noqa: BLE001
+            return {"ok": False, "error": f"orchestrator task failed: {exc}"}
         finally:
             try:
                 await orchestrator.teardown()

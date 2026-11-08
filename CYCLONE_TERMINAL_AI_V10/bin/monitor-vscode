@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# MOON VS Code Workflow Monitor -- startup script
+# Start the monitoring protocol for the VS Code editor workflow
+# Usage: ./bin/monitor-vscode start | stop | status | run
+
+set -euo pipefail
+
+PROJECT_ROOT="/home/meow/Projects/MOON/CYCLONE_TERMINAL_AI_V10"
+MONITOR_PID="/home/meow/.moon/vscode_monitor.pid"
+LOG_DIR="/home/meow/.moon/vscode_monitors"
+
+# Ensure log directory exists
+mkdir -p "$LOG_DIR"
+
+# Source environment if needed
+export PYTHONPATH="${PROJECT_ROOT}:${PYTHONPATH:-}"
+
+cmd="${1:-}"
+
+case "${cmd}" in
+    start)
+        # Check if already running
+        if [ -f "${MONITOR_PID}" ] && kill -0 "$(cat "${MONITOR_PID}")" 2>/dev/null; then
+            echo "monitor already running (pid $(cat "${MONITOR_PID}"))"
+            exit 0
+        fi
+        # Start the monitor daemon
+        nohup python -m moon.vscode_monitor daemon --interval 30 >>"${LOG_DIR}/monitor.log" 2>&1 &
+        echo $! > "${MONITOR_PID}"
+        echo "monitor started (pid $(cat "${MONITOR_PID}"))"
+        ;;
+    stop)
+        if [ -f "${MONITOR_PID}" ]; then
+            kill "$(cat "${MONITOR_PID}")" 2>/dev/null || true
+            rm -f "${MONITOR_PID}"
+            echo "monitor stopped"
+        else
+            echo "monitor not running (no pid file)"
+        fi
+        ;;
+    status)
+        if [ -f "${MONITOR_PID}" ] && kill -0 "$(cat "${MONITOR_PID}")" 2>/dev/null; then
+            echo "monitor running (pid $(cat "${MONITOR_PID}"))"
+        else
+            echo "monitor not running"
+        fi
+        # Show last probe result
+        python -m moon.vscode_monitor status --project-root "${PROJECT_ROOT}"
+        ;;
+    run)
+        python -m moon.vscode_monitor run --project-root "${PROJECT_ROOT}"
+        ;;
+    *)
+        echo "Usage: ${0} {start|stop|status|run}"
+        exit 1
+        ;;
+esac

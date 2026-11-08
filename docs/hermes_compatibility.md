@@ -2,6 +2,54 @@
 
 This document maps **Hermes Agent** capabilities to the **MOON** implementation, indicating whether each feature is **Implemented**, **Enhanced**, or **Missing** in the current codebase (as of the latest audit on 2026‑08‑16).
 
+## V13 integration status (2026-11-05)
+
+The installed Hermes Agent is v0.22.6. `hermes acp --check` passes. MOON now
+includes an optional `ACPSubprocessConnector` for ACP stdio initialization,
+session creation, text delegation, bounded response collection, task status,
+timeouts, and protocol errors. It validates protocol version and the declared
+`agentCapabilities` object. A local fake ACP agent verifies the protocol flow,
+permission rejection, and timeout behavior.
+
+The adapter is exposed as an explicit operator CLI command:
+
+```bash
+moon acp --inspect --workspace /path/to/project --confirm
+moon acp "Review the selected project task" --workspace /path/to/project --confirm
+```
+
+Both `main.py` and `python -m moon` expose this command. It does not start
+automatically, and it is not exposed as an agent-facing tool/API. A live Hermes
+session was not started or tested; no Hermes service was enabled. ACP itself is
+not a process sandbox: the local agent has the invoking account's OS
+permissions and may use configured external providers. The client advertises
+no filesystem or terminal capabilities, sends no MCP servers, rejects
+permission requests, and only delegates after the operator passes `--confirm`.
+Hermes compatibility must not be inferred from the existing
+OpenAI-compatible agent connector.
+
+The MOON connector audit made these verified, additive changes:
+
+- Agent credentials are sent only when explicitly referenced by an environment
+  variable; the value is not persisted in the connection registry.
+- Inline MCP environment values are never serialized into the connection
+  registry or API responses; legacy persisted values are ignored with a
+  warning. Supply sensitive values through the MOON process environment.
+- Connection registry updates use a flushed temporary file and atomic replace;
+  failed writes preserve the previously persisted registry.
+- Agent and WebSocket health checks perform real requests. MCP health performs
+  initialization and `tools/list`; stdio MCP requires an explicit command.
+- No remote host or loopback is implicitly trusted. Only exact hosts explicitly
+  listed in `ALLOWED_EGRESS_HOSTS` are auto-allowed. ToolManager ignores
+  model-supplied confirmation arguments; the gateway API accepts confirmation
+  only from an authenticated request when a terminal access token is configured.
+- MCP methods are restricted to the supported protocol operations.
+
+Focused local tests cover these behaviors, the MCP stdio round trip, and the
+ACP protocol flow against a fake agent. The five-phase MOON V13 roadmap
+remains in progress; this is not a claim that the Hermes connector is fully
+integrated or that all five phases are complete.
+
 ---
 
 ## Capability Matrix

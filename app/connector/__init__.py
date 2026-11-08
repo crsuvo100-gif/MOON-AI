@@ -19,12 +19,16 @@ app.security.authorization.require_auth. Nothing egresses without a passing gate
 
 from __future__ import annotations
 
+from app.connector.acp import ACPError, ACPSubprocessConnector, ACPTask
 from app.connector.connectors import AgentConnector, HTTPConnector, MCPConnector, WebSocketConnector
 from app.connector.gateway import ConnectionGateway, ConnectionRecord
 from app.connector.permission import ConnectorPermissionManager
 from app.connector.tool import GlobalConnectorTool
 
 __all__ = [
+    "ACPError",
+    "ACPSubprocessConnector",
+    "ACPTask",
     "AgentConnector",
     "ConnectionGateway",
     "ConnectionRecord",

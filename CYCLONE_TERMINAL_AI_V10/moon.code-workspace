@@ -1,0 +1,37 @@
+{
+  "folders": [
+    {
+      "path": "/home/meow/Projects/MOON"
+    }
+  ],
+  "settings": {
+    "editor.tabSize": 2,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "git.autofetch": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+      "tests"
+    ],
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.black-formatter"
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "formulahendry.acp-client",
+      "github.vscode-pull-request-github",
+      "rangav.vscode-thunder-client",
+      "eamodio.gitlens",
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "ms-python.black-formatter",
+      "ms-python.debugpy",
+      "jagreehal.rundebug",
+      "omercnet.vscode-acp",
+      "qwenlm.qwen-code-vscode-ide-companion"
+    ]
+  }
+}

@@ -37,8 +37,20 @@ class InstallResult:
 
 
 class InstallationManager:
-    def __init__(self) -> None:
+    def __init__(self, confirm=None) -> None:
         self._pm = self._detect_pkg_manager()
+        self._confirm = confirm
+
+    def _approved(self, method: str, package: str) -> bool:
+        if self._confirm is None:
+            return False
+        try:
+            return self._confirm(
+                f"install package '{package}' using {method} (external code execution)"
+            ) is True
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("package installation confirmation failed: %s", exc)
+            return False
 
     @staticmethod
     def _detect_pkg_manager() -> str | None:
@@ -57,6 +69,8 @@ class InstallationManager:
         return bool(shutil.which(util))
 
     def install_pip(self, package: str, *, timeout: int = 240) -> InstallResult:
+        if not self._approved("pip", package):
+            return InstallResult(False, "blocked", "explicit confirmation required for package installation")
         if not shutil.which(sys.executable) and not shutil.which("pip"):
             return InstallResult(False, "pip", "pip unavailable")
         exe = [sys.executable, "-m", "pip", "install", "--quiet", package]
@@ -69,6 +83,8 @@ class InstallationManager:
             return InstallResult(False, "pip", str(exc))
 
     def install_npm(self, package: str, *, timeout: int = 240) -> InstallResult:
+        if not self._approved("npm", package):
+            return InstallResult(False, "blocked", "explicit confirmation required for package installation")
         if not shutil.which("npm"):
             return InstallResult(False, "npm", "npm unavailable")
         try:
@@ -81,6 +97,8 @@ class InstallationManager:
             return InstallResult(False, "npm", str(exc))
 
     def install_system(self, package: str, *, timeout: int = 300) -> InstallResult:
+        if not self._approved("system package manager", package):
+            return InstallResult(False, "blocked", "explicit confirmation required for package installation")
         if self._pm is None:
             return InstallResult(False, "system", "no supported OS package manager")
         # build the exact command per manager
@@ -118,6 +136,8 @@ class InstallationManager:
         if method == "system":
             return self.install_system(spec.get("package", ""))
         if method in ("go", "cargo"):
+            if not self._approved(method, spec.get("package", "")):
+                return InstallResult(False, "blocked", "explicit confirmation required for package installation")
             exe = method
             if not shutil.which(exe):
                 return InstallResult(False, method, f"{exe} unavailable")

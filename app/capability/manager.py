@@ -74,7 +74,7 @@ class CapabilityManager:
                  workspace: str | None = None) -> None:
         self.registry = registry or CapabilityRegistry()
         self.permissions = PermissionManager(confirmation_callback=confirm)
-        self.installer = InstallationManager()
+        self.installer = InstallationManager(confirm=confirm)
         self.verifier = VerificationEngine()
         self.repair = SelfRepairEngine(max_retries=3)
         self.sandbox = SandboxExecutor(workspace_root=workspace)
@@ -131,11 +131,11 @@ class CapabilityManager:
         while self.repair.should_retry(attempt):
             attempt += 1
             if spec is not None:
-                # Route installs through sandbox when possible
-                try:
-                    res = await self.sandbox.install(spec)
-                except Exception:
-                    res = self.installer.install(spec)
+                res = self.installer.install(spec)
+                if res.method == "blocked":
+                    return AcquisitionResult(
+                        name, "blocked", "", res.detail, {"method": res.method}
+                    )
                 last_err = res.detail
                 if res.ok:
                     vr = self.verifier.verify(spec["type"], spec["verify"])
@@ -150,10 +150,15 @@ class CapabilityManager:
                 if plan.recoverable and plan.action.startswith("pip:"):
                     pkg = plan.action.split(":", 1)[1]
                     if pkg and pkg != "unknown":
-                        try:
-                            await self.sandbox.install_pip(pkg)
-                        except Exception:
-                            self.installer.install_pip(pkg)
+                        repair_result = self.installer.install_pip(pkg)
+                        if repair_result.method == "blocked":
+                            return AcquisitionResult(
+                                name, "blocked", "", repair_result.detail,
+                                {"method": repair_result.method},
+                            )
+                        if not repair_result.ok:
+                            last_err = repair_result.detail
+                            break
                         await self.repair.backoff(attempt)
                         continue
                 if plan.action == "retry":

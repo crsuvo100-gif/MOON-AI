@@ -20,3 +20,13 @@ def test_role_groups_present():
 def test_select_returns_capability_match():
     reg = get_registry()
     assert reg.select(capability="coding")[0].id == "coding"
+
+
+def test_browser_agent_manifest_matches_read_only_tools():
+    browser = get_registry().get("browser_agent")
+    assert browser is not None
+    assert {"web_navigation", "read_web_page", "web_search"} <= set(browser.capabilities)
+    assert {"browser", "web_search"} <= set(browser.required_tools)
+    assert "web:read" in browser.permissions
+    assert not {"browser_control", "web_interaction"} & set(browser.capabilities)
+    assert "web:write" not in browser.permissions

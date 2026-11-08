@@ -3,25 +3,21 @@
 from __future__ import annotations
 
 import json
-import time
 
 import pytest
 
 from app.memory import backup as B
 from app.memory.context_engine import (
-    ContextEngine,
     MEMORY_BLOCK_HEADER,
-    dedupe_items,
+    ContextEngine,
     estimate_tokens,
 )
 from app.memory.health import MemoryHealthService
 from app.memory.record import (
     Importance,
     MemoryRecord,
-    MemoryType,
     Scope,
     SourceType,
-    SyncStatus,
 )
 from app.memory.store import LocalMemoryStore
 from app.memory.sync import (
@@ -111,9 +107,38 @@ def test_backup_rotation(store, tmp_path, monkeypatch) -> None:
     """spec 47: rotation must bound storage."""
     monkeypatch.setenv("MOON-AI_BACKUP_PATH", str(tmp_path / "bk"))
     for i in range(5):
-        p = B.create_backup(store, name=f"moon_memory_test_{i:02d}", keep=3)
+        B.create_backup(store, name=f"moon_memory_test_{i:02d}", keep=3)
     backups = B.list_backups()
     assert len(backups) <= 3, f"rotation failed: {len(backups)} kept"
+
+
+def test_backup_names_are_safe_and_collision_does_not_replace(store, tmp_path, monkeypatch) -> None:
+    backup_root = tmp_path / "bk"
+    monkeypatch.setenv("MOON-AI_BACKUP_PATH", str(backup_root))
+    with pytest.raises(ValueError, match="filename-safe"):
+        B.create_backup(store, name="../escape")
+    assert not (tmp_path / "escape.json").exists()
+
+    path = B.create_backup(store, name="moon_memory_safe")
+    original = path.read_bytes()
+    with pytest.raises(FileExistsError):
+        B.create_backup(store, name="moon_memory_safe")
+    assert path.read_bytes() == original
+    with pytest.raises(ValueError, match="retention"):
+        B.create_backup(store, name="valid_name", keep=0)
+
+
+def test_export_preserves_existing_file_unless_overwrite_is_explicit(
+    store, tmp_path
+) -> None:
+    target = tmp_path / "export.json"
+    target.write_text("existing", encoding="utf-8")
+    with pytest.raises(FileExistsError):
+        B.export_json(store, target)
+    assert target.read_text(encoding="utf-8") == "existing"
+
+    B.export_json(store, target, overwrite=True)
+    assert isinstance(json.loads(target.read_text(encoding="utf-8")), list)
 
 
 def test_import_validates_and_rejects(store) -> None:
@@ -127,6 +152,13 @@ def test_import_validates_and_rejects(store) -> None:
     assert rep.inserted == 1
     assert rep.rejected_secret == 1
     assert rep.rejected_schema == 1
+
+
+def test_import_rejects_oversized_memory_fields(store) -> None:
+    rep = B.import_records(store, [{"content": "x" * 100_001}])
+    assert rep.received == 1
+    assert rep.rejected_schema == 1
+    assert rep.inserted == 0
 
 
 def test_backup_restore_roundtrip(store, tmp_path, monkeypatch) -> None:

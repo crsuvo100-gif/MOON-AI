@@ -1,10 +1,9 @@
 """SandboxExecutor -- run installs/tests with isolation best-effort.
 
-Uses the BEST isolation the host already supports (never forces Docker). Tries,
-in order: bubblewrap (bwrap) -> podman -> docker -> restricted workspace (cwd
-only, resource-limited, network-off where possible) -> plain local (last
-resort, only for safe workspace-level operations). The sandbox must prevent a
-newly discovered tool from receiving unrestricted control of the host.
+Uses the best available isolation runtime without forcing Docker. Tries, in
+order: bubblewrap (bwrap) -> podman -> docker -> workspace fallback. The
+fallback sanitizes environment variables, limits captured output, and applies
+a timeout, but does not isolate filesystem access or disable networking.
 """
 
 from __future__ import annotations
@@ -12,7 +11,9 @@ from __future__ import annotations
 import logging
 import os
 import shutil
+import signal
 import subprocess
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -28,6 +29,12 @@ class SandboxResult:
 
 
 class SandboxExecutor:
+    _MAX_CAPTURE_BYTES = 1_000_000
+    _SAFE_ENV_KEYS = (
+        "PATH", "HOME", "USER", "LOGNAME", "LANG", "LC_ALL", "LC_CTYPE",
+        "TMPDIR", "TMP", "TEMP", "SYSTEMROOT", "WINDIR", "COMSPEC", "PATHEXT",
+    )
+
     def __init__(self, workspace_root: str | Path | None = None) -> None:
         self.workspace = Path(workspace_root or Path.cwd()).resolve()
         self._method = self._detect()
@@ -48,8 +55,7 @@ class SandboxExecutor:
     def run(self, cmd: list[str], *, timeout: int = 180, network: bool = False,
             cwd: str | Path | None = None) -> SandboxResult:
         cwd_path = Path(cwd or self.workspace).resolve()
-        env = dict(os.environ)
-        env.pop("PYTHONPATH", None)
+        env = {key: os.environ[key] for key in self._SAFE_ENV_KEYS if key in os.environ}
         if self._method == "bubblewrap":
             return self._run_bwrap(cmd, timeout, network, cwd_path, env)
         if self._method == "podman":
@@ -88,25 +94,99 @@ class SandboxExecutor:
         return self._exec(dcmd, timeout, cwd, env)
 
     def _run_workspace(self, cmd, timeout, network, cwd, env) -> SandboxResult:
-        # No container runtime: confine to workspace, disable network only if the
-        # caller opted in AND an env knob is set (we never silently cut network).
+        # This fallback only sanitizes the environment and bounds execution/output;
+        # it does not provide filesystem, resource, or network isolation.
+        if not network:
+            logger.warning("sandbox workspace fallback cannot disable network access")
         return self._exec(cmd, timeout, cwd, env)
 
     def _exec(self, cmd, timeout, cwd, env) -> SandboxResult:
+        captured: dict[str, bytearray] = {
+            "stdout": bytearray(),
+            "stderr": bytearray(),
+        }
+        truncated = {"stdout": False, "stderr": False}
+
+        def drain(stream, name: str) -> None:
+            try:
+                while True:
+                    chunk = stream.read(8192)
+                    if not chunk:
+                        return
+                    available = self._MAX_CAPTURE_BYTES - len(captured[name])
+                    if available > 0:
+                        captured[name].extend(chunk[:available])
+                    if len(chunk) > available:
+                        truncated[name] = True
+            except (OSError, ValueError):
+                return
+
         try:
-            r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True,
-                               timeout=timeout, env=env)
-            return SandboxResult(r.returncode, r.stdout or "", r.stderr or "", self._method)
-        except subprocess.TimeoutExpired:
-            return SandboxResult(124, "", "sandbox: command timed out", self._method)
+            process = subprocess.Popen(
+                cmd,
+                cwd=cwd,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env,
+                start_new_session=(os.name == "posix"),
+            )
+            readers = [
+                threading.Thread(target=drain, args=(process.stdout, "stdout"), daemon=True),
+                threading.Thread(target=drain, args=(process.stderr, "stderr"), daemon=True),
+            ]
+            for reader in readers:
+                reader.start()
+            try:
+                returncode = process.wait(timeout=timeout)
+            except subprocess.TimeoutExpired:
+                if os.name == "posix":
+                    try:
+                        os.killpg(process.pid, signal.SIGTERM)
+                    except ProcessLookupError:
+                        pass
+                else:
+                    process.terminate()
+                try:
+                    process.wait(timeout=1)
+                except subprocess.TimeoutExpired:
+                    if os.name == "posix":
+                        try:
+                            os.killpg(process.pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                    else:
+                        process.kill()
+                    process.wait()
+                for reader in readers:
+                    reader.join(timeout=2)
+                return SandboxResult(124, "", "sandbox: command timed out", self._method)
+            finally:
+                if process.stdout:
+                    process.stdout.close()
+                if process.stderr:
+                    process.stderr.close()
+            for reader in readers:
+                reader.join()
+
+            def output(name: str) -> str:
+                value = bytes(captured[name]).decode("utf-8", errors="replace")
+                if truncated[name]:
+                    value += "\n[sandbox output truncated]"
+                return value
+
+            return SandboxResult(returncode, output("stdout"), output("stderr"), self._method)
         except Exception as exc:  # noqa: BLE001
+            logger.warning("sandbox command failed: %s", exc)
             return SandboxResult(1, "", f"sandbox error: {exc}", self._method)
 
     # ------------------------------------------------------------------
-    # High-level install helpers used by CapabilityManager
+    # Optional install helpers; the workspace fallback must never run installers.
     # ------------------------------------------------------------------
     def install(self, spec: dict) -> SandboxResult:
         """Install a capability spec inside the sandbox."""
+        if self._method == "workspace":
+            return self._workspace_install_error()
         method = spec.get("method", "pip")
         pkg = spec.get("package", "")
         if method == "pip":
@@ -117,4 +197,13 @@ class SandboxExecutor:
 
     def install_pip(self, pkg: str) -> SandboxResult:
         """Install a pip package inside the sandbox."""
+        if self._method == "workspace":
+            return self._workspace_install_error()
         return self.run(["pip", "install", pkg], timeout=300)
+
+    def _workspace_install_error(self) -> SandboxResult:
+        message = (
+            "sandboxed installation unavailable: install requires bubblewrap, "
+            "podman, or docker; workspace fallback is not an isolation boundary"
+        )
+        return SandboxResult(1, "", message, self._method)

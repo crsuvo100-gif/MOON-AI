@@ -137,12 +137,17 @@ python -m moon install        # bootstrap venv + deps + (best-effort) models
 || `python -m moon doctor` | Health check (Python/deps/config/DB/agents/tools/model/git) → PASS/WARN/FAIL |
 || `python -m moon status` | Check the live backend `/api/health` |
 || `python -m moon backup` | Snapshot runtime data into `backups/moon_<ts>/` (cross-platform) |
-|| `python -m moon restore <snapshot>` | Restore a backup over live data |
+|| `python -m moon restore <snapshot>` | Restore without replacing existing runtime files |
+|| `python -m moon restore <snapshot> --confirm-overwrite` | Restore and replace conflicting runtime files after review |
 || `python -m moon install` | Python bootstrap installer (venv + deps + models) |
 || `python -m moon update` | Safe update: `git pull --ff-only` + `pip install -e . --upgrade` |
 || `python -m moon models` | Pre-pull per-agent preferred models |
 || `python -m moon telegram` | Telegram bot listener |
 || `python -m moon version` | Print version |
+
+Restore refuses to replace existing runtime files by default. Review the
+snapshot and pass `--confirm-overwrite` to replace conflicting files; restore
+merges the selected runtime paths and does not delete unrelated live files.
 
 > The installed `moon` console script (`pyproject.toml [project.scripts]`) also
 > works after `pip install -e .`.

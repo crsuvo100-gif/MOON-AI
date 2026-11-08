@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
@@ -50,6 +49,13 @@ def get_gateway_router() -> APIRouter:
 
     def _auth_ok(headers: dict | None) -> bool:
         return not TERMINAL_TOKEN or _token_ok(headers or {})
+
+    def _operator_confirmed(headers: dict, supplied: object) -> bool:
+        return (
+            supplied is True
+            and bool(TERMINAL_TOKEN)
+            and _token_ok(headers)
+        )
 
     # -- lifecycle -----------------------------------------------------------
     @router.get("/health")
@@ -90,6 +96,19 @@ def get_gateway_router() -> APIRouter:
             credential_ref=str(body.get("credential_ref", "")),
             enabled=bool(body.get("enabled", True)),
         )
+        allowed, tier, reason = gw.authorize_egress(
+            rec.url,
+            rec.scope,
+            confirmed=_operator_confirmed(dict(request.headers), body.get("confirmed")),
+        )
+        if not allowed:
+            return JSONResponse(
+                {
+                    "error": reason,
+                    "confirmation_required": tier == "confirmation",
+                },
+                status_code=403,
+            )
         gw.register(rec)
         return JSONResponse({"name": rec.name, "kind": rec.kind, "url": rec.url,
                              "status": rec.last_status}, status_code=201)
@@ -140,6 +159,26 @@ def get_gateway_router() -> APIRouter:
         if rec is None:
             return JSONResponse({"error": f"no connection named '{conn_id}'"},
                                 status_code=404)
+        if not rec.enabled:
+            return JSONResponse({"error": f"connection '{conn_id}' is disabled"},
+                                status_code=409)
+        try:
+            body = await request.json()
+        except Exception:  # noqa: BLE001
+            body = {}
+        allowed, tier, reason = gw.authorize_egress(
+            rec.url,
+            rec.scope,
+            confirmed=_operator_confirmed(dict(request.headers), body.get("confirmed")),
+        )
+        if not allowed:
+            return JSONResponse(
+                {
+                    "error": reason,
+                    "confirmation_required": tier == "confirmation",
+                },
+                status_code=403,
+            )
         conn = gw.build_connector(rec)
         try:
             if rec.kind == "agent":
@@ -148,16 +187,14 @@ def get_gateway_router() -> APIRouter:
             elif rec.kind == "websocket":
                 res = await conn.send_recv("__gateway_check__")
             elif rec.kind == "mcp":
-                # Establish the transport before probing. Previously this branch
-                # called conn._call("list_tools") directly, which returned
-                # "MCP transport not connected; call connect() first" whenever
-                # connect() was never invoked -- so every MCP connection looked
-                # permanently disconnected. Now we connect first; if the transport
-                # fails to open, surface that real error instead of a stale one.
                 c_res = await conn.connect()
-                res = await conn._call("list_tools")
-                if not res.ok:
-                    res = c_res if not c_res.ok else res
+                if not c_res.ok:
+                    res = c_res
+                else:
+                    try:
+                        res = await conn.list_tools()
+                    finally:
+                        await conn.close()
             else:
                 res = await conn.call("GET", "/")
             gw.set_status(conn_id, "ok" if res.ok else f"error:{res.error or res.status}")

@@ -44,7 +44,7 @@ class GlobalConnectorTool(BaseTool):
         if action == "call":
             return await self._call(kwargs)
         if action == "health":
-            return await self._health()
+            return await self._health(kwargs)
         if action == "disconnect":
             return self._disconnect(kwargs)
         if action == "federate":
@@ -64,12 +64,15 @@ class GlobalConnectorTool(BaseTool):
             "webhook": "network.webhook", "mcp": "network.service",
             "websocket": "network.service",
         }.get(kind, "network.egress")
-        allowed, tier, reason = self._gw.check_connection(name, host, scope)
+        allowed, tier, reason = self._gw.authorize_egress(
+            url, scope, confirmed=kw.get("confirmed") is True
+        )
         if not allowed and tier == "never":
             return f"[global_connector] BLOCKED: {reason}"
         if not allowed and tier == "confirmation" and not kw.get("confirmed"):
-            return (f"[global_connector] CONFIRMATION REQUIRED to connect to '{host}' "
-                    f"({reason}). Re-issue with confirmed=true if Psycho approves.")
+            return (f"[global_connector] OPERATOR CONFIRMATION REQUIRED to connect to '{host}' "
+                    f"({reason}). Model-provided confirmation is not sufficient; configure "
+                    "ALLOWED_EGRESS_HOSTS or use a trusted approval path.")
         rec = ConnectionRecord(
             name=name, kind=kind, url=url, model=kw.get("model", ""),
             scope=scope, permissions=(scope,), credential_ref=kw.get("credential_ref", ""),
@@ -86,8 +89,11 @@ class GlobalConnectorTool(BaseTool):
         lines = ["[global_connector] registered connections:"]
         for c in conns:
             lines.append(f"  - {c.name} [{c.kind}] {c.url}  status={c.last_status}")
-        lines.append("\nEgress is permission-gated: allowlisted/private hosts = SAFE (auto); "
-                     "others = CONFIRMATION (Psycho approves). secrets.read = NEVER auto.")
+        lines.append(
+            "\nEgress is permission-gated: explicitly allowlisted hosts are SAFE; "
+            "all other destinations, including loopback/private hosts, require "
+            "operator confirmation. Model-generated confirmation is not trusted."
+        )
         return "\n".join(lines)
 
     async def _call(self, kw: dict) -> str:
@@ -98,12 +104,15 @@ class GlobalConnectorTool(BaseTool):
         if not rec.enabled:
             return f"[global_connector] '{name}' is disabled."
         host = self._gw.host_of(rec.url)
-        allowed, tier, reason = self._gw.check_connection(name, host, rec.scope)
+        allowed, tier, reason = self._gw.authorize_egress(
+            rec.url, rec.scope, confirmed=kw.get("confirmed") is True
+        )
         if not allowed and tier == "never":
             return f"[global_connector] BLOCKED: {reason}"
         if not allowed and tier == "confirmation" and not kw.get("confirmed"):
-            return (f"[global_connector] CONFIRMATION REQUIRED to call '{host}' "
-                    f"({reason}). Re-issue with confirmed=true if Psycho approves.")
+            return (f"[global_connector] OPERATOR CONFIRMATION REQUIRED to call '{host}' "
+                    f"({reason}). Model-provided confirmation is not sufficient; configure "
+                    "ALLOWED_EGRESS_HOSTS or use a trusted approval path.")
         conn = self._gw.build_connector(rec)
         try:
 
@@ -113,17 +122,27 @@ class GlobalConnectorTool(BaseTool):
                 # REAL websocket: open and send a message (was a no-op health() call).
                 res = await conn.send_recv(kw.get("message", ""))
             elif rec.kind == "mcp":
-                # REAL MCP: dispatch an RPC method through the connector session.
                 mcp_method = (kw.get("method") or "list_tools").lower()
-                mcp_params = {}
+                if mcp_method not in conn._CALLABLE_METHODS:
+                    return f"[global_connector] unsupported MCP method '{mcp_method}'."
+                mcp_params: dict[str, Any] = {}
                 if mcp_method == "call_tool":
-                    # Tool spec uses "tool" for the tool name; gateway uses "name".
-                    mcp_params["name"] = kw.get("tool") or kw.get("name") or ""
+                    tool_name = kw.get("tool")
+                    if not tool_name:
+                        return "[global_connector] MCP call_tool requires a tool name."
+                    mcp_params["name"] = tool_name
                     mcp_params["arguments"] = kw.get("arguments") or {}
                 else:
                     mcp_params = {k: v for k, v in kw.items()
                                   if k not in ("method", "message", "confirmed")}
-                res = await conn._call(mcp_method, **mcp_params)
+                connected = await conn.connect()
+                if not connected.ok:
+                    res = connected
+                else:
+                    try:
+                        res = await conn._call(mcp_method, **mcp_params)
+                    finally:
+                        await conn.close()
             else:
                 method = (kw.get("method") or "GET").upper()
                 res = await conn.call(method, kw.get("path", ""), json_body=kw.get("json"),
@@ -135,9 +154,16 @@ class GlobalConnectorTool(BaseTool):
         body = res.data if isinstance(res.data, str) else json.dumps(res.data, default=str)[:1500]
         return f"[global_connector] {name} -> {res.status}\n{body}"
 
-    async def _health(self) -> str:
+    async def _health(self, kw: dict) -> str:
         lines = ["[global_connector] connection health:"]
         for c in self._gw.list():
+            allowed, tier, reason = self._gw.authorize_egress(
+                c.url, c.scope, confirmed=kw.get("confirmed") is True
+            )
+            if not allowed:
+                status = "BLOCKED" if tier == "never" else "CONFIRMATION REQUIRED"
+                lines.append(f"  - {c.name} [{c.kind}] {status} :: {reason}")
+                continue
             conn = self._gw.build_connector(c)
             try:
                 res = await conn.health()
@@ -166,7 +192,12 @@ class GlobalConnectorTool(BaseTool):
         message = kw.get("message") or ""
         if not name or not message:
             return "[global_connector] federate requires name (peer agent) and message."
-        res = await self._gw.call_agent(name, message, system=kw.get("system", ""))
+        res = await self._gw.call_agent(
+            name,
+            message,
+            system=kw.get("system", ""),
+            confirmed=kw.get("confirmed") is True,
+        )
         if not res.get("ok"):
             return f"[global_connector] federation with '{name}' failed: {res.get('error')}"
         return (f"[global_connector] '{name}' (peer {res.get('agent')}) replied:\n"

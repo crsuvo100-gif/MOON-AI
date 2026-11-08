@@ -1,0 +1,96 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moon-ai-agent"
+version = "0.1.0"
+description = "MOON -- self-hosted autonomous AI agent with its own brain, connected agent brains, and a Neural Brain Command Center UI."
+readme = "README.md"
+requires-python = ">=3.10"
+# Keep in sync with requirements.txt. Listed here so `pip install .` works on
+# any machine without first reading requirements.txt.
+dependencies = [
+    "fastapi>=0.141",
+    "uvicorn[standard]>=0.52",
+    "pydantic>=2.13",
+    "pydantic-settings>=2.15",
+    "anyio>=4.3",
+    "httpx>=0.27",
+    "openai>=2.53",
+    "numpy>=1.26",
+    "requests>=2.31",
+    "python-dotenv>=1.0",
+    "rich>=13.7",
+    "tenacity>=8.2",
+    "PyYAML>=6.0",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+
+[project.optional-dependencies]
+# Hugging Face hosted inference (chat + text-to-image via InferenceClient).
+# MOON works without it; install with: pip install "moon-ai-agent[hf]"
+hf = ["huggingface_hub>=0.22"]
+# Telegram channel (MOON as a Telegram bot).
+telegram = ["python-telegram-bot>=20.0"]
+# Runtime extras (optional; MOON degrades gracefully when absent):
+#   asyncpg   -> PostgreSQL cloud memory store
+#   scipy     -> audio DSP utilities
+#   kokoro-onnx -> offline female voice engine
+#   langdetect -> multilingual TTS language auto-detect
+#   torch/torchaudio -> F5-TTS voice cloning (optional)
+runtime = [
+    "asyncpg>=0.29",
+    "scipy>=1.11",
+    "kokoro-onnx>=0.2.1",
+    "langdetect>=1.0.0",
+    "torch",
+    "torchaudio",
+]
+
+[project.scripts]
+moon = "main:main"
+moon-terminal = "main:main"
+
+[tool.setuptools]
+py-modules = ["main", "moon_terminal"]
+
+[tool.setuptools.packages.find]
+include = ["app*", "apps.moon_ui*", "plugins*", "scripts*", "moon*", "skills*", "voices*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+app = ["config/*.json", "config/*.yaml", "logs/lessons.jsonl", "prompts/templates/*.md", "terminal/*.yaml", "terminal/*.css"]
+"apps.moon_ui" = ["*.html", "*.json"]
+skills = ["**/*.md"]
+voices = ["*.json", "*.txt", "*.wav"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+# Explicit rule selection. This project was authored against ruff's historic
+# default rule set (E4/E7/E9 + F). Newer ruff releases enable a far wider
+# default set (~1,000 extra findings from RUF/UP/TRY/B/etc.), so we pin the
+# original intent here to keep CI honest and stable across ruff upgrades.
+select = ["E4", "E7", "E9", "F"]
+# E501: line length is intentionally not enforced (long inline data/templates).
+# B008: FastAPI dependencies are called in default arguments by design.
+ignore = ["E501", "B008"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+
+[tool.pyrefly]
+python-version = "3.10.0"
+preset = "legacy"
+ignore-missing-imports = ["*"]

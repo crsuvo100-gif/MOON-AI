@@ -1,0 +1,38 @@
+[Unit]
+Description=MOON Agent Control Plane (local ASGI API)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=__INSTALL_PATH__/MOON
+# Run uvicorn directly so systemd tracks the real long-running server process
+# (main.py start only spawns uvicorn as a child, leaving the parent in the
+# 'activating' state). This makes the unit report 'active' cleanly.
+# Keep the unauthenticated control plane local by default.  The tunnel workflow
+# supplies a bearer token before any deliberate remote exposure.
+ExecStart=__INSTALL_PATH__/MOON/.venv/bin/python -m uvicorn app.terminal_interface:app --host 127.0.0.1 --port 8777 --log-level info
+# The visible NEURAL CORE HUD window is owned solely by moon-hud.service
+# (the keeper loop below), which opens exactly ONE window and reopens it if
+# closed. Do NOT also open it here -- running open_hud.py from ExecStartPost
+# in addition to the keeper caused duplicate HUD windows at boot.
+# Clear PYTHONPATH so the broken system Python path can't shadow MOON's venv
+Environment=PYTHONPATH=
+# Auto-restart on crash / exit so the terminal always comes back
+Restart=always
+RestartSec=3
+# Spec 32/51: memory-tight hosts must not make MOON the kernel's preferred
+# OOM victim (it was killed mid-task at oom_score_adj=200 on a 3.7GB box),
+# and MOON must stay bounded so it degrades instead of destabilising the host.
+# NOTE: a negative OOMScoreAdjust is SILENTLY IGNORED for rootless user
+# services (no CAP_SYS_RESOURCE) -- verified: MOON still ran at adj=100. So
+# we do not rely on it; the real fix is keeping MOON's footprint small
+# (packed vectors) plus the cgroup limits below.
+MemoryHigh=1500M
+MemoryMax=2200M
+OOMPolicy=continue
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

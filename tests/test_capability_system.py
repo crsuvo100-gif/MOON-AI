@@ -17,17 +17,17 @@ import pytest
 
 from app.capability import (
     CapabilityManager,
+    CapabilityManagerTool,
     CapabilityRegistry,
     PermissionManager,
     PolicyLevel,
-    CapabilityManagerTool,
 )
-from app.capability.dependency_analyzer import analyze_text, analyze_path
+from app.capability.dependency_analyzer import analyze_path, analyze_text
+from app.capability.github_retriever import GitHubRetriever, RepoCandidate
 from app.capability.installer import InstallationManager
-from app.capability.verification import VerificationEngine
-from app.capability.self_repair import SelfRepairEngine
 from app.capability.permission_manager import MINIMAL_PERMISSIONS
-from app.capability.github_retriever import RepoCandidate, GitHubRetriever
+from app.capability.self_repair import SelfRepairEngine
+from app.capability.verification import VerificationEngine
 
 
 # ---------------------------------------------------------------------------
@@ -115,15 +115,34 @@ def test_sandbox_runs_command_offline():
     assert "moon-sandbox-ok" in res.stdout
 
 
+def test_sandbox_refuses_installs_without_isolation(monkeypatch, tmp_path):
+    from app.capability.sandbox import SandboxExecutor
+
+    sb = SandboxExecutor(workspace_root=tmp_path)
+    sb._method = "workspace"
+    monkeypatch.setattr(
+        sb, "_exec", lambda *args, **kwargs: pytest.fail("unisolated install was executed")
+    )
+
+    result = sb.install({"method": "pip", "package": "example"})
+    assert result.returncode != 0
+    assert "not an isolation boundary" in result.stderr
+
+    result = sb.install_pip("example")
+    assert result.returncode != 0
+    assert "not an isolation boundary" in result.stderr
+
+
 # ---------------------------------------------------------------------------
 # Installer (dispatch only; do not actually install network packages here)
 # ---------------------------------------------------------------------------
 def test_installer_pip_dispatch_shape():
     im = InstallationManager()
-    # install_pip requires network; just assert the method returns an InstallResult
+    # No approval callback is installed, so a package install must not reach pip.
     from app.capability.installer import InstallResult
     r = im.install({"method": "pip", "package": "nonexistent-moon-pkg-xyz"})
     assert isinstance(r, InstallResult)
+    assert not r.ok and r.method == "blocked"
 
 
 def test_installer_detects_pkg_manager():
@@ -206,6 +225,45 @@ async def test_manager_tool_exposes_discover():
 
 
 @pytest.mark.asyncio
+async def test_capability_acquisition_requires_install_confirmation(tmp_path):
+    manager = CapabilityManager(registry=CapabilityRegistry(root=tmp_path))
+    result = await manager.acquire("yt-dlp", github_ok=False)
+    assert result.status == "blocked"
+    assert "confirmation" in result.detail
+
+
+@pytest.mark.asyncio
+async def test_capability_acquisition_uses_approved_installer_without_sandbox_fallback(
+    monkeypatch, tmp_path
+):
+    approved = []
+    manager = CapabilityManager(
+        registry=CapabilityRegistry(root=tmp_path),
+        confirm=lambda reason: approved.append(reason) or True,
+    )
+    from app.capability.installer import InstallResult
+
+    def failed_install(spec):
+        assert manager.installer._approved("pip", spec["package"])
+        return InstallResult(False, "pip", "mocked package failure")
+
+    monkeypatch.setattr(
+        manager.installer,
+        "install",
+        failed_install,
+    )
+    monkeypatch.setattr(
+        manager.sandbox,
+        "install",
+        lambda spec: pytest.fail("capability install bypassed the approved installer"),
+    )
+    result = await manager.acquire("yt-dlp", github_ok=False)
+    assert approved
+    assert result.status == "unavailable"
+    assert "mocked package failure" in result.detail
+
+
+@pytest.mark.asyncio
 async def test_manager_tool_list_empty():
     with tempfile.TemporaryDirectory() as d:
         tool = CapabilityManagerTool(manager=CapabilityManager(registry=CapabilityRegistry(root=Path(d))))
@@ -236,8 +294,8 @@ def test_system_prompt_includes_capability_subsystem():
 
 def test_capability_manager_tool_registered_in_registry():
     # The prompt's Section 15 maps to a real, registered agent tool.
-    from app.tools.registry import ToolRegistry
     from app.capability.tool import CapabilityManagerTool
+    from app.tools.registry import ToolRegistry
     reg = ToolRegistry()
     reg.register(CapabilityManagerTool())
     assert reg.get("capability_manager") is not None

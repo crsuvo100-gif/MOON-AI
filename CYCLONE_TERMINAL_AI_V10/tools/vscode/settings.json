@@ -1,0 +1,23 @@
+{
+  "terminal.integrated.shell.linux": "/bin/bash",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "editor.fontFamily": "'JetBrains Mono', 'Fira Code', 'Consolas', monospace",
+  "editor.fontLigatures": true,
+  "window.title": "MOON - ${dirty}${activeEditorLong}${separator}${rootName}",
+  "workbench.colorTheme": "vs-dark",
+  "files.autoSave": "onFocusChange",
+  "git.enableSmartCommit": true,
+  "editor.tabSize": 4,
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.analysis.autoImportCompletions": true,
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "terminal.integrated.env.linux": {
+    "PATH": "${env:PATH}:${workspaceFolder}/.venv/bin"
+  }
+}

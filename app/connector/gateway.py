@@ -12,6 +12,8 @@ import asyncio
 import builtins
 import json
 import logging
+import os
+import tempfile
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -45,12 +47,20 @@ class ConnectionRecord:
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
+        d.pop("env", None)
         d["permissions"] = list(self.permissions)
         return d
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> ConnectionRecord:
         d = dict(d)
+        if d.get("env"):
+            logger.warning(
+                "ignoring inline environment values in persisted connection %r; "
+                "use the MOON process environment for sensitive values",
+                d.get("name", ""),
+            )
+        d.pop("env", None)
         d["permissions"] = tuple(d.get("permissions", []))
         return cls(**d)
 
@@ -77,16 +87,42 @@ class ConnectionGateway:
                 logger.warning("connection registry load failed: %s", exc)
 
     def _save(self) -> None:
-        self._file.write_text(
-            json.dumps([c.to_dict() for c in self._conns.values()], indent=2),
-            encoding="utf-8",
-        )
+        payload = json.dumps([c.to_dict() for c in self._conns.values()], indent=2)
+        temporary: Path | None = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                dir=self._root,
+                prefix=f".{self._file.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as handle:
+                temporary = Path(handle.name)
+                handle.write(payload)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temporary, self._file)
+            temporary = None
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
 
     # -- permission gate ----------------------------------------------------
     def check_connection(self, name: str, host: str, scope: str) -> tuple[bool, str, str]:
         """Returns (allowed, tier, reason). CONFIRMATION -> caller must confirm."""
         d = self._perms.egress_decision(host, scope)
         return d.allowed, d.tier.value, d.reason
+
+    def authorize_egress(
+        self, url: str, scope: str, *, confirmed: bool = False
+    ) -> tuple[bool, str, str]:
+        """Check outbound permission consistently before any network operation."""
+        decision = self._perms.egress_decision(self.host_of(url), scope)
+        tier = decision.tier.value
+        if decision.allowed or (tier == "confirmation" and confirmed):
+            return True, tier, decision.reason
+        return False, tier, decision.reason
 
     # -- CRUD ---------------------------------------------------------------
     def register(self, rec: ConnectionRecord) -> str:
@@ -139,7 +175,13 @@ class ConnectionGateway:
             WebSocketConnector,
         )
         if rec.kind == "agent":
-            return AgentConnector(rec.url, rec.model or "gpt-4o-mini", timeout=120.0)
+            api_key = os.environ.get(rec.credential_ref) if rec.credential_ref else None
+            return AgentConnector(
+                rec.url,
+                rec.model or "gpt-4o-mini",
+                api_key=api_key,
+                timeout=120.0,
+            )
         if rec.kind == "websocket":
             return WebSocketConnector(rec.url)
         if rec.kind == "mcp":
@@ -149,7 +191,8 @@ class ConnectionGateway:
     # -- federation ---------------------------------------------------------
     async def call_agent(self, name: str, message: str, *,
                          system: str = "", history: builtins.list[dict] | None = None,
-                         timeout: float | None = 90.0) -> dict[str, Any]:
+                         timeout: float | None = 90.0,
+                         confirmed: bool = False) -> dict[str, Any]:
         """Delegate a prompt to a registered peer AI agent and return its answer.
 
         This is MOON-AI's two-way federation: she not only reaches OUT to the world
@@ -168,6 +211,15 @@ class ConnectionGateway:
             return {"ok": False, "error": f"connection '{name}' is kind '{rec.kind}', not 'agent'"}
         if not rec.enabled:
             return {"ok": False, "error": f"connection '{name}' is disabled"}
+        allowed, tier, reason = self.authorize_egress(
+            rec.url, rec.scope, confirmed=confirmed
+        )
+        if not allowed:
+            return {
+                "ok": False,
+                "error": f"outbound call requires confirmation: {reason}",
+                "confirmation_required": tier == "confirmation",
+            }
         from app.connector.connectors import AgentConnector
         conn: AgentConnector = self.build_connector(rec)  # type: ignore[assignment]
 

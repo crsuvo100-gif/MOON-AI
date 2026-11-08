@@ -18,7 +18,7 @@ class SystemInfoTool(BaseTool):
     description = "Cross-OS host recon: OS, kernel, hostname, CPU, memory, disks, network, processes."
 
     async def execute(self, section: str = "all", **kwargs) -> str:
-        out = [f"=== System info ({platform.system()} {platform.release()}) ==="]
+        out = [f"=== System info ({platform.system().lower()} {platform.release()}) ==="]
         out.append(f"node: {platform.node()} | arch: {platform.machine()} | python: {platform.python_version()}")
         if section in ("all", "mem", "cpu") and shutil.which("free") is not None:
             try:

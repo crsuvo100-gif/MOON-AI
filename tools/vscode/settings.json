@@ -8,7 +8,7 @@
   "files.autoSave": "onFocusChange",
   "git.enableSmartCommit": true,
   "editor.tabSize": 4,
-  "python.defaultInterpreterPath": "/usr/bin/python3",
+  "python.defaultInterpreterPath": ".venv/bin/python",
   "python.analysis.autoImportCompletions": true,
   "terminal.integrated.env.linux": {
     "PATH": "/home/meow/.hermes/bin:/home/meow/.local/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin"

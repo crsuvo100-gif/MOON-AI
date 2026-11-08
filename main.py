@@ -328,29 +328,80 @@ def _cmd_backup() -> int:
         return 1
 
 
-def _cmd_restore() -> int:
+def _cmd_restore(snapshot: str | Path | None = None, *, confirm_overwrite: bool = False) -> int:
     """Restore a backups/moon_<timestamp> snapshot via the existing component."""
-    import sys as _sys
-
     try:
         from app.runtime.backup import restore
     except Exception as exc:  # noqa: BLE001
         print(f"restore unavailable: {exc}")
         return 1
-    if len(_sys.argv) < 2:
-        print("usage: python -m MOON-AI restore <snapshot-dir>")
+    if snapshot is None:
+        print(
+            "usage: python -m MOON-AI restore <snapshot-dir> "
+            "[--confirm-overwrite]"
+        )
         return 2
-    snap = Path(_sys.argv[-1])
+    snap = Path(snapshot)
     if not snap.is_dir():
         print(f"snapshot not found: {snap}")
         return 2
     try:
-        restored = restore(snap)
+        restored = restore(snap, confirmed=confirm_overwrite)
         print(f"RESTORE COMPLETE -> restored: {', '.join(restored) or 'nothing'}")
         return 0
     except Exception as exc:  # noqa: BLE001
         print(f"RESTORE FAILED: {exc}")
         return 1
+
+
+def _cmd_acp(
+    objective: str,
+    workspace: str | Path,
+    *,
+    confirmed: bool = False,
+    inspect_only: bool = False,
+) -> int:
+    """Inspect or delegate to the configured local ACP agent after operator approval."""
+    if confirmed is not True:
+        print("ACP access requires explicit operator approval with --confirm.", file=sys.stderr)
+        return 2
+    cwd = Path(workspace).resolve()
+    if not cwd.is_dir():
+        print(f"ACP workspace is not a directory: {cwd}", file=sys.stderr)
+        return 2
+    if inspect_only and objective.strip():
+        print("--inspect cannot be combined with a task objective.", file=sys.stderr)
+        return 2
+    if not inspect_only and not objective.strip():
+        print("Provide a task objective or use --inspect.", file=sys.stderr)
+        return 2
+
+    from app.connector.acp import ACPSubprocessConnector
+
+    async def _run() -> dict:
+        connector = ACPSubprocessConnector(cwd=cwd)
+        try:
+            if inspect_only:
+                return {"status": "inspected", "manifest": await connector.connect()}
+            return await connector.delegate(objective, confirmed=True)
+        finally:
+            await connector.close()
+
+    try:
+        result = asyncio.run(_run())
+    except Exception as exc:  # noqa: BLE001
+        print(f"ACP operation failed: {exc}", file=sys.stderr)
+        return 1
+    if result["status"] == "inspected":
+        import json
+
+        print(json.dumps(result["manifest"], indent=2, sort_keys=True))
+        return 0
+    if result["status"] != "completed":
+        print(f"ACP delegation {result['status']}: {result.get('error', '')}", file=sys.stderr)
+        return 1
+    print(result["answer"])
+    return 0
 
 
 def _cmd_setup() -> int:
@@ -492,7 +543,33 @@ def main() -> int:
     sub.add_parser("doctor", help="Health check: Python/deps/config/DB/agents/tools/model/git")
     sub.add_parser("status", help="Check the running MOON-AI backend health endpoint")
     sub.add_parser("backup", help="Snapshot runtime data into backups/ (cross-platform)")
-    sub.add_parser("restore", help="Restore a backups/moon_<timestamp> snapshot")
+    restore_p = sub.add_parser("restore", help="Restore a backups/moon_<timestamp> snapshot")
+    restore_p.add_argument("snapshot", help="Path to the backup snapshot")
+    restore_p.add_argument(
+        "--confirm-overwrite",
+        action="store_true",
+        help="Allow replacing existing runtime files after reviewing the snapshot",
+    )
+    acp_p = sub.add_parser(
+        "acp",
+        help="Delegate a task to the local ACP agent (explicit approval required)",
+    )
+    acp_p.add_argument("objective", nargs="*", help="Task text sent to the ACP agent")
+    acp_p.add_argument(
+        "--workspace",
+        default=".",
+        help="Existing workspace path used by the ACP agent (default: current directory)",
+    )
+    acp_p.add_argument(
+        "--confirm",
+        action="store_true",
+        help="Approve starting the ACP agent; it may use configured external providers",
+    )
+    acp_p.add_argument(
+        "--inspect",
+        action="store_true",
+        help="Show the ACP agent's declared identity and capabilities without sending a task",
+    )
     sub.add_parser("install", help="Run the Python bootstrap installer (venv + deps + models)")
     sub.add_parser("setup", help="First-run setup wizard (configure .env, then install)")
     sub.add_parser("uninstall", help="Remove MOON-AI auto-start wiring (launcher, services, desktop)")
@@ -512,10 +589,16 @@ def main() -> int:
     sub.add_parser("integrations", help="List integrations, connections, lifecycle state and diagnostics - MOON's own integration catalog")
     work_p = sub.add_parser("work", help="Execute an authorized task through the integration hub - MOON owns the runtime path")
     work_p.add_argument("task", nargs="?", default=None, help="Task to execute through the integration hub")
+    work_p.add_argument(
+        "--confirmed",
+        action="store_true",
+        help="Confirm use of the configured moon_local connector for this task",
+    )
 
 
     args, remaining = ap.parse_known_args()
-    _ensure_default_peer()
+    if args.cmd != "acp":
+        _ensure_default_peer()
     if args.cmd == "run":
         task = args.task or args.task_flag
         if task:
@@ -549,7 +632,16 @@ def main() -> int:
     elif args.cmd == "backup":
         raise SystemExit(_cmd_backup())
     elif args.cmd == "restore":
-        raise SystemExit(_cmd_restore())
+        raise SystemExit(
+            _cmd_restore(args.snapshot, confirm_overwrite=args.confirm_overwrite)
+        )
+    elif args.cmd == "acp":
+        return _cmd_acp(
+            " ".join(args.objective),
+            args.workspace,
+            confirmed=args.confirm,
+            inspect_only=args.inspect,
+        )
     elif args.cmd == "install":
         raise SystemExit(_cmd_install())
     elif args.cmd == "setup":
@@ -587,18 +679,18 @@ def main() -> int:
         return 0
 
     elif args.cmd == "work":
-        task = args.task or args.task_flag
+        task = args.task
         if not task:
-            print("usage: moon work <task>  [--confirmed]", file=sys.stderr)
+            print("usage: moon work <task>", file=sys.stderr)
             return 1
         from app.connector.hub import IntegrationHub
 
         hub = IntegrationHub()
-        ok = asyncio.run(hub.execute_permitted_task(task))
+        ok = asyncio.run(hub.execute_permitted_task(task, confirmed=args.confirmed))
         if not ok.get("ok"):
             print(f"[MOON-AI] work failed: {ok.get('error')}", file=sys.stderr)
             return 1
-        print("[MOON-AI] work executed through the integration hub (MOON owns the runtime path).")
+        print(f"[MOON-AI] result:\n{ok.get('result', '')}")
         return 0
 
     elif args.cmd == "build":

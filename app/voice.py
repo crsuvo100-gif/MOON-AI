@@ -21,6 +21,7 @@ disabled -- the rest of MOON-AI keeps working.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import shutil
@@ -29,6 +30,10 @@ import tempfile
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+_MAX_TRANSCRIPTION_SECONDS = 15
+_MAX_TTS_TEXT_CHARS = 2_000
+_MAX_VOICE_FILE_BYTES = 20 * 1024 * 1024
 
 
 # Aesthetic "world's most attractive female voice" tuning.
@@ -71,51 +76,85 @@ class Voice:
         """Return a path to a WAV file with MOON-AI's female voice, or None."""
         if not text:
             return None
+        if len(text) > _MAX_TTS_TEXT_CHARS:
+            logger.warning("voice text exceeds %s characters", _MAX_TTS_TEXT_CHARS)
+            return None
         if not self._espeak:
             logger.warning("no TTS engine (espeak) available; cannot speak")
             return None
         try:
-            return await self._female_speak(text)
+            return await asyncio.to_thread(self._female_speak, text)
         except Exception as exc:  # noqa: BLE001
             logger.warning("voice speak failed: %s", exc)
             return None
 
-    async def _female_speak(self, text: str) -> str:
+    def _female_speak(self, text: str) -> str:
         fd, raw = tempfile.mkstemp(suffix=".wav")
         os.close(fd)
-        # 1) espeak with explicit FEMALE voice + raised pitch + softer intonation
-        subprocess.run(
-            [
-                self._espeak,
-                "-v", self.espeak_voice,
-                "-s", str(self.rate),
-                "-p", "60",          # higher pitch baseline (espeak 0-99)
-                "-a", "110",         # amplitude
-                "-w", raw,
-                text,
-            ],
-            check=False,
-            stderr=subprocess.DEVNULL,
-        )
-        if not self._sox:
+        output: str | None = None
+        try:
+            result = subprocess.run(
+                [
+                    self._espeak,
+                    "-v", self.espeak_voice,
+                    "-s", str(self.rate),
+                    "-p", "60",
+                    "-a", "110",
+                    "-w", raw,
+                    text,
+                ],
+                check=False,
+                stderr=subprocess.DEVNULL,
+                timeout=60,
+            )
+            if result.returncode or not Path(raw).is_file() or Path(raw).stat().st_size == 0:
+                raise RuntimeError("espeak did not produce a WAV file")
+            if Path(raw).stat().st_size > _MAX_VOICE_FILE_BYTES:
+                raise RuntimeError("espeak output exceeded the audio file limit")
+            if not self._sox:
+                return raw
+
+            out_fd, output = tempfile.mkstemp(suffix=".wav")
+            os.close(out_fd)
+            Path(output).unlink()
+            preset = self.preset
+            sox_cmd = [self._sox, raw, output]
+            sox_cmd += ["pitch", str(preset["pitch_hz"])]
+            sox_cmd += ["bass", str(preset["formant"])]
+            sox_cmd += ["treble", str(preset["air"])]
+            sox_cmd += ["highpass", "80"]
+            sox_cmd += ["compand", "0.02,0.2", "-60,-60,-30,-15,-10,-6,0,0", "-6", "0", "0.1"]
+            if preset["chorus"]:
+                sox_cmd += ["chorus", "0.7", "0.9", "55", "0.4", "0.25", "2.0", "-s"]
+            if preset["reverb"]:
+                sox_cmd += ["reverb", "-w", str(preset["reverb"])]
+            sox_cmd += ["gain", "-1"]
+            try:
+                sox_result = subprocess.run(
+                    sox_cmd,
+                    check=False,
+                    stderr=subprocess.DEVNULL,
+                    timeout=60,
+                )
+            except subprocess.TimeoutExpired:
+                logger.warning("SoX post-processing timed out; using raw TTS audio")
+                Path(output).unlink(missing_ok=True)
+                return raw
+            if (
+                sox_result.returncode == 0
+                and Path(output).is_file()
+                and 0 < Path(output).stat().st_size <= _MAX_VOICE_FILE_BYTES
+            ):
+                Path(raw).unlink(missing_ok=True)
+                return output
+            logger.warning("SoX post-processing failed; using raw TTS audio")
+            Path(output).unlink(missing_ok=True)
             return raw
-        # 2) SoX timbre chain -> warm, intimate, attractive female tone
-        out_fd, out = tempfile.mkstemp(suffix=".wav")
-        os.close(out_fd)
-        p = self.preset
-        sox_cmd = [self._sox, raw, out]
-        sox_cmd += ["pitch", str(p["pitch_hz"])]
-        sox_cmd += ["bass", str(p["formant"])]
-        sox_cmd += ["treble", str(p["air"])]
-        sox_cmd += ["highpass", "80"]          # remove rumble
-        sox_cmd += ["compand", "0.02,0.2", "-60,-60,-30,-15,-10,-6,0,0", "-6", "0", "0.1"]
-        if p["chorus"]:
-            sox_cmd += ["chorus", "0.7", "0.9", "55", "0.4", "0.25", "2.0", "-s"]
-        if p["reverb"]:
-            sox_cmd += ["reverb", "-w", str(p["reverb"])]
-        sox_cmd += ["gain", "-1"]              # gentle normalisation
-        subprocess.run(sox_cmd, check=False, stderr=subprocess.DEVNULL)
-        return out
+        except Exception:
+            Path(raw).unlink(missing_ok=True)
+            if output:
+                Path(output).unlink(missing_ok=True)
+            raise
 
     def available(self) -> bool:
         return bool(self._espeak)
@@ -136,6 +175,26 @@ class Voice:
         Requires vosk + a model dir set via VOSK_MODEL_DIR. Returns None if
         dictation is unavailable.
         """
+        if (
+            not isinstance(seconds, int)
+            or isinstance(seconds, bool)
+            or not 1 <= seconds <= _MAX_TRANSCRIPTION_SECONDS
+        ):
+            logger.warning(
+                "dictation duration must be between 1 and %s seconds",
+                _MAX_TRANSCRIPTION_SECONDS,
+            )
+            return None
+        if (
+            device is not None
+            and (
+                not isinstance(device, int)
+                or isinstance(device, bool)
+                or device < 0
+            )
+        ):
+            logger.warning("dictation device index must be a non-negative integer")
+            return None
         if not self.stt_available():
             logger.info("dictation unavailable (install vosk + VOSK_MODEL_DIR)")
             return None
@@ -150,6 +209,8 @@ class Voice:
         # capture
         rec_fd, rec = tempfile.mkstemp(suffix=".wav")
         os.close(rec_fd)
+        pa = None
+        stream = None
         try:
             pa = pyaudio.PyAudio()
             stream = pa.open(format=pyaudio.paInt16, channels=1, rate=16000,
@@ -158,17 +219,37 @@ class Voice:
             frames = []
             for _ in range(int(16000 / 8000 * seconds)):
                 frames.append(stream.read(8000, exception_on_overflow=False))
-            stream.stop_stream(); stream.close(); pa.terminate()
+            stream.stop_stream()
+            stream.close()
+            stream = None
+            pa.terminate()
+            pa = None
             with wave.open(rec, "wb") as wf:
                 wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(16000)
                 wf.writeframes(b"".join(frames))
             recog = vosk.KaldiRecognizer(vosk.Model(self._vosk_model), 16000)
             with wave.open(rec, "rb") as wf:
                 data = wf.readframes(wf.getnframes())
-            recog.AcceptWaveFile(data)
-            res = recog.Result()
+            recog.AcceptWaveform(data)
+            res = recog.FinalResult()
             import json
             return json.loads(res).get("text", "")
         except Exception as exc:  # noqa: BLE001
             logger.warning("dictation failed: %s", exc)
             return None
+        finally:
+            if stream is not None:
+                try:
+                    stream.stop_stream()
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("dictation stream stop failed: %s", exc)
+                try:
+                    stream.close()
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("dictation stream close failed: %s", exc)
+            if pa is not None:
+                try:
+                    pa.terminate()
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning("dictation audio cleanup failed: %s", exc)
+            Path(rec).unlink(missing_ok=True)

@@ -13,20 +13,16 @@ This is the same authorization model used by professional red-team tooling
 
 from __future__ import annotations
 
+import ipaddress
 import os
-import re
 from dataclasses import dataclass
 
 
 # Targets the operator owns / is authorized to test. Comma-separated hosts or
-# CIDRs in .env (AUTHORIZED_TARGETS). "127.0.0.1", "localhost", and RFC1918
-# private ranges are treated as implicitly authorized (your own lab).
+# CIDRs in .env (AUTHORIZED_TARGETS). Network locality does not imply consent.
 def _authorized_set() -> set[str]:
     raw = os.environ.get("AUTHORIZED_TARGETS", "")
-    return {t.strip().lower() for t in raw.split(",") if t.strip()}
-
-
-_PRIVATE = re.compile(r"^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|127\.\d+\.\d+\.\d+$|::1$|localhost$)")
+    return {t.strip().lower().rstrip(".") for t in raw.split(",") if t.strip()}
 
 
 @dataclass
@@ -36,18 +32,28 @@ class AuthDecision:
 
 
 def is_authorized(target: str) -> AuthDecision:
-    t = (target or "").strip().lower()
+    t = (target or "").strip().lower().rstrip(".")
     if not t:
         return AuthDecision(False, "empty target")
-    if t in _authorized_set():
+    authorized = _authorized_set()
+    if t in authorized:
         return AuthDecision(True, "explicitly authorized (AUTHORIZED_TARGETS)")
-    if _PRIVATE.search(t):
-        return AuthDecision(True, "private/loopback address (your lab)")
+    try:
+        address = ipaddress.ip_address(t.strip("[]"))
+    except ValueError:
+        address = None
+    if address is not None:
+        for entry in authorized:
+            try:
+                if address in ipaddress.ip_network(entry, strict=False):
+                    return AuthDecision(True, "address is within an authorized CIDR")
+            except ValueError:
+                continue
     return AuthDecision(False, "target not in AUTHORIZED_TARGETS; confirm ownership before active ops")
 
 
 def require_auth(target: str, *, confirmed: bool = False) -> AuthDecision:
     """Active-op gate. `confirmed` is set when the operator explicitly approves."""
-    if confirmed:
+    if confirmed is True:
         return AuthDecision(True, "operator confirmed authorization at runtime")
     return is_authorized(target)

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "entries": {
+    "TEST-001": {
+      "file": "tasks/TEST-001.json",
+      "status": "COMPLETED",
+      "recorded_at": "2026-10-27T08:39:08.470797+00:00"
+    }
+  }
+}

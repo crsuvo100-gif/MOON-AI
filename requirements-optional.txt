@@ -26,7 +26,6 @@ playwright>=1.43
 pillow>=10.3
 pytesseract>=0.3
 pypdf>=4.2
-PyYAML>=6.0
 
 # Voice engine (MOON's female voice + cloning; all optional)
 # Kokoro-ONNX is the default premium female voice and is now in requirements.txt

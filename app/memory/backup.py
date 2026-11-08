@@ -13,10 +13,14 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
+import tempfile
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, TextIO
 
 from app.memory.record import MemoryRecord
 from app.memory.security import detect_secret, sanitize
@@ -24,11 +28,42 @@ from app.memory.store import MemoryStore, default_db_path
 
 logger = logging.getLogger(__name__)
 
+_MAX_BACKUP_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,99}\Z")
+_MAX_BACKUP_FILE_BYTES = 50 * 1024 * 1024
+_MAX_IMPORT_RECORDS = 100_000
+_MAX_RECORD_CONTENT_CHARS = 100_000
+
 
 def backup_dir() -> Path:
     d = Path(os.environ.get("MOON-AI_BACKUP_PATH", "")
              or (default_db_path().parent / "backups"))
     return d
+
+
+@contextmanager
+def _atomic_text_output(path: Path, *, overwrite: bool) -> Iterator[TextIO]:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temporary = Path(handle.name)
+            yield handle
+            handle.flush()
+            os.fsync(handle.fileno())
+        if overwrite:
+            os.replace(temporary, path)
+        else:
+            os.link(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 @dataclass
@@ -70,20 +105,26 @@ def export_records(store: MemoryStore, *, limit: int = 0,
     return out
 
 
-def export_json(store: MemoryStore, path: str | Path, **kw: Any) -> Path:
+def export_json(
+    store: MemoryStore, path: str | Path, *, overwrite: bool = False, **kw: Any
+) -> Path:
     p = Path(path)
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(export_records(store, **kw), indent=2, default=str),
-                 encoding="utf-8")
+    with _atomic_text_output(p, overwrite=overwrite) as handle:
+        json.dump(export_records(store, **kw), handle, indent=2, default=str)
+        if handle.tell() > _MAX_BACKUP_FILE_BYTES:
+            raise ValueError(f"memory export exceeds {_MAX_BACKUP_FILE_BYTES} bytes")
     return p
 
 
-def export_jsonl(store: MemoryStore, path: str | Path, **kw: Any) -> Path:
+def export_jsonl(
+    store: MemoryStore, path: str | Path, *, overwrite: bool = False, **kw: Any
+) -> Path:
     p = Path(path)
-    p.parent.mkdir(parents=True, exist_ok=True)
-    with p.open("w", encoding="utf-8") as fh:
+    with _atomic_text_output(p, overwrite=overwrite) as fh:
         for rec in export_records(store, **kw):
             fh.write(json.dumps(rec, default=str) + "\n")
+            if fh.tell() > _MAX_BACKUP_FILE_BYTES:
+                raise ValueError(f"memory export exceeds {_MAX_BACKUP_FILE_BYTES} bytes")
     return p
 
 
@@ -91,9 +132,13 @@ def export_jsonl(store: MemoryStore, path: str | Path, **kw: Any) -> Path:
 def create_backup(store: MemoryStore, *, name: str | None = None,
                   keep: int = 7) -> Path:
     """Full JSON snapshot + rotation (spec 46/47)."""
+    if not isinstance(keep, int) or isinstance(keep, bool) or not 1 <= keep <= 100:
+        raise ValueError("backup retention must be between 1 and 100")
+    if name is not None and not _MAX_BACKUP_NAME.fullmatch(name):
+        raise ValueError("backup name must be a simple filename-safe identifier")
     d = backup_dir()
     d.mkdir(parents=True, exist_ok=True)
-    stamp = name or time.strftime("moon_memory_%Y%m%d_%H%M%S")
+    stamp = name or f"moon_memory_{time.strftime('%Y%m%d_%H%M%S')}_{time.time_ns() % 1_000_000:06d}"
     path = d / f"{stamp}.json"
     export_json(store, path)
     _rotate(d, keep=keep)
@@ -130,7 +175,12 @@ def list_backups() -> list[dict[str, Any]]:
 
 def restore_backup(store: MemoryStore, path: str | Path) -> ImportReport:
     """spec 46: restore a snapshot through the validated import path."""
-    rep = import_records(store, json.loads(Path(path).read_text(encoding="utf-8")))
+    source = Path(path)
+    if not source.is_file():
+        raise FileNotFoundError(f"memory backup not found: {source}")
+    if source.stat().st_size > _MAX_BACKUP_FILE_BYTES:
+        raise ValueError(f"memory backup exceeds {_MAX_BACKUP_FILE_BYTES} bytes")
+    rep = import_records(store, json.loads(source.read_text(encoding="utf-8")))
     _emit("memory.restore_completed", extra={
         "path": str(path), "inserted": rep.inserted,
         "duplicates": rep.duplicates,
@@ -143,8 +193,8 @@ def _emit(event: str, extra: dict | None = None) -> None:
     try:
         from app.runtime.event_bus import bus
         bus().publish(event, detail="backup", payload=extra or {})
-    except Exception:  # noqa: BLE001
-        pass
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("failed to publish memory backup event: %s", exc)
 
 
 # ---------------------------------------------------------------- spec 49
@@ -156,6 +206,9 @@ def import_records(store: MemoryStore, data: Any) -> ImportReport:
     if not isinstance(data, list):
         rep.errors.append("payload is not a list of records")
         return rep
+    if len(data) > _MAX_IMPORT_RECORDS:
+        rep.errors.append(f"payload exceeds {_MAX_IMPORT_RECORDS} records")
+        return rep
     rep.received = len(data)
 
     existing = {r.memory_id: r for r in store.query(limit=100000,
@@ -163,6 +216,16 @@ def import_records(store: MemoryStore, data: Any) -> ImportReport:
     existing_by_content = {r.content: r for r in existing.values()}
     for item in data:
         if not isinstance(item, dict) or "content" not in item:
+            rep.rejected_schema += 1
+            continue
+        content = item.get("content")
+        summary = item.get("summary", "")
+        if (
+            not isinstance(content, str)
+            or len(content) > _MAX_RECORD_CONTENT_CHARS
+            or not isinstance(summary, str)
+            or len(summary) > _MAX_RECORD_CONTENT_CHARS
+        ):
             rep.rejected_schema += 1
             continue
         # SECURITY before anything else (spec 43/49)

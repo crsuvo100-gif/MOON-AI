@@ -1,17 +1,13 @@
-"""Tests for optional backend stubs.
-
-These tests verify that attempting to use the Docker or SSH backends raises the
-expected ``NotImplementedError`` with a clear message when the required binary
-is missing. The tests are deliberately simple – they only instantiate the backend
-via ``BackendManager`` and call ``execute``.
-"""
+"""Tests for optional backends when their external runtimes are unavailable."""
 
 import pytest
+
 from app.terminal.backend_manager import BackendManager
 from app.terminal.models import ExecutionRequest
 
+
 @pytest.mark.parametrize("backend_name", ["docker", "ssh"])
-def test_backend_unavailable(backend_name):
+def test_backend_unavailable(backend_name, monkeypatch):
     # Optional backends must degrade gracefully: when the required tool cannot
     # actually run (binary missing or the daemon/command unavailable), execute()
     # returns a failed result rather than raising an exception or succeeding.
@@ -21,6 +17,7 @@ def test_backend_unavailable(backend_name):
     # current implementation does not raise.
     manager = BackendManager()
     backend = manager.get_backend(backend_name)
+    monkeypatch.setattr(backend, "available", False)
     request = ExecutionRequest(command="echo test", backend=backend_name)
     resp = backend.execute(request)
     # The backend must NOT report a successful execution.

@@ -71,7 +71,33 @@ def _build_parser() -> argparse.ArgumentParser:
     sub.add_parser("doctor", help="Health check: Python/deps/config/DB/agents/tools/model/git")
     sub.add_parser("status", help="Check the running MOON-AI backend health endpoint")
     sub.add_parser("backup", help="Snapshot runtime data into backups/ (cross-platform)")
-    sub.add_parser("restore", help="Restore a backups/moon_<timestamp> snapshot")
+    restore_p = sub.add_parser("restore", help="Restore a backups/moon_<timestamp> snapshot")
+    restore_p.add_argument("snapshot", help="Path to the backup snapshot")
+    restore_p.add_argument(
+        "--confirm-overwrite",
+        action="store_true",
+        help="Allow replacing existing runtime files after reviewing the snapshot",
+    )
+    acp_p = sub.add_parser(
+        "acp",
+        help="Delegate a task to the local ACP agent (explicit approval required)",
+    )
+    acp_p.add_argument("objective", nargs="*", help="Task text sent to the ACP agent")
+    acp_p.add_argument(
+        "--workspace",
+        default=".",
+        help="Existing workspace path used by the ACP agent (default: current directory)",
+    )
+    acp_p.add_argument(
+        "--confirm",
+        action="store_true",
+        help="Approve starting the ACP agent; it may use configured external providers",
+    )
+    acp_p.add_argument(
+        "--inspect",
+        action="store_true",
+        help="Show the ACP agent's declared identity and capabilities without sending a task",
+    )
     sub.add_parser("install", help="Run the Python bootstrap installer (venv + deps + models)")
     sub.add_parser("setup", help="First-run setup wizard (configure .env, then install)")
     sub.add_parser("uninstall", help="Remove MOON-AI auto-start wiring (launcher, services, desktop)")
@@ -136,7 +162,16 @@ def _dispatch(args) -> int:
     if args.cmd == "backup":
         raise SystemExit(_real_main._cmd_backup())
     if args.cmd == "restore":
-        raise SystemExit(_real_main._cmd_restore())
+        raise SystemExit(
+            _real_main._cmd_restore(args.snapshot, confirm_overwrite=args.confirm_overwrite)
+        )
+    if args.cmd == "acp":
+        return _real_main._cmd_acp(
+            " ".join(args.objective),
+            args.workspace,
+            confirmed=args.confirm,
+            inspect_only=args.inspect,
+        )
     if args.cmd == "install":
         raise SystemExit(_real_main._cmd_install())
     if args.cmd == "setup":

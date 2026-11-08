@@ -1,0 +1,86 @@
+"""ToolManager -- registry-backed tool dispatch with safety gating."""
+
+from __future__ import annotations
+
+import asyncio
+from dataclasses import dataclass
+from typing import Any
+
+from app.config.logging import get_logger
+
+logger = get_logger(__name__)
+
+
+@dataclass
+class ToolResult:
+    name: str
+    output: Any
+    success: bool
+    error: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "output": self.output,
+            "success": self.success,
+            "error": self.error,
+        }
+
+    # The runtime (ToolManager -> orchestrator._tools) calls the tool by name
+    # and the cognition loop expects a string back. Return a plain str so both
+    # the verified contract (assert 'linux' in (res or '')) and the cognition
+    # loop stay valid. json.dumps may wrap the output if a consumer parses it.
+    def __str__(self) -> str:
+        return str(self.output if self.success else self.error or "")
+
+
+class ToolManager:
+    def __init__(self, registry, *, enabled_tools: set[str] | None = None, allow_dangerous: bool = False) -> None:
+        self._registry = registry
+        self._enabled = enabled_tools or {t.name for t in registry.all()}
+        self._allow_dangerous = allow_dangerous
+        self._tool_timeout = 30.0
+
+    def available_specs(self) -> list[dict[str, Any]]:
+        specs = []
+        for t in self._registry.all():
+            if t.name in self._enabled:
+                try:
+                    specs.append(t.spec())
+                except Exception:  # noqa: BLE001
+                    specs.append({"name": t.name, "description": "", "parameters": {}})
+        return specs
+
+    async def run(self, name: str, args: dict[str, Any], *, agent=None, timeout: float | None = None) -> ToolResult:
+        tool = self._registry.get(name)
+        if tool is None or name not in self._enabled:
+            return ToolResult(name=name, output=None, success=False, error="tool not available")
+        # --- spec 51: rate-limit tool execution (no unlimited tool calls) ---
+        try:
+            from app.runtime.rate_limit import get_limiter
+
+            decision = get_limiter().check(f"tool:{name}")
+            if not decision.allowed:
+                logger.warning("tool '%s' rate-limited: %s", name, decision.reason)
+                return ToolResult(name=name, output=None, success=False,
+                                  error=f"rate limited ({decision.reason}); "
+                                        f"retry in {decision.retry_after:.2f}s")
+        except Exception:  # noqa: BLE001
+            pass
+        # Safety gate: reject dangerous tools unless explicitly allowed
+        if not self._allow_dangerous and hasattr(tool, 'is_dangerous') and tool.is_dangerous():
+            logger.warning("tool %s blocked: dangerous tool not allowed", name)
+            return ToolResult(name=name, output=None, success=False, error="tool requires explicit approval (dangerous)")
+        try:
+            to = timeout if timeout is not None else getattr(self, "_tool_timeout", None)
+            if to:
+                result = await asyncio.wait_for(tool.execute(**(args or {})), timeout=to)
+            else:
+                result = await tool.execute(**(args or {}))
+            return ToolResult(name=name, output=result, success=True)
+        except asyncio.TimeoutError:
+            logger.warning("tool %s timed out after %ss", name, to)
+            return ToolResult(name=name, output=None, success=False, error=f"tool timed out after {to}s")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("tool %s failed: %s", name, exc)
+            return ToolResult(name=name, output=None, success=False, error=str(exc))

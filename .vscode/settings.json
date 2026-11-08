@@ -1,29 +1,32 @@
 {
-  "observer.exclude": [
-    "node_modules",
-    "**/node_modules",
-    ".venv",
-    "**/.venv",
-    "venv",
-    "**/venv",
-    "__pycache__",
-    "**/__pycache__",
-    ".git",
-    "**/.git",
-    "dist",
-    "**/dist",
-    "build",
-    "**/build",
-    ".output",
-    "**/.output",
-    "target",
-    "**/target"
-  ],
+  "files.exclude": {
+    "node_modules": true,
+    "**/node_modules": true,
+    ".venv": true,
+    "**/.venv": true,
+    "venv": true,
+    "**/venv": true,
+    "__pycache__": true,
+    "**/__pycache__": true,
+    ".git": true,
+    "**/.git": true,
+    "dist": true,
+    "**/dist": true,
+    "build": true,
+    "**/build": true,
+    ".output": true,
+    "**/.output": true,
+    "target": true,
+    "**/target": true
+  },
   "agent_servers": {
     "hermes-agent": {
       "type": "custom",
       "command": "hermes",
       "args": ["acp"]
     }
-  }
+  },
+  "python.defaultInterpreterPath": ".venv/bin/python",
+  "terminal.integrated.shellIntegration": 1,
+  "workbench.colorTheme": "Default Dark Modern"
 }

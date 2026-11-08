@@ -1,9 +1,10 @@
 """Smoke test: every app module imports cleanly."""
 
 import importlib
+import importlib.util
+import os
 import pkgutil
 import sys
-import os
 
 
 def _ensure_paths():
@@ -39,17 +40,14 @@ def _module_names(pkg, prefix):
 def test_all_app_modules_import():
     _ensure_paths()
 
-    # Pre-import textual (required by app.tui) using importlib to ensure
-    # the module is cached in sys.modules before app.tui tries to import it.
-    try:
-        importlib.import_module("textual")
-    except ImportError:
-        pass  # textual not available; app.tui will be skipped
-
     # Lazy import so it sees the fixed sys.path.
     import app as app_pkg
 
     names = _module_names(app_pkg, "app.")
+    try:
+        importlib.import_module("textual.app")
+    except ImportError:
+        names = [name for name in names if name != "app.terminal.ui"]
     failures = []
     for name in names:
         try:

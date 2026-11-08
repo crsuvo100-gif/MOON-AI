@@ -2,13 +2,21 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "MOON: Build & Run",
+      "label": "MOON: Build",
       "type": "shell",
-      "command": "make run",
+      "command": "make build",
       "group": {
         "kind": "build",
         "isDefault": true
       },
+      "problemMatcher": []
+    },
+    {
+      "label": "MOON: Build & Run",
+      "type": "shell",
+      "command": "make build && make serve",
+      "group": "build",
+      "detail": "Build the project, then start the MOON-AI command terminal",
       "problemMatcher": []
     },
     {
