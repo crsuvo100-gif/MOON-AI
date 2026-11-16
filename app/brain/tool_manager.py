@@ -81,6 +81,9 @@ class ToolManager:
             return ToolResult(name=name, output=None, success=False, error="tool requires explicit approval (dangerous)")
         try:
             tool_args = dict(args or {})
+            if name == "global_connector":
+                # This signal is supplied by the trusted caller, never the model.
+                tool_args["operator_confirmed"] = operator_confirmed is True
             if "confirmed" in tool_args:
                 # Tool arguments are model-controlled. Only a trusted caller may
                 # provide the separate operator_confirmed signal.

@@ -54,9 +54,10 @@ GITHUB_READER_PERMISSIONS = ("github.read", "network.http")
 
 
 class PermissionManager:
-    def __init__(self, confirmation_callback=None) -> None:
+    def __init__(self, confirmation_callback=None, allowed_ingress_hosts: list[str] | None = None) -> None:
         # callback(reason: str) -> bool  (ask the user; return True to allow)
         self._confirm = confirmation_callback
+        self.allowed_ingress_hosts = allowed_ingress_hosts or []
 
     # ------------------------------------------------------------------
     def minimal_for(self, kind: str) -> tuple[str, ...]:

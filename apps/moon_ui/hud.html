@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MOON-AI — NEURAL CORE</title>
-<link rel="stylesheet" href="/theme.json">
 <style>
 :root{
   --bg:#07090f; --panel:#0c101a; --fg:#e6e9f0; --muted:#8a93a6;
@@ -77,6 +76,27 @@ body{
 .status-dot.on{background:#57f5a5; box-shadow:0 0 8px #57f5a5}
 .status-dot.mid{background:#ffb454; box-shadow:0 0 8px #ffb454}
 </style>
+<script>
+(async () => {
+  try {
+    const response = await fetch('/theme.json');
+    if (!response.ok) throw new Error(`theme request failed: ${response.status}`);
+    const theme = await response.json();
+    const variables = {
+      bg: '--bg', panel: '--panel', fg: '--fg', muted: '--muted',
+      accent: '--accent', accent2: '--accent2', danger: '--danger',
+      ok: '--ok', pulse: '--pulse', border: '--border'
+    };
+    for (const [key, variable] of Object.entries(variables)) {
+      if (typeof theme[key] === 'string' && /^#[0-9a-f]{6}$/i.test(theme[key])) {
+        document.documentElement.style.setProperty(variable, theme[key]);
+      }
+    }
+  } catch (error) {
+    console.warn('MOON theme could not be loaded:', error);
+  }
+})();
+</script>
 </head>
 <body>
 <div id="scanline"></div>

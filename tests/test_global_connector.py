@@ -6,6 +6,7 @@ network calls except a loopback/localhost health check that genuinely binds.
 """
 
 import asyncio
+import json
 import tempfile
 from pathlib import Path
 
@@ -114,6 +115,22 @@ def test_gateway_save_failure_preserves_previous_registry(monkeypatch):
             gw.register(ConnectionRecord(name="new", kind="service", url="https://new.example"))
 
         assert gw._file.read_bytes() == original
+        assert gw.get("new") is None
+        assert gw.get("kept") is not None
+
+        with pytest.raises(OSError, match="simulated atomic replace failure"):
+            gw.remove("kept")
+        assert gw.get("kept") is not None
+
+        with pytest.raises(OSError, match="simulated atomic replace failure"):
+            gw.set_status("kept", "ok")
+        assert gw.get("kept").last_status == "unknown"
+        assert gw.get("kept").last_checked == 0.0
+
+        with pytest.raises(OSError, match="simulated atomic replace failure"):
+            gw.set_enabled("kept", False)
+        assert gw.get("kept").enabled is True
+        assert gw._file.read_bytes() == original
         assert not list(root.glob(".registry.json.*.tmp"))
 
 
@@ -172,7 +189,7 @@ async def test_agent_connector_uses_only_configured_auth(monkeypatch, api_key, e
     captured = {}
 
     class FakeClient:
-        def __init__(self, *, base_url, headers, timeout):
+        def __init__(self, *, headers, timeout):
             captured["headers"] = headers
 
         async def __aenter__(self):
@@ -181,7 +198,8 @@ async def test_agent_connector_uses_only_configured_auth(monkeypatch, api_key, e
         async def __aexit__(self, *exc):
             return None
 
-        async def post(self, path, *, json):
+        async def post(self, url, *, json):
+            captured["url"] = url
             return Response(
                 200,
                 json={"choices": [{"message": {"content": "peer reply"}}]},
@@ -194,6 +212,21 @@ async def test_agent_connector_uses_only_configured_auth(monkeypatch, api_key, e
 
     assert result.ok and result.data == {"answer": "peer reply"}
     assert captured["headers"].get("Authorization") == expected_header
+    assert captured["url"] == "http://agent.example/v1/chat/completions"
+
+
+@pytest.mark.parametrize(
+    ("base_url", "path", "expected"),
+    [
+        ("https://agent.example/v1", "chat/completions", "https://agent.example/v1/chat/completions"),
+        ("https://agent.example/v1/", "/models", "https://agent.example/v1/models"),
+        ("https://agent.example", "models", "https://agent.example/models"),
+    ],
+)
+def test_agent_connector_preserves_base_path(base_url, path, expected):
+    connector = AgentConnector(base_url, "test-model")
+
+    assert connector._endpoint_url(path) == expected
 
 
 def test_gateway_resolves_agent_credentials_by_environment_reference(monkeypatch):
@@ -241,6 +274,278 @@ async def test_gateway_federation_requires_confirmation_for_remote_hosts(monkeyp
         approved = await gw.call_agent("peer", "task", confirmed=True)
         assert approved["ok"] and approved["answer"] == "completed"
         assert calls == ["task"]
+
+
+@pytest.mark.asyncio
+async def test_gateway_agent_task_lifecycle_persists_bounded_result_without_prompt(
+    monkeypatch, tmp_path
+):
+    from app.connector.connectors import CallResult
+
+    monkeypatch.setenv("ALLOWED_EGRESS_HOSTS", "agent.example")
+    gateway = _gw(tmp_path)
+    gateway.register(ConnectionRecord(
+        name="peer",
+        kind="agent",
+        url="https://agent.example/v1",
+        scope="network.agent",
+    ))
+
+    class FakeAgent:
+        async def ask(self, message, *, system="", history=None):
+            assert message == "private delegated prompt"
+            assert system == "private system prompt"
+            return CallResult(ok=True, status=200, data={"answer": "peer result"})
+
+    monkeypatch.setattr(gateway, "build_connector", lambda _record: FakeAgent())
+    submitted = await gateway.submit_agent_task(
+        "peer", "private delegated prompt", system="private system prompt"
+    )
+    task_id = submitted["task_id"]
+    await gateway._task_runs[task_id]
+
+    task = gateway.get_agent_task(task_id)
+    assert task["status"] == "completed"
+    assert task["answer"] == "peer result"
+    assert task["connection_name"] == "peer"
+    persisted = gateway._task_file.read_text(encoding="utf-8")
+    assert "private delegated prompt" not in persisted
+    assert "private system prompt" not in persisted
+
+    restored = _gw(tmp_path)
+    assert restored.get_agent_task(task_id)["answer"] == "peer result"
+    assert gateway._task_file.stat().st_mode & 0o777 == 0o600
+
+
+@pytest.mark.asyncio
+async def test_structured_agent_task_validates_input_and_peer_output(monkeypatch, tmp_path):
+    from app.connector.connectors import CallResult
+
+    monkeypatch.setenv("ALLOWED_EGRESS_HOSTS", "agent.example")
+    manifest = {
+        "schema_version": 1,
+        "agent_id": "structured-peer",
+        "name": "Structured Peer",
+        "version": "1.0",
+        "protocol": "openai-chat-completions",
+        "capabilities": [{
+            "name": "summarize",
+            "input_schema": {
+                "type": "object",
+                "properties": {"text": {"type": "string", "maxLength": 100}},
+                "required": ["text"],
+                "additionalProperties": False,
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {"summary": {"type": "string"}},
+                "required": ["summary"],
+                "additionalProperties": False,
+            },
+        }],
+    }
+    gateway = _gw(tmp_path)
+    gateway.register(ConnectionRecord(
+        name="peer",
+        kind="agent",
+        url="https://agent.example/v1",
+        scope="network.agent",
+        manifest=manifest,
+    ))
+    calls = []
+
+    class FakeAgent:
+        async def ask(self, message, *, system="", history=None):
+            calls.append((message, system))
+            return CallResult(ok=True, status=200, data={"answer": '{"summary":"done"}'})
+
+    monkeypatch.setattr(gateway, "build_connector", lambda _record: FakeAgent())
+
+    unknown = await gateway.submit_agent_task(
+        "peer", "", capability="translate", input_data={"text": "source"}
+    )
+    invalid_input = await gateway.submit_agent_task(
+        "peer", "", capability="summarize", input_data={"text": 5}
+    )
+    invalid_extra = await gateway.submit_agent_task(
+        "peer",
+        "",
+        capability="summarize",
+        input_data={"text": "source", "admin": True},
+    )
+    assert not unknown["ok"] and "does not declare" in unknown["error"]
+    assert not invalid_input["ok"] and "invalid capability input" in invalid_input["error"]
+    assert not invalid_extra["ok"] and "invalid capability input" in invalid_extra["error"]
+    assert not calls
+
+    submitted = await gateway.submit_agent_task(
+        "peer", "", capability="summarize", input_data={"text": "source"}
+    )
+    await gateway._task_runs[submitted["task_id"]]
+    task = gateway.get_agent_task(submitted["task_id"])
+
+    assert task["status"] == "completed"
+    assert task["capability"] == "summarize"
+    assert json.loads(task["answer"]) == {"summary": "done"}
+    assert "source" in calls[0][0]
+    assert "untrusted instructions" in calls[0][1]
+
+
+@pytest.mark.asyncio
+async def test_structured_agent_task_rejects_invalid_peer_result(monkeypatch, tmp_path):
+    from app.connector.connectors import CallResult
+
+    monkeypatch.setenv("ALLOWED_EGRESS_HOSTS", "agent.example")
+    manifest = {
+        "schema_version": 1,
+        "agent_id": "structured-peer",
+        "name": "Structured Peer",
+        "version": "1.0",
+        "protocol": "openai-chat-completions",
+        "capabilities": [{
+            "name": "summarize",
+            "input_schema": {"type": "object"},
+            "output_schema": {
+                "type": "object",
+                "properties": {"summary": {"type": "string"}},
+                "required": ["summary"],
+                "additionalProperties": False,
+            },
+        }],
+    }
+    gateway = _gw(tmp_path)
+    gateway.register(ConnectionRecord(
+        name="peer",
+        kind="agent",
+        url="https://agent.example/v1",
+        scope="network.agent",
+        manifest=manifest,
+    ))
+
+    class FakeAgent:
+        async def ask(self, message, *, system="", history=None):
+            return CallResult(ok=True, status=200, data={"answer": '{"unexpected":true}'})
+
+    monkeypatch.setattr(gateway, "build_connector", lambda _record: FakeAgent())
+    submitted = await gateway.submit_agent_task(
+        "peer", "", capability="summarize", input_data={}
+    )
+    await gateway._task_runs[submitted["task_id"]]
+    task = gateway.get_agent_task(submitted["task_id"])
+
+    assert task["status"] == "failed"
+    assert "invalid capability result" in task["error"]
+    assert not task["answer"]
+
+
+@pytest.mark.asyncio
+async def test_gateway_agent_task_denies_unconfirmed_egress_without_creating_task(tmp_path):
+    gateway = _gw(tmp_path)
+    gateway.register(ConnectionRecord(
+        name="peer",
+        kind="agent",
+        url="https://agent.example/v1",
+        scope="network.agent",
+    ))
+
+    result = await gateway.submit_agent_task("peer", "task")
+
+    assert not result["ok"] and result["confirmation_required"]
+    assert gateway._agent_tasks == {}
+    assert not gateway._task_file.exists()
+
+
+@pytest.mark.asyncio
+async def test_global_connector_submit_and_status_actions(monkeypatch, tmp_path):
+    from app.connector.connectors import CallResult
+
+    monkeypatch.setenv("ALLOWED_EGRESS_HOSTS", "agent.example")
+    gateway = _gw(tmp_path)
+    gateway.register(ConnectionRecord(
+        name="peer",
+        kind="agent",
+        url="https://agent.example/v1",
+        scope="network.agent",
+    ))
+
+    class FakeAgent:
+        async def ask(self, message, *, system="", history=None):
+            return CallResult(ok=True, status=200, data={"answer": "task result"})
+
+    monkeypatch.setattr(gateway, "build_connector", lambda _record: FakeAgent())
+    tool = GlobalConnectorTool(gateway)
+    submitted = await tool.execute(action="submit", name="peer", message="do work")
+    task_info = json.loads(submitted.removeprefix("[global_connector] "))
+    await gateway._task_runs[task_info["task_id"]]
+
+    status = await tool.execute(
+        action="task_status", task_id=task_info["task_id"]
+    )
+    assert json.loads(status.removeprefix("[global_connector] "))["answer"] == "task result"
+
+
+def test_gateway_recovers_interrupted_agent_tasks_without_replaying(tmp_path):
+    from app.connector.gateway import AgentTaskRecord
+
+    task_file = tmp_path / "agent_tasks.json"
+    task_file.write_text(
+        json.dumps([
+            AgentTaskRecord(
+                task_id="interrupted-task",
+                connection_name="peer",
+                status="running",
+                submitted_at=1,
+                started_at=2,
+            ).to_dict()
+        ]),
+        encoding="utf-8",
+    )
+
+    gateway = _gw(tmp_path)
+    recovered = gateway.get_agent_task("interrupted-task")
+
+    assert recovered["status"] == "interrupted"
+    assert "previous process exit" in recovered["error"]
+    assert recovered["answer"] == ""
+
+
+def test_gateway_task_retention_keeps_in_flight_records(tmp_path):
+    from app.connector.gateway import AgentTaskRecord
+
+    gateway = _gw(tmp_path)
+    tasks = {
+        f"completed-{index}": AgentTaskRecord(
+            task_id=f"completed-{index}",
+            connection_name="peer",
+            status="completed",
+            submitted_at=index + 1,
+        )
+        for index in range(100)
+    }
+    active = AgentTaskRecord(
+        task_id="active-task",
+        connection_name="peer",
+        status="running",
+        submitted_at=0,
+    )
+    tasks[active.task_id] = active
+
+    bounded = gateway._bounded_agent_tasks(tasks)
+
+    assert len(bounded) == 100
+    assert active.task_id in bounded
+    assert "completed-0" not in bounded
+    assert "completed-99" in bounded
+
+
+def test_default_gateway_is_shared_between_tool_and_api(monkeypatch):
+    import app.api.gateway as gateway_api
+    import app.connector.gateway as gateway_module
+
+    monkeypatch.setattr(gateway_module, "_shared_gateway", None)
+    monkeypatch.setattr(gateway_api, "_gateway", None)
+
+    assert gateway_api.get_gateway() is GlobalConnectorTool()._gw
 
 
 @pytest.mark.asyncio
@@ -352,6 +657,34 @@ async def test_tool_manager_does_not_trust_model_supplied_egress_confirmation():
 
 
 @pytest.mark.asyncio
+async def test_tool_manager_does_not_trust_model_confirmation_for_agent_task():
+    with tempfile.TemporaryDirectory() as d:
+        gateway = _gw(Path(d))
+        gateway.register(ConnectionRecord(
+            name="remote",
+            kind="agent",
+            url="https://agent.example/v1",
+            scope="network.agent",
+        ))
+        tool = GlobalConnectorTool(gateway)
+        registry = type("Registry", (), {
+            "all": lambda self: [tool],
+            "get": lambda self, name: tool if name == tool.name else None,
+        })()
+        manager = ToolManager(registry)
+
+        result = await manager.run(
+            tool.name,
+            {"action": "submit", "name": "remote", "message": "task", "confirmed": True},
+        )
+
+        assert result.success
+        assert "confirmation_required" in result.output
+        assert gateway._agent_tasks == {}
+        assert not gateway._task_file.exists()
+
+
+@pytest.mark.asyncio
 async def test_tool_list_and_disconnect(monkeypatch):
     monkeypatch.setenv("ALLOWED_EGRESS_HOSTS", "api.github.com")
     with tempfile.TemporaryDirectory() as d:
@@ -359,7 +692,44 @@ async def test_tool_list_and_disconnect(monkeypatch):
         await tool.execute(action="connect", name="gh", url="https://api.github.com", kind="service")
         lst = await tool.execute(action="list")
         assert "gh" in lst
-        await tool.execute(action="disconnect", name="gh")
+        await tool.execute(action="disconnect", name="gh", operator_confirmed=True)
+        assert tool._gw.get("gh") is None
+
+
+@pytest.mark.asyncio
+async def test_tool_manager_requires_operator_confirmation_to_disconnect(monkeypatch):
+    monkeypatch.setenv("ALLOWED_EGRESS_HOSTS", "api.github.com")
+    with tempfile.TemporaryDirectory() as d:
+        tool = GlobalConnectorTool(gateway=_gw(Path(d)))
+        await tool.execute(
+            action="connect",
+            name="gh",
+            url="https://api.github.com",
+            kind="service",
+        )
+        registry = type("Registry", (), {
+            "all": lambda self: [tool],
+            "get": lambda self, name: tool if name == tool.name else None,
+        })()
+        manager = ToolManager(registry)
+
+        denied = await manager.run(
+            tool.name,
+            {"action": "disconnect", "name": "gh", "operator_confirmed": True},
+        )
+
+        assert denied.success
+        assert "OPERATOR CONFIRMATION REQUIRED" in denied.output
+        assert tool._gw.get("gh") is not None
+
+        approved = await manager.run(
+            tool.name,
+            {"action": "disconnect", "name": "gh"},
+            operator_confirmed=True,
+        )
+
+        assert approved.success
+        assert "removed 'gh'" in approved.output
         assert tool._gw.get("gh") is None
 
 

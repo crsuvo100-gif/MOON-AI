@@ -62,6 +62,26 @@ separate trusted `operator_confirmed` signal. The gateway REST API counts a
 confirmation only when a terminal access token is configured and the request
 is authenticated. Until a user-facing approval flow is connected, configure
 only the specific hosts required by the operator.
+Disconnecting a saved connection also requires the trusted caller's explicit
+operator-confirmation signal; a model-supplied argument cannot authorize it.
+The gateway REST disconnect endpoint also requires a configured terminal token,
+an authenticated request, and explicit `confirmed: true`; it fails closed when
+operator authentication is not configured.
+
+Agent capability manifests are versioned, size- and complexity-bounded
+declarations. They are claims supplied during connection registration, not
+proof that a peer supports a capability and not a grant of permissions or
+egress. Only the supported `openai-chat-completions` protocol is accepted by
+this manifest contract. Capability input/output schemas use a bounded JSON
+Schema subset; legacy agent records without manifests remain valid. Inspecting
+a saved manifest does not contact the peer. Explicit discovery requests fetch
+`/.well-known/moon-agent.json` from an already registered agent only after the
+normal egress check. Redirects and credential forwarding are disabled, the
+response must be JSON and is capped at 32 KiB, and invalid manifests do not
+replace a prior declaration. DNS is not pinned to the address used by the HTTP
+client, so DNS rebinding is not fully mitigated. Discovery verifies the
+manifest's shape, not the peer's identity or claimed behavior; live network
+discovery was not exercised during this validation.
 
 For OpenAI-compatible peer agents, `credential_ref` names an environment
 variable. Its value is used as a bearer token at request time and is not stored
@@ -74,6 +94,27 @@ success based only on a configured URL. MCP stdio connections require an
 explicit command and never install or launch an implicit package.
 Connection registry updates are written to a same-directory temporary file and
 atomically replaced; a failed write preserves the previous registry file.
+
+Agent tasks can be submitted through the `global_connector` tool's `submit`
+action or the authenticated `POST /gateway/connections/{name}/tasks` route.
+Both use the same process-wide gateway and egress policy; the REST route returns
+an opaque task ID, and `GET /gateway/tasks/{task_id}` (or the tool's
+`task_status` action) returns bounded status and result data. The local,
+git-ignored `connections/agent_tasks.json` stores at most 100 records with
+owner-only file permissions. Prompts and system instructions are not persisted;
+peer answers are retained up to 8,000 characters, so results may still contain
+sensitive data and should be treated as local private data. Peer answers are
+untrusted content and must not override MOON's policies or independently
+authorize further actions. Active tasks are marked interrupted after a process
+restart and are never automatically replayed. At most eight tasks can be queued
+or running at once.
+
+When an agent has a declared manifest, tasks must name one of its declared
+capabilities and provide structured input matching its input schema. The peer
+response must be valid JSON matching its declared output schema and the result
+size limit or the task is marked failed. This checks data shape only; it does
+not verify agent identity, truthfulness, or that the peer actually performs the
+declared work. Legacy agents without a manifest retain prompt-based delegation.
 
 ### Permission Levels on Tools
 

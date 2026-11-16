@@ -23,6 +23,24 @@ class ToolRegistry:
     def all(self) -> list[BaseTool]:
         return list(self._tools.values())
 
+    def all_tools(self) -> list[BaseTool]:
+        """Alias used by capability reports / tooling consumers."""
+        return self.all()
+
     @property
     def tool_names(self) -> list[str]:
         return list(self._tools)
+
+# Module-level singleton (lazy import-safe) -- mirrors app/agents/registry.py.
+_REGISTRY: "ToolRegistry | None" = None
+
+
+def get_registry() -> "ToolRegistry":
+    """Return the canonical tool registry singleton (parallel to app/agents)."""
+    global _REGISTRY
+    if _REGISTRY is None:
+        _REGISTRY = ToolRegistry()
+    return _REGISTRY
+
+
+__all__ = ["BaseTool", "ToolRegistry", "get_registry"]

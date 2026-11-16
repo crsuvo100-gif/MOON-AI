@@ -89,12 +89,13 @@ def _build_capability_registry():
     try:
         from app.tools.registry import get_registry
         reg = get_registry()
+        tools = reg.all_tools() if hasattr(reg, "all_tools") else reg.all()
         capabilities.append({
             "id": "MOON.tools",
             "name": "Tools",
             "status": "available",
             "source": "app/tools/registry.py",
-            "detail": f"{len(reg.all_tools())} tools registered",
+            "detail": f"{len(tools)} tools registered",
             "how_to_check": "GET /api/terminal/tools",
         })
     except Exception as exc:  # noqa: BLE001

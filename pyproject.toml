@@ -58,7 +58,7 @@ moon-terminal = "main:main"
 py-modules = ["main"]
 
 [tool.setuptools.packages.find]
-include = ["app*", "plugins*", "scripts*", "moon*"]
+include = ["app*", "plugins*", "scripts*", "moon*", "apps.moon_ui*"]
 exclude = ["tests*"]
 
 [tool.setuptools.package-data]
@@ -68,6 +68,7 @@ app = [
     "terminal/risk_policy.yaml",
     "terminal/ui.css",
 ]
+"apps.moon_ui" = ["hud.html", "theme.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

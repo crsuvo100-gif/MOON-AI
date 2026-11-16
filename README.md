@@ -1,58 +1,47 @@
 # MOON -- Neural Brain Command Center
 
 A self-hosted autonomous AI agent with its own "brain", connected per-agent
-brains, and continuous self-learning. The interface is the web-based Neural
-Brain Command Center at `http://127.0.0.1:8777`.
+brains, and continuous self-learning. MOON provides a brain-connected terminal
+REPL and an optional browser HUD at `http://127.0.0.1:8777/ui` when its HTTP
+server is running.
 
 ## Features
 - **Main brain (LongTermMemory + KnowledgeBase)** -- durable, survives restarts.
 - **Per-agent brains** -- 39 specialist agents, each with its own isolated memory connected to the main brain.
+- **Connected-agent tasks** -- permission-gated peer task submission with bounded, persistent status/result records; prompts are not persisted.
 - **Autonomous self-learning** -- every interaction's facts, tool outcomes, and lessons are consolidated into the durable brain (`enable_auto_learning`).
-- **Neural Brain Command Center** -- Three.js visualization of the brain mesh, connected-agent mesh, and live cognition channel over WebSocket.
-- **Always-connected GitHub** -- MOON autonomously pulls needed tools/plugins/skills from the connected repo on demand.
+- **Browser HUD** -- single-page canvas visualization with API status and a WebSocket event connection.
+- **GitHub integration** -- optional repository search and on-demand file/tool retrieval; inspect fetched code before enabling or executing it.
 
-## Female Voice & Dictation
+## Voice capabilities
 
-MOON speaks with a warm, clearly-FEMALE voice (espeak female voice `f5` + a SoX
-timbre chain: pitch lift, body/bass, air/treble, subtle chorus + reverb for an
-intimate, attractive tone). Presets: `default`, `seductive`, `warm`, `crystal`.
-
-```bash
-make voice-install          # install espeak + sox (+ optional vosk for mic)
-make voice                  # companion loop: type/talk -> MOON -> female voice
-make voice-test             # generate a sample female-voice WAV
-```
-
-With a microphone + vosk (`VOSK_MODEL_DIR` set), use `make voice -- --mic` for
-true speech dictation. Without vosk it runs in typed mode but still replies in
-MOON's female voice. The voice module is `app/voice.py`.
+Voice helpers are implemented in `app/voice.py` and `app/voice_engine.py`, but
+the CLI and Makefile do not currently expose a standalone voice workflow.
+Microphone hardware, installed speech providers, and end-to-end voice
+conversation have not been verified.
 
 ## Quick start
 
-### Starting the terminal UI
+### Starting the terminal interface
 
-The default entry point for the interactive terminal UI is:
+The following commands launch the brain-connected terminal REPL:
 
 ```bash
 python -m moon terminal
 ```
 
-**Alternative entry point** (direct module invocation):
-
-```bash
-python -m moon_terminal
-```
-
-Both commands launch the same Textual TUI.
-
-
-Running `python -m moon` without arguments also launches the terminal, as it is the default sub‑command. Use this command to open the Textual TUI, issue commands, and interact with MOON’s agents.
+Running `python -m moon` without arguments launches the same REPL. To submit a
+single task instead, use `python -m moon run "Your task"`.
 
 
 ```bash
 python -m venv .venv && .venv/bin/pip install -r requirements.txt
 cp .env.example .env
-make serve          # MOON Neural Command Center at http://127.0.0.1:8777
+make serve          # interactive terminal REPL
+
+# Optional HTTP API and browser HUD:
+.venv/bin/python -m uvicorn app.terminal_interface:app --host 127.0.0.1 --port 8777
+# Open http://127.0.0.1:8777/ui
 ```
 
 > ### GitHub login prompt when cloning? (read this)

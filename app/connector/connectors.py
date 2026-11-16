@@ -68,6 +68,9 @@ class AgentConnector:
         self._key = api_key if api_key not in (None, "", "not-required") else None
         self._to = timeout
 
+    def _endpoint_url(self, path: str) -> str:
+        return f"{self._base}/{path.lstrip('/')}"
+
     async def ask(self, message: str, *, system: str = "",
                   history: list[dict] | None = None) -> CallResult:
         msgs = []
@@ -80,9 +83,9 @@ class AgentConnector:
         headers = {"Authorization": f"Bearer {self._key}"} if self._key else {}
         try:
             async with httpx.AsyncClient(
-                base_url=self._base, headers=headers, timeout=self._to
+                headers=headers, timeout=self._to
             ) as c:
-                r = await c.post("/chat/completions", json=payload)
+                r = await c.post(self._endpoint_url("chat/completions"), json=payload)
                 try:
                     body = r.json()
                 except ValueError:
@@ -120,9 +123,9 @@ class AgentConnector:
         headers = {"Authorization": f"Bearer {self._key}"} if self._key else {}
         try:
             async with httpx.AsyncClient(
-                base_url=self._base, headers=headers, timeout=self._to
+                headers=headers, timeout=self._to
             ) as client:
-                response = await client.get("/models")
+                response = await client.get(self._endpoint_url("models"))
                 return CallResult(
                     ok=response.is_success,
                     status=response.status_code,

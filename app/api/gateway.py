@@ -2,8 +2,8 @@
 
 Everything the agent-facing :class:`GlobalConnectorTool` exposes, over HTTP, so
 CYCLONE and queriers can call the gateway without an agent session. Supports
-connect, list, call, health, status, check, mute, unmute and disconnect for
-service/agent/mcp/webhook/websocket connections.
+connect, list, call, health, status, task submission/result polling, check,
+mute, unmute and disconnect for service/agent/mcp/webhook/websocket connections.
 
 A single **ConnectionGateway** is shared with the tool layer (built in
 :meth:`get_gateway`) so the API and the tool layer mutate the same
@@ -18,7 +18,12 @@ import logging
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
-from app.connector.gateway import ConnectionGateway, ConnectionRecord
+from app.connector.gateway import (
+    ConnectionGateway,
+    ConnectionRecord,
+    get_shared_connection_gateway,
+)
+from app.connector.manifest import ManifestValidationError, validate_agent_manifest
 
 try:  # same gate as every /api endpoint
     from app.terminal_interface import TERMINAL_TOKEN, _token_ok
@@ -37,8 +42,7 @@ def get_gateway() -> ConnectionGateway:
     """Return the (singleton) ConnectionGateway shared with the tool layer."""
     global _gateway
     if _gateway is None:
-        from app.connector.gateway import ConnectionGateway
-        _gateway = ConnectionGateway()
+        _gateway = get_shared_connection_gateway()
     return _gateway
 
 
@@ -88,6 +92,17 @@ def get_gateway_router() -> APIRouter:
         if not name or not url:
             return JSONResponse({"error": "connect requires name and url"},
                                 status_code=400)
+        manifest = body.get("manifest")
+        if manifest is not None:
+            if kind != "agent":
+                return JSONResponse(
+                    {"error": "only agent connections may declare a manifest"},
+                    status_code=400,
+                )
+            try:
+                manifest = validate_agent_manifest(manifest)
+            except ManifestValidationError as exc:
+                return JSONResponse({"error": str(exc)}, status_code=400)
         rec = ConnectionRecord(
             name=name, kind=kind, url=url,
             model=str(body.get("model", "")),
@@ -95,6 +110,7 @@ def get_gateway_router() -> APIRouter:
             permissions=list(body.get("permissions", [])),
             credential_ref=str(body.get("credential_ref", "")),
             enabled=bool(body.get("enabled", True)),
+            manifest=manifest,
         )
         allowed, tier, reason = gw.authorize_egress(
             rec.url,
@@ -109,7 +125,10 @@ def get_gateway_router() -> APIRouter:
                 },
                 status_code=403,
             )
-        gw.register(rec)
+        try:
+            gw.register(rec)
+        except ManifestValidationError as exc:
+            return JSONResponse({"error": str(exc)}, status_code=400)
         return JSONResponse({"name": rec.name, "kind": rec.kind, "url": rec.url,
                              "status": rec.last_status}, status_code=201)
 
@@ -127,6 +146,17 @@ def get_gateway_router() -> APIRouter:
     async def disconnect_connection(request: Request, conn_id: str):
         if not _auth_ok(dict(request.headers)):
             return JSONResponse({"detail": "Unauthorized"}, status_code=401)
+        try:
+            body = await request.json()
+        except Exception:  # noqa: BLE001
+            body = {}
+        if not isinstance(body, dict) or not _operator_confirmed(
+            dict(request.headers), body.get("confirmed")
+        ):
+            return JSONResponse(
+                {"error": "operator confirmation required to disconnect this connection"},
+                status_code=403,
+            )
         if gw.remove(conn_id):
             return JSONResponse({"name": conn_id, "removed": True})
         return JSONResponse({"error": f"no connection named '{conn_id}'"},
@@ -207,6 +237,73 @@ def get_gateway_router() -> APIRouter:
             return JSONResponse({"name": conn_id, "ok": False,
                                  "detail": str(exc)[:160],
                                  "status": f"error:{exc}"})
+
+    @router.post("/connections/{conn_id}/discover")
+    async def discover_connection_manifest(request: Request, conn_id: str):
+        if not _auth_ok(dict(request.headers)):
+            return JSONResponse({"detail": "Unauthorized"}, status_code=401)
+        try:
+            body = await request.json()
+        except Exception:  # noqa: BLE001
+            body = {}
+        if not isinstance(body, dict):
+            return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+        result = await gw.discover_agent_manifest(
+            conn_id,
+            confirmed=_operator_confirmed(
+                dict(request.headers), body.get("confirmed")
+            ),
+        )
+        if result.get("ok"):
+            return JSONResponse(result)
+        if result.get("confirmation_required"):
+            return JSONResponse(result, status_code=403)
+        if result.get("error", "").startswith("no connection named"):
+            return JSONResponse(result, status_code=404)
+        if result.get("error", "").startswith("connection '"):
+            return JSONResponse(result, status_code=409)
+        return JSONResponse(result, status_code=502)
+
+    @router.post("/connections/{conn_id}/tasks")
+    async def submit_agent_task(request: Request, conn_id: str):
+        if not _auth_ok(dict(request.headers)):
+            return JSONResponse({"detail": "Unauthorized"}, status_code=401)
+        try:
+            body = await request.json()
+        except Exception:  # noqa: BLE001
+            return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+        if not isinstance(body, dict):
+            return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+        result = await gw.submit_agent_task(
+            conn_id,
+            body.get("message"),
+            system=body.get("system", ""),
+            confirmed=_operator_confirmed(
+                dict(request.headers), body.get("confirmed")
+            ),
+            capability=body.get("capability", ""),
+            input_data=body.get("input"),
+        )
+        if result.get("ok"):
+            return JSONResponse(result, status_code=202)
+        if result.get("confirmation_required"):
+            return JSONResponse(result, status_code=403)
+        if result.get("error", "").startswith("no connection named"):
+            return JSONResponse(result, status_code=404)
+        if result.get("error", "").startswith("connection '"):
+            return JSONResponse(result, status_code=409)
+        if result.get("error") == "agent task queue is full":
+            return JSONResponse(result, status_code=429)
+        return JSONResponse(result, status_code=400)
+
+    @router.get("/tasks/{task_id}")
+    async def get_agent_task(request: Request, task_id: str):
+        if not _auth_ok(dict(request.headers)):
+            return JSONResponse({"detail": "Unauthorized"}, status_code=401)
+        task = gw.get_agent_task(task_id)
+        if task is None:
+            return JSONResponse({"error": "agent task not found"}, status_code=404)
+        return JSONResponse(task)
 
     @router.post("/connections/{conn_id}/mute")
     async def mute_connection(request: Request, conn_id: str):

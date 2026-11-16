@@ -1,0 +1,1 @@
+"""Packaged MOON HUD assets."""

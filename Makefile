@@ -18,7 +18,7 @@ build:
 	$(PY) -m pip install . --no-deps --force-reinstall
 
 serve:
-	python main.py terminal
+	$(PY) main.py terminal
 
 clean:
 	find . -name '__pycache__' -type d -prune -exec rm -rf {} +

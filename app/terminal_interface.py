@@ -23,6 +23,7 @@ import subprocess
 import time
 from collections.abc import Iterable
 from dataclasses import dataclass
+from importlib.resources import files
 from typing import Any
 
 _START_TIME = time.time()
@@ -65,8 +66,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve the interactive HUD (single-file HTML, no server-side routes beyond static serve).
-_HUD_PATH = Path(__file__).resolve().parent.parent / "apps/moon_ui" / "hud.html"
+# Serve the HUD and its theme from packaged resources in both source and wheel installs.
+_UI_RESOURCES = files("apps.moon_ui")
+_HUD_RESOURCE = _UI_RESOURCES.joinpath("hud.html")
+_THEME_RESOURCE = _UI_RESOURCES.joinpath("theme.json")
 
 # --- Cognitive memory API (spec 29/30) -------------------------------------
 # Mounted on the EXISTING app rather than starting a second server (spec 1).
@@ -112,9 +115,16 @@ except Exception as _term_exc:  # noqa: BLE001
 @app.get("/ui", response_class=HTMLResponse)
 async def ui_hud():
     """MOON-AI Neural Core interactive HUD — single-page app, live health + WS feed + API explorer."""
-    if not _HUD_PATH.is_file():
-        return HTMLResponse("<h1>MOON-AI HUD — not deployed</h1><p>Copy MOON-AI_ui/hud.html beside this file.</p>", status_code=503)
-    return HTMLResponse(_HUD_PATH.read_text(encoding="utf-8"))
+    if not _HUD_RESOURCE.is_file():
+        return HTMLResponse("<h1>MOON-AI HUD — not deployed</h1>", status_code=503)
+    return HTMLResponse(_HUD_RESOURCE.read_text(encoding="utf-8"))
+
+
+@app.get("/theme.json")
+async def ui_theme():
+    if not _THEME_RESOURCE.is_file():
+        return JSONResponse({"error": "theme not deployed"}, status_code=404)
+    return JSONResponse(json.loads(_THEME_RESOURCE.read_text(encoding="utf-8")))
 
 @app.get("/hud")
 @app.get("/hud/")

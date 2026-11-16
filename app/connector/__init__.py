@@ -22,6 +22,11 @@ from __future__ import annotations
 from app.connector.acp import ACPError, ACPSubprocessConnector, ACPTask
 from app.connector.connectors import AgentConnector, HTTPConnector, MCPConnector, WebSocketConnector
 from app.connector.gateway import ConnectionGateway, ConnectionRecord
+from app.connector.manifest import (
+    MANIFEST_SCHEMA_VERSION,
+    ManifestValidationError,
+    validate_agent_manifest,
+)
 from app.connector.permission import ConnectorPermissionManager
 from app.connector.tool import GlobalConnectorTool
 
@@ -35,6 +40,9 @@ __all__ = [
     "ConnectorPermissionManager",
     "GlobalConnectorTool",
     "HTTPConnector",
+    "MANIFEST_SCHEMA_VERSION",
+    "ManifestValidationError",
     "MCPConnector",
     "WebSocketConnector",
+    "validate_agent_manifest",
 ]
