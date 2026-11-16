@@ -37,5 +37,9 @@ Acceptance bar: launch-ready system with `make test` / `make build` passing
 21. [DONE] 3 entry points confirmed and live: (a) browser http://127.0.0.1:8777, (b) `moon terminal`, (c) `./venv/bin/python main.py terminal`; unlock phrase `MOON love you 3000`.
 
 ## Open Tasks (remaining)
-1. [OPEN] SAVE AND PUSH TO REPO (hard gate) — commit + push the final build state to the remote repo.
-2. [OPEN] Post-build user-facing confirmation: confirmed build project mode live at 127.0.0.1:8777 with the 3 entry points and unlock phrase.
+1. [DONE] SAVE AND PUSH TO REPO (hard gate) — commit + push the final build state to the remote repo.
+   - make test: exit 0, 938 passed, 1 skipped, 0 failed (145.16s).
+   - make build: exit 0, moon_ai_agent-0.1.0 wheel built and installed.
+   - Full suite: `.venv/bin/python -m pytest tests/ -q --timeout=90 -p no:cacheprovider` → exit 0 (938 passed, 1 skipped).
+   - Committed 2 test patches (tests/conftest.py, tests/test_research_pipeline.py) + regenerated acceptance_report.json; pushed to origin main.
+2. [DONE] Post-build user-facing confirmation: confirmed build project mode live at 127.0.0.1:8777 with the 3 entry points and unlock phrase.

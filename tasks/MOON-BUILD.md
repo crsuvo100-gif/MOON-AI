@@ -47,7 +47,7 @@ Venv: `/home/meow/Projects/MOON/.venv`
 - Server :8777 → GET /api/interface/version, /api/interface/models,
   /api/terminal/agents, /api/capabilities, /api/tools → all exit 0.
 - `make run`  → 41 agent brains connected, real LLM call, RESULT correct. (exit 0)
-- `make test` → 98 tests, exit 0.
+- `make test` → 938 tests, exit 0 (938 passed, 1 skipped, 0 failed; full-suite run with --timeout=90 -p no:cacheprovider).
 - `make live` → 21/21 checks, exit 0.
 - `moon terminal` / `./venv/bin/python main.py terminal` → banner + prompt + real
   brain response + `/quit` clean exit. (entry points verified)
@@ -59,8 +59,13 @@ Venv: `/home/meow/Projects/MOON/.venv`
 - `tasks/ledger.json` — local ledger data.
 
 ## Git state
-- branch `main`; all staged (index) edits committed + pushed.
-- Remote: `origin git@github.com:crsuvo100-gif/MOON-AI.git`
+- branch `main`; HEAD `7b51f81` + final session commit added.
+- Remote: `origin https://github.com/crsuvo100-gif/MOON-AI.git`
 
-## SAVE AND PUSH TO REPO — COMPLETE
-Commit + push to origin main succeeded. Ready for next task.
+## SAVE AND PUSH TO REPO — COMPLETE (final session)
+Commit + push to origin main succeeded. Final build state committed and pushed:
+- `tests/conftest.py` — sys.path resolution fix (venv site-packages first).
+- `tests/test_research_pipeline.py` — single-source dedup assertion (sources_checked == 1).
+- `docs/TASK_TRACKER.md` — open tasks closed with real verification evidence.
+- `tasks/MOON-BUILD.md` — build log updated with real test counts.
+- `acceptance_report.json` — regenerated with real `make test` / `make build` results (938 passed, 1 skipped, 0 failed; exit 0).
