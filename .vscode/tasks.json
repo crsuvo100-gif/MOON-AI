@@ -5,39 +5,101 @@
       "label": "MOON: Build",
       "type": "shell",
       "command": "make build",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "problemMatcher": []
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [],
+      "detail": "Build MOON-AI package in a fresh virtualenv"
     },
     {
-      "label": "MOON: Build & Run",
+      "label": "MOON: Run",
       "type": "shell",
-      "command": "make build && make serve",
-      "group": "build",
-      "detail": "Build the project, then start the MOON-AI command terminal",
-      "problemMatcher": []
+      "command": "make run",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [],
+      "detail": "Start MOON-AI agent in terminal mode"
+    },
+    {
+      "label": "MOON: Serve",
+      "type": "shell",
+      "command": "make serve",
+      "group": "none",
+      "detail": "Start MOON-AI terminal server (web UI)"
     },
     {
       "label": "MOON: Test",
       "type": "shell",
       "command": "make test",
-      "group": "test"
+      "group": "test",
+      "detail": "Run all unit tests with pytest"
     },
     {
       "label": "MOON: Verify",
       "type": "shell",
-      "command": "make live",
-      "group": "test"
+      "command": "make verify",
+      "group": "test",
+      "detail": "Run the live smoke pipeline to verify deployment"
     },
     {
-      "label": "hermes build",
+      "label": "MOON: Clean",
       "type": "shell",
-      "command": "hermes acp",
+      "command": "make clean",
+      "group": "none",
+      "detail": "Clean build artifacts and cache directories"
+    },
+    {
+      "label": "MOON: Install deps",
+      "type": "shell",
+      "command": "make install",
+      "group": "none",
+      "detail": "Install base and optional dependencies"
+    },
+    {
+      "label": "hermes: Run AI task",
+      "type": "shell",
+      "command": "cd \"${workspaceFolder}\" && hermes -q \"$0\"",
       "args": [],
       "group": "none",
-      "detail": "Start hermes ACP server for VS Code integration"
+      "detail": "Run a command through the hermes AI agent (pass command as argument)"
+    },
+    {
+      "label": "AI: Generate code with hermes",
+      "type": "shell",
+      "command": "cd \"${workspaceFolder}\" && hermes \"${input\":\"AI: Generate code for ${input:file_pattern}\"}\"",
+      "args": [],
+      "group": "none",
+      "detail": "Ask hermes AI to generate code for the selected file pattern",
+      "inAgents": true,
+      "runOptions": {
+        "runOn": "worktreeCreated"
+      }
+    },
+    {
+      "label": "AI: Explain code",
+      "type": "shell",
+      "command": "cd \"${workspaceFolder}\" && hermes \"Explain the architecture of this project\"",
+      "args": [],
+      "group": "none",
+      "detail": "Ask hermes AI to explain the project architecture"
+    },
+    {
+      "label": "MCP: Start server",
+      "type": "shell",
+      "command": "hermes acp",
+      "group": "none",
+      "detail": "Start hermes ACP server for VS Code MCP integration"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "file_pattern",
+      "type": "promptString",
+      "description": "File pattern to generate code for (e.g., *.py, src/*.py)",
+      "password": false
+    },
+    {
+      "id": "task_description",
+      "type": "promptString",
+      "description": "AI task description for hermes",
+      "password": false
     }
   ]
 }

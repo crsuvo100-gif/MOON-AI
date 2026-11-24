@@ -169,8 +169,8 @@ def main() -> int:
             t = json.loads(tsk.read_text())
             labels = [x.get("label", "") for x in t.get("tasks", [])]
             low = [l.lower() for l in labels]
-            check("VS Code: 4 task templates",
-                  all(any(k in l for l in low) for k in ("verify", "build", "test", "hermes build")),
+            check("VS Code: task templates (verify/build/test/hermes)",
+                  all(any(k in l for l in low) for k in ("verify", "build", "test", "hermes")),
                   ", ".join(labels))
         except Exception:  # noqa: BLE001
             check("tasks.json parse", False)

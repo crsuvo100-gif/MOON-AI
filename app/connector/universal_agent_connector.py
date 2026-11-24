@@ -62,6 +62,8 @@ from pathlib import Path
 from typing import Any, Optional
 from urllib.parse import urlparse
 
+logger = logging.getLogger(__name__)
+
 try:
     from app.connector.connectors import CallResult as FoundationCallResult
 except ImportError:  # pragma: no cover - fallback for tests without the foundation
@@ -208,6 +210,7 @@ class TaskRecord:
     attempts: int = 0
     max_attempts: int = 3
     queued_at: float = 0.0
+    task: Any = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -313,6 +316,23 @@ class AgentRegistry:
         else:
             tasks.append(task)
         self.save_tasks(tasks)
+
+    def get_agent_by_id(self, agent_id: str) -> Optional[dict[str, Any]]:
+        """Return the registered agent record by id, or None."""
+        for agent in self.agents():
+            if agent.get("id") == agent_id:
+                return agent
+        return None
+
+    def complete_task(self, task_id: str) -> Optional[TaskRecord]:
+        """Mark a registered task as completed and persist the change."""
+        tasks = self.tasks()
+        for task in tasks:
+            if task.task_id == task_id:
+                task.status = "completed"
+                self.save_tasks(tasks)
+                return task
+        return None
 
 
 # =============================================================================
@@ -438,7 +458,9 @@ class RestConnector(ConnectorAdapter):
         endpoint = self.config.get("endpoint", "")
         if not endpoint:
             return False
-        if not permission_manager.is_allowed("network.service", "rest:" + endpoint):
+        if permission_manager is not None and not permission_manager.is_allowed(
+            "network.service", "rest:" + endpoint
+        ):
             return False
         self.client = httpx.Client(base_url=endpoint.rstrip("/"), timeout=60.0)
         ok, msg = self.ping()
@@ -504,7 +526,10 @@ class WebSocketConnector(ConnectorAdapter):
         if not _HAS_WS:
             return False
         endpoint = self.config.get("endpoint", "")
-        if not endpoint or not permission_manager.is_allowed("network.service", "ws:" + endpoint):
+        if not endpoint or (
+            permission_manager is not None
+            and not permission_manager.is_allowed("network.service", "ws:" + endpoint)
+        ):
             return False
         try:
             self.ws = websockets.connect(endpoint, ping_interval=30)
@@ -524,7 +549,7 @@ class WebSocketConnector(ConnectorAdapter):
         return True
 
     def capabilities(self) -> dict[str, Any]:
-        return {"protocol": self.protocol(), "streaming": True, "realtime": True}
+        return {"protocol": self.protocol(), "streaming": True, "realtime": True, "websocket": True}
 
     def ping(self) -> tuple[bool, str]:
         if not self.ws:
@@ -559,7 +584,9 @@ class LocalIpcConnector(ConnectorAdapter):
         cmd = self.config.get("command", [])
         if not cmd:
             return False
-        if not permission_manager.is_allowed("local.exec", "local:" + " ".join(cmd[:3])):
+        if permission_manager is not None and not permission_manager.is_allowed(
+            "local.exec", "local:" + " ".join(cmd[:3])
+        ):
             return False
         try:
             self.proc = subprocess.Popen(
@@ -630,7 +657,9 @@ class McpConnector(ConnectorAdapter):
             cmd = self.config.get("command", [])
             if not cmd:
                 return False
-            if not permission_manager.is_allowed("local.exec", "mcp:" + " ".join(cmd[:3])):
+            if permission_manager is not None and not permission_manager.is_allowed(
+                "local.exec", "mcp:" + " ".join(cmd[:3])
+            ):
                 return False
             try:
                 self.session = mcp.ClientSession(
@@ -643,8 +672,11 @@ class McpConnector(ConnectorAdapter):
                 return False
         else:
             endpoint = self.config.get("endpoint", "")
-            if not endpoint or not permission_manager.is_allowed(
-                "network.service", "mcp:" + endpoint
+            if not endpoint or (
+                permission_manager is not None
+                and not permission_manager.is_allowed(
+                    "network.service", "mcp:" + endpoint
+                )
             ):
                 return False
             try:
@@ -727,7 +759,9 @@ class AcpSubprocessConnector(ConnectorAdapter):
         cmd = self.config.get("command", [])
         if not cmd:
             return False
-        if not permission_manager.is_allowed("local.exec", "acp:" + " ".join(cmd[:3])):
+        if permission_manager is not None and not permission_manager.is_allowed(
+            "local.exec", "acp:" + " ".join(cmd[:3])
+        ):
             return False
         try:
             self.proc = subprocess.Popen(

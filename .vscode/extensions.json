@@ -9,9 +9,20 @@
     "ms-python.black-formatter",
     "ms-python.debugpy",
     "jagreehal.rundebug",
-    "omercnet.vscode-acp"
+    "omercnet.vscode-acp",
+    "github.copilot",
+    "github.copilot-chat",
+    "github.vscode-github-actions",
+    "charliermarsh.ruff",
+    "ms-python.mypy-type-checker",
+    "redhat.vscode-yaml"
   ],
-  "languages": [
-    "Python"
-  ]
+  "unwantedRecommendations": [
+    "ms-vscode.aspnetcore-bundle"
+  ],
+  "properties": {
+    "github.copilot.enabled": true,
+    "github.copilot.chat.enabled": true,
+    "github.copilot.integrations": ["vscode", "vscode-tests"]
+  }
 }

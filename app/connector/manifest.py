@@ -286,7 +286,7 @@ def validate_agent_manifest(value: Any) -> dict[str, Any]:
             normalized["description"] = _bounded_text(description, "capability description", 256)
         for key in ("input_schema", "output_schema"):
             normalized[key] = _validate_json_schema(
-                capability.get(key), root=True, depth=0, budget=schema_budget
+                capability.get(key), root=False, depth=0, budget=schema_budget
             )
         normalized_capabilities.append(normalized)
 

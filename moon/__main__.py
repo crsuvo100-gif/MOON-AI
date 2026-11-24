@@ -57,13 +57,14 @@ def _build_parser() -> argparse.ArgumentParser:
     # text so `python -m MOON-AI -h` matches the console-script help.
     ap = argparse.ArgumentParser(prog="moon", description="Standalone AI Agent")
     sub = ap.add_subparsers(dest="cmd")
-    run_p = sub.add_parser("run", help="Run a single task via LLM, or launch MOON-AIscope TUI if no task given")
-    run_p.add_argument("task", nargs="?", default=None, help="Task to run (omit to launch the terminal)")
-    run_p.add_argument("--task", dest="task_flag", default=None, help="Task to run (omit to launch the terminal)")
+    run_p = sub.add_parser("run", help="Run a single task via LLM (use 'terminal' for interactive mode)")
+    run_p.add_argument("task", nargs="?", default=None, help="Task to run (required; use 'moon terminal' for interactive mode)")
+    run_p.add_argument("--task", dest="task_flag", default=None, help="Task to run (required for 'run')")
     run_p.add_argument("--agent", default=None, help="Agent name to run the task with")
     sub.add_parser("models", help="Pre-pull all per-agent preferred models so agents are ready")
     # Single terminal interface: Hermes-style Textual TUI (moonscope).
-    #   MOON-AI / MOON-AI terminal / MOON-AI run  ->  Hermes-style TUI (moonscope)
+    #   MOON-AI / MOON-AI terminal  ->  Hermes-style TUI (moonscope)
+    #   MOON-AI run <task>          ->  one-shot task runner (no task -> usage)
     #   MOON-AI cli  ->  readline REPL (fallback, Hermes-feature-rich)
     #   MOON-AI terminal-moon  ->  standalone MOON-AI Terminal (terminal_moon/ sub-project)
     sub.add_parser("terminal", help="Interactive MOON-AI Terminal REPL (brain-connected)")

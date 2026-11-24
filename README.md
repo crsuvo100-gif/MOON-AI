@@ -51,11 +51,11 @@ make serve          # interactive terminal REPL
 > repo owner can change on GitHub. Nothing in MOON controls it. To clone from
 > GitHub with no (or minimal) friction, pick ONE:
 > 1. **Make the repo PUBLIC** (GitHub → repo Settings → Danger Zone → Change
->    visibility → Public). Then `git clone https://github.com/crsuvo100-gif/MOON.git`
+>    visibility → Public). Then `git clone https://github.com/crsuvo100-gif/MOON-AI.git`
 >    works with **no credentials at all**. This is the only way to get a truly
 >    password-free install.
 > 2. **Use SSH** (recommended for private repos): `git clone
->    git@github.com:crsuvo100-gif/MOON.git`. Add your SSH key to GitHub
+>    git@github.com:crsuvo100-gif/MOON-AI.git`. Add your SSH key to GitHub
 >    (Settings → SSH and GPG keys) — no password needed afterward.
 > 3. **Use HTTPS + a PAT**: username = your GitHub login (`meow`); password =
 >    a **Personal Access Token** (GitHub disabled account-password git auth in
@@ -67,7 +67,7 @@ make serve          # interactive terminal REPL
 | `MODEL_NAME` | `qwen3:0.6b` | model id |
 | `ENABLE_AUTO_LEARNING` | `true` | MOON learns from every interaction |
 | `ENABLE_AGENT_VALIDATION` | `true` | two-phase main-brain validation |
-| `GITHUB_REPO` | `https://github.com/crsuvo100-gif/MOON` | connected repo for auto tool-pull |
+| `GITHUB_REPO` | `https://github.com/crsuvo100-gif/MOON-AI` | connected repo for auto tool-pull |
 
 ## Tests
 ```bash
@@ -111,7 +111,7 @@ MOON talks to an **OpenAI-compatible** endpoint. Options:
 
 ### Install (Python)
 ```bash
-git clone git@github.com:crsuvo100-gif/MOON.git
+git clone git@github.com:crsuvo100-gif/MOON-AI.git
 cd MOON
 python -m venv .venv && .venv/bin/pip install -e .
 cp .env.example .env          # then fill in secrets (NEVER commit .env)
@@ -122,17 +122,17 @@ python -m moon install        # bootstrap venv + deps + (best-effort) models
 | Command | Purpose |
 |---------|---------|
 | `python -m moon` | Launch the default Terminal/Neural Command Center UI |
-|| `python -m moon run "task"` | Run a single task and exit (or launch CLI terminal if no task) |
-|| `python -m moon doctor` | Health check (Python/deps/config/DB/agents/tools/model/git) → PASS/WARN/FAIL |
-|| `python -m moon status` | Check the live backend `/api/health` |
-|| `python -m moon backup` | Snapshot runtime data into `backups/moon_<ts>/` (cross-platform) |
-|| `python -m moon restore <snapshot>` | Restore without replacing existing runtime files |
-|| `python -m moon restore <snapshot> --confirm-overwrite` | Restore and replace conflicting runtime files after review |
-|| `python -m moon install` | Python bootstrap installer (venv + deps + models) |
-|| `python -m moon update` | Safe update: `git pull --ff-only` + `pip install -e . --upgrade` |
-|| `python -m moon models` | Pre-pull per-agent preferred models |
-|| `python -m moon telegram` | Telegram bot listener |
-|| `python -m moon version` | Print version |
+| `python -m moon run "task"` | Run a single task and exit (a task is required) |
+| `python -m moon doctor` | Health check (Python/deps/config/DB/agents/tools/model/git) → PASS/WARN/FAIL |
+| `python -m moon status` | Check the live backend `/api/health` |
+| `python -m moon backup` | Snapshot runtime data into `backups/moon_<ts>/` (cross-platform) |
+| `python -m moon restore <snapshot>` | Restore without replacing existing runtime files |
+| `python -m moon restore <snapshot> --confirm-overwrite` | Restore and replace conflicting runtime files after review |
+| `python -m moon install` | Python bootstrap installer (venv + deps + models) |
+| `python -m moon update` | Safe update: `git pull --ff-only` + `pip install -e . --upgrade` |
+| `python -m moon models` | Pre-pull per-agent preferred models |
+| `python -m moon telegram` | Telegram bot listener |
+| `python -m moon version` | Print version |
 
 Restore refuses to replace existing runtime files by default. Review the
 snapshot and pass `--confirm-overwrite` to replace conflicting files; restore
@@ -143,7 +143,7 @@ merges the selected runtime paths and does not delete unrelated live files.
 
 ### Recovery workflow (clean compatible machine)
 ```bash
-git clone git@github.com:crsuvo100-gif/MOON.git
+git clone git@github.com:crsuvo100-gif/MOON-AI.git
 cd MOON
 python -m venv .venv && .venv/bin/pip install -e .
 cp .env.example .env            # supply real secrets

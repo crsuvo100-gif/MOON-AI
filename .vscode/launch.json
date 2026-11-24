@@ -1,44 +1,100 @@
 {
   "version": "0.2.0",
   "configurations": [
-    
     {
-      "name": "Run application",
+      "name": "MOON: Run",
       "type": "python",
       "request": "launch",
-      "program": "main.py",
-      "args": [
-        "run"
-      ],
+      "module": "main",
+      "args": ["run"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "MOON_ENV": "development"
+      },
+      "justMyCode": true,
+      "console": "integratedTerminal",
+      "purpose": ["debug"]
+    },
+    {
+      "name": "MOON: Serve (web UI)",
+      "type": "python",
+      "request": "launch",
+      "module": "main",
+      "args": ["terminal"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "MOON_ENV": "development"
+      },
+      "justMyCode": true,
+      "console": "integratedTerminal",
+      "purpose": ["debug"]
+    },
+    {
+      "name": "MOON: Pytest",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": ["-v", "${workspaceFolder}/tests"],
       "cwd": "${workspaceFolder}",
       "env": {
         "PYTHONPATH": "${workspaceFolder}"
       },
-      "purpose": [
-        "debug"
-      ]
+      "justMyCode": false,
+      "console": "integratedTerminal",
+      "purpose": ["debug-test"]
     },
     {
-      "name": "Run tests",
+      "name": "MOON: Profiler",
       "type": "python",
       "request": "launch",
-      "program": "pytest",
-      "args": [
-        "-q"
-      ],
+      "module": "main",
+      "args": ["run"],
       "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "PYTHONPROFILE": "1",
+        "MOON_ENV": "development"
+      },
+      "justMyCode": false,
       "console": "integratedTerminal",
-      "purpose": [
-        "debug"
-      ]
+      "purpose": ["debug"]
+    },
+    {
+      "name": "hermes AI: Interactive",
+      "type": "python",
+      "request": "launch",
+      "module": "hermes_cli.main",
+      "args": ["-q", "Run the system"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}",
+        "HERMES_AGENT_MODE": "interactive"
+      },
+      "justMyCode": true,
+      "console": "integratedTerminal",
+      "purpose": ["debug"]
+    },
+    {
+      "name": "hermes AI: One-shot",
+      "type": "python",
+      "request": "launch",
+      "module": "hermes_cli.main",
+      "args": ["-q", "ls -la", "--oneshot"],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": true,
+      "console": "integratedTerminal",
+      "purpose": ["debug"]
     }
   ],
   "compounds": [
     {
       "name": "MOON + hermes ACP",
-      "configurations": [
-        "MOON: Run"
-      ],
+      "configurations": ["MOON: Run"],
       "stopAll": true
     }
   ]
