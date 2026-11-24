@@ -44,5 +44,5 @@
   "terminal.integrated.defaultProfile.linux": "zsh",
   "telemetry.enableTelemetry": false,
   "telemetry.enableCrashReporter": false,
-  "workbench.colorTheme": "Default Dark Modern"
+  "workbench.colorTheme": "Dark Modern"
 }

@@ -10,8 +10,8 @@ If a command matches a rule with ``action: ask`` the engine raises a
 this exception, prompt the user, and re‑invoke the execution engine with the
 same request.
 
-A default policy is provided that ``allow`` everything under ``/home/meow``
-(and therefore the current project) and ``ask`` for any destructive command
+A default policy is provided that ``allow`` normal read-only commands and
+``ask`` for any destructive command
 (``rm``, ``dd``, ``mkfs`` …).  The file is deliberately tiny – real deployments
 should customise it to the organisation's security posture.
 """

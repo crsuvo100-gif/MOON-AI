@@ -26,10 +26,10 @@ import textwrap
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
-from typing import Optional
 
-# MOON project directory
-PROJECT_ROOT = Path("/home/meow/Projects/MOON")
+# MOON project directory -- resolved from this file's location, never hard-coded.
+# scripts/build_moon_infra.py -> parents[1] is the project root.
+PROJECT_ROOT = Path(os.environ.get("MOON_PROJECT_ROOT", Path(__file__).resolve().parents[1]))
 
 # Status tracking
 BUILD_STATUS = {

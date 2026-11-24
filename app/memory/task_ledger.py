@@ -17,6 +17,7 @@ the local ledger stays readable offline and git-able.
 from __future__ import annotations
 
 import json
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -24,8 +25,28 @@ from typing import Any
 
 from app.memory.task_record import TaskRecord, TaskStatus
 
+
+def _detect_project_root() -> Path:
+    """Resolve the MOON source folder without any machine-specific path.
+
+    Priority:
+      1. ``MOON_PROJECT_ROOT`` override (portable across installs).
+      2. Source-tree layout: this file lives at ``<root>/app/memory/...``.
+      3. Fallback: the current working directory (installed-package layout).
+    """
+    override = os.environ.get("MOON_PROJECT_ROOT")
+    if override:
+        return Path(override).expanduser().resolve()
+    here = Path(__file__).resolve()
+    # app/memory/task_ledger.py -> parents[2] is the project root.
+    candidate = here.parents[2] if len(here.parents) >= 3 else Path.cwd()
+    if (candidate / "app" / "memory").is_dir():
+        return candidate
+    return Path.cwd()
+
+
 # Canonical project root (MOON source folder).  All local task JSONs land here.
-_DEFAULT_PROJECT_ROOT = Path("/home/meow/Projects/MOON")
+_DEFAULT_PROJECT_ROOT = _detect_project_root()
 
 # Local ledger index file (in-project JSON, human/grep-able).
 _LEGER_INDEX = "tasks/ledger.json"
@@ -144,7 +165,8 @@ _default_ledger: LocalTaskLedger | None = None
 
 def get_ledger(project_root: Path | None = None) -> LocalTaskLedger:
     global _default_ledger
-    if _default_ledger is None or project_root != _default_ledger.project_root:
+    key = Path(project_root) if project_root is not None else _DEFAULT_PROJECT_ROOT
+    if _default_ledger is None or _default_ledger.project_root != key:
         _default_ledger = LocalTaskLedger(project_root)
     return _default_ledger
 

@@ -103,8 +103,6 @@ except Exception as _iface_exc:  # noqa: BLE001
 try:
     from app.api.terminal import get_terminal_router as _get_terminal_router
     app.include_router(_get_terminal_router(), prefix="/api/terminal")
-    from app.api.gateway import get_gateway_router as _get_gateway_router
-    app.include_router(_get_gateway_router(), prefix="/api/gateway")
 except Exception as _term_exc:  # noqa: BLE001
     import logging as _logging
 
@@ -157,6 +155,22 @@ def _token_ok(ws_or_headers) -> bool:
     else:
         auth = ws_or_headers.headers.get("authorization", "") if hasattr(ws_or_headers, "headers") else ""
     return auth == f"Bearer {TERMINAL_TOKEN}"
+
+
+# Mount the gateway only after the auth gate exists, so the router binds the
+# real token. Importing here also breaks the circular import with this module.
+try:
+    from app.api import gateway as _gateway_api
+    # Bind the real auth gate into the gateway module before its router is
+    # built. A module-scope back-import from gateway would run before this
+    # token exists (and cause a circular import), leaving routes open.
+    _gateway_api.TERMINAL_TOKEN = TERMINAL_TOKEN
+    _gateway_api._token_ok = _token_ok
+    app.include_router(_gateway_api.get_gateway_router(), prefix="/api/gateway")
+except Exception as _gw_exc:  # noqa: BLE001
+    import logging as _logging
+    _logging.getLogger(__name__).warning(
+        "gateway control surface not mounted (gateway subsystem unavailable): %s", _gw_exc)
 
 
 # ---------------------------------------------------------------------------

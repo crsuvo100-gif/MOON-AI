@@ -25,12 +25,12 @@ from app.connector.gateway import (
 )
 from app.connector.manifest import ManifestValidationError, validate_agent_manifest
 
-try:  # same gate as every /api endpoint
-    from app.terminal_interface import TERMINAL_TOKEN, _token_ok
-except Exception:  # pragma: no cover - fallback guard
-    TERMINAL_TOKEN = ""
-    def _token_ok(ws_or_headers):  # noqa: F811
-        return bool(TERMINAL_TOKEN)
+TERMINAL_TOKEN = ""
+
+
+def _token_ok(ws_or_headers):  # noqa: F811
+    return bool(TERMINAL_TOKEN)
+
 
 logger = logging.getLogger(__name__)
 
