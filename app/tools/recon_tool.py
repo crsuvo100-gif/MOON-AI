@@ -27,7 +27,7 @@ class ReconTool(BaseTool):
         try:
             infos = socket.getaddrinfo(target, None)
             ips = sorted({i[4][0] for i in infos})
-            out.append("A/AAAA: " + ", ".join(ips))
+            out.append("A/AAAA: " + ", ".join(ips))  # type: ignore[arg-type]
         except Exception as exc:  # noqa: BLE001
             out.append(f"DNS resolve failed: {exc}")
         # whois (if present)

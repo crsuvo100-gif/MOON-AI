@@ -16,7 +16,6 @@ from __future__ import annotations
 import asyncio
 import base64
 import ipaddress
-import io
 import logging
 import socket
 from typing import Any
@@ -51,7 +50,7 @@ async def _authorize_browser_url(
                 port or (443 if parsed.scheme == "https" else 80),
                 type=socket.SOCK_STREAM,
             )
-            addresses = [ipaddress.ip_address(record[4][0].split("%", 1)[0]) for record in records]
+            addresses = [ipaddress.ip_address(record[4][0].split("%", 1)[0]) for record in records]  # type: ignore[union-attr]
         except (OSError, ValueError):
             return False, "URL host could not be resolved"
     if not addresses:
@@ -96,10 +95,10 @@ class BrowserTool(BaseTool):
 
         async with async_playwright() as p:
             self._browser = await p.chromium.launch(env=self._playwright_env())
-            self._page = await self._browser.new_context(
+            self._page = await self._browser.new_context(  # type: ignore[attr-defined]
                 service_workers="block", java_script_enabled=False
             )
-            self._page.on("console", lambda msg: logger.debug("chromium console %s", msg.text))
+            self._page.on("console", lambda msg: logger.debug("chromium console %s", msg.text))  # type: ignore[attr-defined]
         assert self._browser is not None and self._page is not None
 
     @staticmethod
@@ -135,7 +134,7 @@ class BrowserTool(BaseTool):
             return f"[browser] confirmation required or URL blocked: {reason}"
         try:
             await self._ensure()
-            text = await self._page.inner_text("body", timeout=5000)
+            text = await self._page.inner_text("body", timeout=5000)  # type: ignore[attr-defined]
             return (text or "")[:2000]
         except Exception as exc:  # noqa: BLE001
             logger.warning("browser navigation failed: %s", exc)

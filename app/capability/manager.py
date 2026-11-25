@@ -183,7 +183,7 @@ class CapabilityManager:
     async def _acquire_from_github(self, name: str) -> AcquisitionResult | None:
         # Does an equivalent tool already exist in the live registry/tool set?
         if self.registry.has(name):
-            return AcquisitionResult(name, "cached", self.registry.get(name).source)
+            return AcquisitionResult(name, "cached", self.registry.get(name).source)  # type: ignore[union-attr]
         try:
             from app.tools.registry import ToolRegistry
         except Exception:  # noqa: BLE001

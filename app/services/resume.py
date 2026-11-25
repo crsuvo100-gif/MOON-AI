@@ -75,7 +75,7 @@ def build_status_markdown(cur_task: str, stage: str, progress: int,
     lines.append("# hermes status.md — AUTO-RESUME CHECKPOINT")
     lines.append("")
     lines.append(f"**Generated:** {now}")
-    lines.append(f"**Project:** MOON V13.0")
+    lines.append("**Project:** MOON V13.0")
     lines.append(f"**Workspace:** {PROJECT_STATE_FILE[:64]}...")
     lines.append("")
     lines.append("## STATUS OVERVIEW")
@@ -85,7 +85,7 @@ def build_status_markdown(cur_task: str, stage: str, progress: int,
     lines.append(f"| Current task | {cur_task} |")
     lines.append(f"| Current milestone | {stage} |")
     lines.append(f"| Progress | {progress}% |")
-    lines.append(f"| Recovery status | PAUSED |")
+    lines.append("| Recovery status | PAUSED |")
     lines.append("")
     lines.append("## NEXT TWO ACTIONS")
     lines.append("")
@@ -125,7 +125,7 @@ def pause() -> None:
     """Save state and write hermes status.md. This is the PAUSE function."""
     ensure_state_dir()
     ps = load_state(PROJECT_STATE_FILE)
-    tq = load_state(TASK_QUEUE_FILE)
+    load_state(TASK_QUEUE_FILE)
     if not ps:
         ps = {
             "project_name": "MOON V13.0",
@@ -150,8 +150,8 @@ def pause() -> None:
     append_text(STATUS_FILE, md)
     print(f"[pause] State saved -> {PROJECT_STATE_FILE}")
     print(f"[pause] Checkpoint -> {STATUS_FILE}")
-    print(f"[pause] PROJECT_STATE.json: recovery_status=PAUSED")
-    print(f"[pause] Next session will auto-resume from the status file.")
+    print("[pause] PROJECT_STATE.json: recovery_status=PAUSED")
+    print("[pause] Next session will auto-resume from the status file.")
 
 
 def resume() -> None:
@@ -159,7 +159,7 @@ def resume() -> None:
     if not os.path.exists(STATUS_FILE):
         print("[resume] No status file found. Nothing to resume.")
         return
-    md = open(STATUS_FILE).read()
+    open(STATUS_FILE).read()
     ps = load_state(PROJECT_STATE_FILE)
     if not ps:
         print("[resume] No PROJECT_STATE.json; creating a fresh checkpoint.")
@@ -176,7 +176,7 @@ def resume() -> None:
     save_state(PROJECT_STATE_FILE, ps)
     print(f"[resume] Status file found: {STATUS_FILE}")
     print(f"[resume] Project state loaded from {PROJECT_STATE_FILE}")
-    print(f"[resume] Recovery status = RESUMING")
+    print("[resume] Recovery status = RESUMING")
     if os.path.isdir(BASE_DIR):
         print(f"[resume] Workspace verified: {BASE_DIR}")
         print(f"[resume] Auto-resuming. Current task: {ps.get('current_task', 'unknown')}")
@@ -186,7 +186,7 @@ def resume() -> None:
         save_state(PROJECT_STATE_FILE, ps)
 
 
-def audit(path: str = None) -> None:
+def audit(path: str = None) -> None:  # type: ignore[assignment]
     """Write an audit report to the status file."""
     from datetime import datetime, timezone
     p = path or STATUS_FILE

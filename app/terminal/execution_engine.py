@@ -102,7 +102,7 @@ class ExecutionEngine:
         sm.transition_to(ExecutionState.WAITING_PERMISSION, "checking permissions")
         try:
             self.permission_engine.check(req, risk_level)
-        except PermissionEngine.PermissionRequired as e:
+        except PermissionEngine.PermissionRequired as e:  # type: ignore[attr-defined]
             self._emit("terminal.permission.required", {
                 "execution_id": execution_id,
                 "command": req.command,
@@ -125,7 +125,7 @@ class ExecutionEngine:
                 verification_result=None,
                 error=f"Permission required: {e}",
             )
-        except PermissionEngine.Denied as e:
+        except PermissionEngine.Denied as e:  # type: ignore[attr-defined]
             self._emit("terminal.execution.denied", {
                 "execution_id": execution_id,
                 "reason": str(e),
@@ -234,7 +234,7 @@ class ExecutionEngine:
                     command=req.command,
                     backend=req.backend,
                     cwd=req.cwd or Path.cwd(),
-                    status=status,
+                    status=status,  # type: ignore[arg-type]
                     exit_code=exit_code,
                     stdout=resp.get("stdout"),
                     stderr=resp.get("stderr"),
@@ -308,7 +308,7 @@ class ExecutionEngine:
                         command=r.command,
                         backend=r.backend,
                         cwd=r.cwd or Path.cwd(),
-                        status=status,
+                        status=status,  # type: ignore[arg-type]
                         exit_code=exit_code,
                         stdout=resp.get("stdout"),
                         stderr=resp.get("stderr"),

@@ -10,8 +10,6 @@ These prove MOON-AI can extend herself when a capability is missing -- the
 "work perfectly on everything" loop -- without requiring network in CI.
 """
 
-import asyncio
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest

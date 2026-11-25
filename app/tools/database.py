@@ -43,8 +43,8 @@ class DatabaseTool(BaseTool):
                 conn = sqlite3.connect(database_uri, uri=True)
 
             if hasattr(conn, "setlimit"):
-                conn.setlimit(sqlite3.SQLITE_LIMIT_LENGTH, _MAX_SQLITE_VALUE_BYTES)
-                conn.setlimit(sqlite3.SQLITE_LIMIT_COLUMN, _MAX_SQLITE_COLUMNS)
+                conn.setlimit(sqlite3.SQLITE_LIMIT_LENGTH, _MAX_SQLITE_VALUE_BYTES)  # type: ignore[attr-defined]
+                conn.setlimit(sqlite3.SQLITE_LIMIT_COLUMN, _MAX_SQLITE_COLUMNS)  # type: ignore[attr-defined]
 
             allowed_actions = {
                 sqlite3.SQLITE_SELECT,

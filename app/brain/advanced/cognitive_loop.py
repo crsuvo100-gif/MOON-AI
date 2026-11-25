@@ -122,10 +122,10 @@ class CognitiveLoop:
             try:
                 compressed = await self._compressor.compress(prompt, max_tokens=4000)
                 if compressed:
-                    prompt = compressed
+                    prompt = compressed  # type: ignore[assignment]
                     reasoning_trace.append({
                         "step": "compression",
-                        "detail": f"Compressed prompt from {len(prompt)} to {len(compressed)} chars",
+                        "detail": f"Compressed prompt from {len(prompt)} to {len(compressed)} chars",  # type: ignore[arg-type]
                     })
             except Exception as exc:
                 logger.warning("Context compression failed: %s", exc)

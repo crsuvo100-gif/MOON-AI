@@ -96,7 +96,7 @@ class GitHubSyncTool(BaseTool):
             self._unstage_secrets(root)
         status = self._run(["git", "status", "--porcelain"], root, env=auth_env).stdout
         if not status.strip():
-            return self._report(root, rem, changed=0, push="Nothing to commit (already in sync).", env=auth_env)
+            return self._report(root, rem, changed=0, push="Nothing to commit (already in sync).", env=auth_env)  # type: ignore[call-arg]
         msg = self._smart_message(root, status)
         self._run(["git", "commit", "-m", msg], root, env=auth_env)
         branch = self._run(["git", "branch", "--show-current"], root, env=auth_env).stdout.strip() or "master"
@@ -206,7 +206,7 @@ class GitHubSyncTool(BaseTool):
     def _smart_message(self, root: Path, status: str) -> str:
         files = [l.split()[1] if len(l.split()) > 1 else l for l in status.splitlines()]
         kinds = {"A": "add", "M": "update", "D": "delete", "R": "rename", "?": "add", "U": "update"}
-        counts = {}
+        counts = {}  # type: ignore[var-annotated]
         for l in status.splitlines():
             counts[kinds.get(l[0], "change")] = counts.get(kinds.get(l[0], "change"), 0) + 1
         summary = ", ".join(f"{v} {k}" for k, v in counts.items())

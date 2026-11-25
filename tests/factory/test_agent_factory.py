@@ -77,7 +77,8 @@ def test_factory_reuses_existing():
 def test_lifecycle_rollback():
     from app.agent_factory.models import AgentFactoryRecord
     import time
-    NOW = lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    def NOW():
+        return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     s = AgentStore()
     # ensure an agent exists with two versions
     aid = "rollback_demo"

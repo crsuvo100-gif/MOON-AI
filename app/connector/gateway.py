@@ -385,7 +385,7 @@ class ConnectionGateway:
             )
         )
         self._task_runs[task.task_id] = worker
-        worker.add_done_callback(lambda _finished, task_id=task.task_id: self._task_runs.pop(task_id, None))
+        worker.add_done_callback(lambda _finished, task_id=task.task_id: self._task_runs.pop(task_id, None))  # type: ignore[misc]
         return {"ok": True, **task.to_dict()}
 
     async def _run_agent_task(

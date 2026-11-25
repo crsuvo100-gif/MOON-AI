@@ -229,9 +229,9 @@ async def _get_orchestrator():
 
 
 # ---- Live telemetry ring buffer + structured log sink (advanced HUD) ----
-_TELEM = deque(maxlen=240)          # rolling {t, cpu, ram, net, load}
+_TELEM = deque(maxlen=240)  # type: ignore[var-annotated]          # rolling {t, cpu, ram, net, load}
 _LOG_FILE = Path(os.environ.get("MOON-AI_TERMINAL_LOG", "/tmp/moon_terminal.log"))
-_LOG_BUF = deque(maxlen=400)        # rolling backend log lines for the HUD
+_LOG_BUF = deque(maxlen=400)  # type: ignore[var-annotated]        # rolling backend log lines for the HUD
 _telem_t = 0.0
 
 def _push_telemetry(orch):
@@ -1221,7 +1221,6 @@ async def api_agent_run(agent_id: str, request: Request):
         # the real orchestrator so it uses MOON-AI's brain + tools + memory.
         orch = await _get_orchestrator()
         if agent_id in getattr(orch, "_agents", {}):
-            from app.models.task import Task
             t = Task.create(task or "hello", agent_name=agent_id)
             t = await orch.run_task(t)
             return JSONResponse({
@@ -1813,11 +1812,10 @@ async def ws_endpoint(ws: WebSocket):
                 # MOON-AI is always unlocked (lock mode removed). observe() is a
                 # no-op and orch._lock.locked is always False, so we skip the
                 # locked-branch entirely and run the real brain on every message.
-                unlock_notice = None
                 try:
-                    unlock_notice = orch._lock.observe(text)
+                    orch._lock.observe(text)
                 except Exception:
-                    unlock_notice = None
+                    pass
                 await send(type="assistant_start")
                 t0 = time.time()
                 # Always unlocked — run the real brain on the text.
@@ -1928,7 +1926,6 @@ async def ws_endpoint(ws: WebSocket):
                     return
                 _stop_requested = False
                 await send(type="assistant_start")
-                from app.models.task import Task
                 task = Task.create(data.get("command") or "", agent_name="auto")
                 t0 = time.time()
                 try:
@@ -1954,9 +1951,9 @@ async def ws_endpoint(ws: WebSocket):
                 await send(type="workflow", stage="tools", detail="linking agent brains")
                 ags = getattr(orch, "_agents", {})
                 names = [getattr(v, "name", k) for k, v in ags.items()] if isinstance(ags, dict) else list(ags)
-                names = [str(n) for n in names][:40]
+                names = [str(n) for n in names][:40]  # type: ignore[assignment]
                 out = (f"Connected {len(names)} agent brains to MOON-AI's main cortex:\n"
-                       + ", ".join(names))
+                       + ", ".join(names))  # type: ignore[arg-type]
                 _stream = _stream_text(out, yield_every=9999 if len(out) > 300 else 1)
                 for chunk in _stream:
                     await send(type="assistant_chunk", content=chunk)
@@ -1979,7 +1976,7 @@ async def ws_endpoint(ws: WebSocket):
                 await send(type="workflow", stage="tools", detail="enumerating tools")
                 reg = getattr(orch._tools, "_registry", None)
                 names = reg.tool_names if reg and hasattr(reg, "tool_names") else []
-                out = f"{len(names)} tools registered:\n" + ", ".join(names)
+                out = f"{len(names)} tools registered:\n" + ", ".join(names)  # type: ignore[arg-type]
                 _stream = _stream_text(out, yield_every=9999 if len(out) > 300 else 1)
                 for chunk in _stream:
                     await send(type="assistant_chunk", content=chunk)
@@ -2212,8 +2209,8 @@ async def ws_endpoint(ws: WebSocket):
                                 names = reg.tool_names if reg is not None else []
                                 if not names:
                                     from app.tools.registry import ToolRegistry
-                                    names = ToolRegistry().tool_names
-                                out = f"TOOLS ({len(names)} registered): " + (", ".join(names[:30]) or "none")
+                                    names = ToolRegistry().tool_names  # type: ignore[assignment]
+                                out = f"TOOLS ({len(names)} registered): " + (", ".join(names[:30]) or "none")  # type: ignore[arg-type]
                             except Exception as e:  # noqa: BLE001
                                 out = f"TOOLS: registry unavailable ({e})."
                         elif cmd == "discover" and arg:
@@ -2616,7 +2613,7 @@ try:
     )
 except Exception as _cyclone_exc:  # pragma: no cover
     _CYCLONE_OK = False
-    _CYCLONE_DIR = None
+    _CYCLONE_DIR = None  # type: ignore[assignment]
     _LOGBOOK.warning("Cyclone bridge disabled: %s", _cyclone_exc)
 
 _LOBBY = None

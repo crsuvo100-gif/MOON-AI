@@ -6,7 +6,6 @@ Guards against reintroducing a machine-specific hard-coded path such as
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 from app.memory import task_ledger

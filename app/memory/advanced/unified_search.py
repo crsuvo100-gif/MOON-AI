@@ -96,7 +96,7 @@ class UnifiedSearcher:
         """
         sources = include_sources or ["stm", "ltm", "episodic", "graph", "kb"]
         query_lower = (query or "").lower()
-        query_words = set(query_lower.split())
+        set(query_lower.split())
         results: list[UnifiedResult] = []
 
         # --- Search Episodic Memory ---

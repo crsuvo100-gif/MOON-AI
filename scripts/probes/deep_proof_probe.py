@@ -1,4 +1,5 @@
-import sys, asyncio
+import sys
+import asyncio
 sys.path.insert(0, '/home/meow/Projects/MOON')
 from app.config.settings import get_settings
 from app.brain.orchestrator import Orchestrator

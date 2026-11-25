@@ -100,7 +100,7 @@ class SSHBackend:
                 "timed_out": False,
             }
 
-        start_time = time.time()
+        time.time()
 
         try:
             if on_output:
@@ -122,7 +122,7 @@ class SSHBackend:
                         assert stdout is not None
                         for line in stdout:
                             stdout_parts.append(line)
-                            if on_output:
+                            if on_output:  # type: ignore[truthy-function]
                                 try:
                                     on_output(line)
                                 except Exception:
@@ -136,7 +136,7 @@ class SSHBackend:
                         assert stderr is not None
                         for line in stderr:
                             stderr_parts.append(line)
-                            if on_output:
+                            if on_output:  # type: ignore[truthy-function]
                                 try:
                                     on_output(line)
                                 except Exception:
@@ -168,7 +168,7 @@ class SSHBackend:
                 }
             else:
                 # Capture mode
-                proc = subprocess.run(
+                proc = subprocess.run(  # type: ignore[assignment]
                     args,
                     capture_output=True,
                     text=True,

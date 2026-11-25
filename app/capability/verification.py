@@ -62,7 +62,7 @@ class VerificationEngine:
             # package). `target` is the tool name, e.g. "huggingface".
             try:
                 from app.tools.registry import ToolRegistry
-                reg = ToolRegistry()
+                ToolRegistry()
                 # Re-import the orchestrator's registry population is heavy; instead
                 # check against the known built-in tool module directly.
                 if target == "huggingface":

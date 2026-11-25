@@ -6,10 +6,8 @@ Every criterion is checked by REAL execution. Exit code 1 if any FAIL.
 """
 from __future__ import annotations
 
-import json
 import sys
 import tempfile
-import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -24,8 +22,8 @@ def rec(name: str, ok: bool | None, detail: str) -> None:
 
 def main() -> int:
     tmp = Path(tempfile.mkdtemp(prefix="moonmem_acc_"))
-    from app.memory.record import (Importance, MemoryRecord, MemoryType, Scope,
-                                   SourceType, SyncStatus)
+    from app.memory.record import (MemoryRecord, MemoryType, Scope,
+                                   SourceType)
     from app.memory.store import LocalMemoryStore
     from app.memory.cognitive import CognitiveMemoryManager
     from app.memory.context_engine import ContextEngine

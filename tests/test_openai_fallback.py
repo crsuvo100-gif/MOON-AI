@@ -8,7 +8,6 @@ wires correctly WITHOUT hitting the real network/API.
 
 from __future__ import annotations
 
-import asyncio
 from types import SimpleNamespace
 
 import pytest

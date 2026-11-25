@@ -1,5 +1,7 @@
 """Boot probe: prove which multi-brain subsystems are ACTIVE (not None)."""
-import asyncio, sys, time
+import asyncio
+import sys
+import time
 
 async def main():
     from app.brain.orchestrator import Orchestrator

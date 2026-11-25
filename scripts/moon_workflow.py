@@ -110,7 +110,7 @@ def run_workflow(args: list[str]) -> int:
     # ------------------------------------------------------------------
     # Save-first: snapshot the source folder state before the task runs
     # ------------------------------------------------------------------
-    before = subprocess.run(
+    subprocess.run(
         ["git", "-C", str(MOON_SRC), "status", "--porcelain=v1"],
         capture_output=True, text=True,
     ).stdout
@@ -150,7 +150,7 @@ def run_workflow(args: list[str]) -> int:
         print(f"\nMOON_WORKFLOW: COMMAND FAILED (exit {res.returncode}).")
         log.append(f"Log saved: {LOG_DIR / ('workflow_' + time.strftime('%Y%m%d-%H%M%S') + '.log')}")
     else:
-        print(f"\nMOON_WORKFLOW: OK (exit 0).")
+        print("\nMOON_WORKFLOW: OK (exit 0).")
 
     # ------------------------------------------------------------------
     # After the task is fully completed: ask the user about GitHub push

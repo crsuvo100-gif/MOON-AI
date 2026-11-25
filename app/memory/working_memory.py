@@ -212,7 +212,7 @@ class WorkingMemory:
         now = time.time()
         to_remove = []
         for k, item in self._items.items():
-            age = now - item.last_accessed
+            now - item.last_accessed
             if item.effective_salience < 0.01:
                 to_remove.append(k)
         for k in to_remove:

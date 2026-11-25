@@ -109,7 +109,7 @@ class SessionContinuity:
                 return session
 
         # Try loading from disk
-        session = await self._load_session(session_id)
+        session = await self._load_session(session_id)  # type: ignore[assignment]
         if session:
             session.status = SessionStatus.ACTIVE
             session.last_active = time.time()

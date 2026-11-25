@@ -52,7 +52,7 @@ class LocalBackend:
             except ValueError:
                 cmd = ["/bin/sh", "-c", request.command]
 
-        start_time = time.time()
+        time.time()
 
         if on_output:
             # Streaming mode

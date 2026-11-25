@@ -150,7 +150,7 @@ class ProfessionalAgentWorkflow:
 
         # Stage 3: Blackboard - post task
         try:
-            await self._blackboard.post(
+            await self._blackboard.post(  # type: ignore[attr-defined]
                 agent_id=self._agent_id,
                 content=task,
                 content_type="task",
@@ -162,7 +162,7 @@ class ProfessionalAgentWorkflow:
 
         # Stage 4: Lifecycle - transition to executing
         try:
-            await self._lifecycle.transition(AgentState.EXECUTING, reason="task_accepted")
+            await self._lifecycle.transition(AgentState.EXECUTING, reason="task_accepted")  # type: ignore[union-attr]
             stages_completed.append("lifecycle_executing")
         except Exception as exc:
             errors.append(f"lifecycle_executing: {exc}")
@@ -248,10 +248,10 @@ class ProfessionalAgentWorkflow:
         # Stage 11: State persistence
         if self._enable_state_persistence:
             try:
-                await self._state_manager.save_state(
+                await self._state_manager.save_state(  # type: ignore[call-arg]
                     agent_id=self._agent_id,
                     task_id=task_id,
-                    state={
+                    state={  # type: ignore[arg-type]
                         "task": task,
                         "output": output[:1000],
                         "success": success,
@@ -265,7 +265,7 @@ class ProfessionalAgentWorkflow:
 
         # Stage 12: Lifecycle - transition to completed
         try:
-            await self._lifecycle.transition(
+            await self._lifecycle.transition(  # type: ignore[union-attr]
                 AgentState.IDLE if success else AgentState.TERMINATED,
                 reason="task_completed" if success else "task_failed",
             )

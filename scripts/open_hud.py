@@ -79,29 +79,25 @@ def _window_open() -> bool:
 
         # Windows: EnumWindows + GetTitleText
         if sys.platform == "win32":
-            from ctypes import POINTER, byref, windll, wintypes
+            from ctypes import windll, wintypes
 
-            class NMSERVER(wintypes.MSGHROUP): ...
-            HWND = wintypes.HWND
-            BOOL = wintypes.BOOL
+            found = ctypes.c_bool(False)
 
-            def enum_cb(hwnd, lparam):
+            def enum_cb(hwnd, _lparam):
                 try:
                     length = wintypes.MAX_PATH
                     title = wintypes.WCHAR(length)
                     windll.user32.GetWindowTextW(hwnd, title, length)
-                    name = title.value
-                    if HUD_URL in name:
-                        lparam[0] = True
+                    if HUD_URL in title.value:
+                        found.value = True
                         return False
                 except Exception:
                     pass
                 return True
 
-            EnumWindows = windll.user32.EnumWindows
-            EnumWindowsProc = wintypes.WNDENUMPROC
-            EnumWindows(EnumWindowsProc(enum_cb), ctypes.byref(NMSERVER()))
-            return lparam[0] if lparam else False
+            EnumWindowsProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+            windll.user32.EnumWindows(EnumWindowsProc(enum_cb), 0)
+            return bool(found.value)
     except Exception:
         pass
     # macOS / Linux: no reliable cross-platform API; assume open if we opened.

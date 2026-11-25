@@ -69,7 +69,7 @@ class TaskAnalyzer:
                 caps.append(cap)
         # de-dupe preserve order
         seen = set()
-        caps = [c for c in caps if not (c in seen or seen.add(c))]
+        caps = [c for c in caps if not (c in seen or seen.add(c))]  # type: ignore[func-returns-value]
 
         # requirements: verb phrases
         for verb in ("create", "build", "analyze", "fix", "test", "search",

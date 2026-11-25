@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 
 from app.brain.advanced_conflict import (
     AdvancedConflictResolver,
@@ -14,11 +13,8 @@ from app.brain.advanced_conflict import (
 )
 from app.brain.aggregator import (
     AgentEnvelope,
-    AggregatedResult,
     Conflict,
     ConflictKind,
-    ConflictResolver,
-    ResultAggregator,
 )
 
 
