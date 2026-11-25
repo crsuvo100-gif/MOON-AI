@@ -20,7 +20,6 @@ import sys
 from pathlib import Path
 
 from app.connector.gateway import ConnectionGateway, ConnectionRecord
-from app.connector.permission import ConnectorPermissionManager
 
 
 def _make_build_all_parser() -> argparse.ArgumentParser:
@@ -115,7 +114,6 @@ def cmd_gateway() -> None:
     for sig in (signal.SIGINT, signal.SIGTERM):
         loop.add_signal_handler(sig, _handle_sigint, sig, None, gw)
 
-    from app.connector.connectors import AgentConnector
 
     while True:
         try:

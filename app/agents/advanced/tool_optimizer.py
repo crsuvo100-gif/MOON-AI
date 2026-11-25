@@ -218,7 +218,7 @@ class ToolOptimizer:
 
             # Check for unused tools
             all_tools = set(self._tool_stats.keys())
-            used_tools = set()
+            used_tools: set[str] = set()
             for agent_tools in self._agent_tool_stats.values():
                 used_tools.update(agent_tools.keys())
             unused = all_tools - used_tools

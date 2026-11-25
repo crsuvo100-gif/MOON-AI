@@ -10,17 +10,15 @@ These prove MOON-AI can extend herself when a capability is missing -- the
 "work perfectly on everything" loop -- without requiring network in CI.
 """
 
-import asyncio
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
-pytestmark = pytest.mark.live  # requires a live model backend (Ollama)
-
 from app.brain.orchestrator import Orchestrator
 from app.config.settings import get_settings
 from app.models.task import Task
+
+pytestmark = pytest.mark.live  # requires a live model backend (Ollama)
 
 
 def _stub_registry(known=("web_search",)):

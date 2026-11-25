@@ -12,7 +12,6 @@ from app.config.logging import get_logger
 from app.utils.text import chunk_text
 
 if TYPE_CHECKING:
-    from app.memory.vector_db import VectorStore
     from app.services.embedding_service import EmbeddingService
 
 logger = get_logger(__name__)
@@ -32,7 +31,7 @@ class KnowledgeBase:
 
     def __init__(
         self,
-        store: VectorStore,
+        store: Any,
         embeddings: EmbeddingService,
         chunk_size: int = 1500,
         chunk_overlap: int = 200,

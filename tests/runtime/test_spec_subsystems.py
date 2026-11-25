@@ -48,12 +48,12 @@ def test_execution_state_machine(tmp_path):
 
 
 def test_learning_mastery_and_reflection(tmp_path):
-    l = Learner(store_path=tmp_path / "mastery.json")
-    before = l.mastery("python")
-    l.observe("python", success=True)
-    assert l.mastery("python") > before
-    l.observe("python", success=False)
-    assert l.mastery("python") < 1.0
+    learner = Learner(store_path=tmp_path / "mastery.json")
+    before = learner.mastery("python")
+    learner.observe("python", success=True)
+    assert learner.mastery("python") > before
+    learner.observe("python", success=False)
+    assert learner.mastery("python") < 1.0
     kind = FailureClassifier.classify("connection refused timeout")
     assert kind in ("network", "timeout")
     rec = Reflector().reflect(goal="g", succeeded=False, failure_kind="timeout", improvement="retry")

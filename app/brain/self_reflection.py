@@ -39,12 +39,12 @@ class SelfReflection:
                 text = (resp.content or "").strip()
                 if text.upper().startswith("SATISFACTORY"):
                     return ReflectionResult(satisfactory=True, improvements=[])
-                improvements = [l.strip("-*1234567890. )") for l in text.splitlines() if l.strip()]
+                improvements = [line.strip("-*1234567890. )") for line in text.splitlines() if line.strip()]
                 return ReflectionResult(satisfactory=not improvements, improvements=improvements[:10])
             except Exception:  # noqa: BLE001
                 pass
         # offline fallback
-        improvements: list[str] = []
+        improvements = []
         if not answer or len(answer) < 5:
             improvements.append("answer is too short / empty")
         return ReflectionResult(satisfactory=len(improvements) == 0, improvements=improvements)

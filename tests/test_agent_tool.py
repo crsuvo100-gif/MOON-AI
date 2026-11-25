@@ -1,5 +1,4 @@
 import pytest
-import asyncio
 from app.tools.terminal import TerminalTool
 
 @pytest.mark.asyncio

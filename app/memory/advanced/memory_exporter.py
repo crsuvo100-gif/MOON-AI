@@ -293,7 +293,7 @@ class MemoryExporter:
         if exporter is None:
             raise ValueError(f"Unsupported format: {format}. Use: {list(exporters.keys())}")
 
-        result = exporter()
+        result = await exporter()
         path = Path(filepath)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(result.content, encoding="utf-8")

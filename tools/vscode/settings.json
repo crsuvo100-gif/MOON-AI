@@ -10,7 +10,14 @@
   "editor.tabSize": 4,
   "python.defaultInterpreterPath": ".venv/bin/python",
   "python.analysis.autoImportCompletions": true,
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
   "terminal.integrated.env.linux": {
-    "PATH": "/home/meow/.hermes/bin:/home/meow/.local/bin:/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin"
+    "PATH": "${env:PATH}:${workspaceFolder}/.venv/bin"
   }
 }

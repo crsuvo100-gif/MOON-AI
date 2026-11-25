@@ -62,5 +62,5 @@ def augment_persona(base_persona: str, agent: str | None = None) -> str:
     lessons = load_lessons(agent)
     if not lessons:
         return base_persona
-    block = "\n\nLearned guidance from past interactions:\n" + "\n".join(f"- {l}" for l in lessons)
+    block = "\n\nLearned guidance from past interactions:\n" + "\n".join(f"- {lesson}" for lesson in lessons)
     return base_persona + block

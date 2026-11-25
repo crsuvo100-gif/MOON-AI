@@ -181,7 +181,6 @@ class E2EVerificationPipeline:
             try:
                 # Check if agent exists in orchestrator
                 if hasattr(orchestrator, "_agents") and agent_id in orchestrator._agents:
-                    agent = orchestrator._agents[agent_id]
                     stage.result = f"Agent {agent_id} ready"
                     stage.status = PipelineStageStatus.COMPLETED
                     evidence.append(f"Agent {agent_id} available")
@@ -277,6 +276,7 @@ class E2EVerificationPipeline:
         # Stage 9: Final response
         stage = self._start_stage("final_response")
         try:
+            final_response = ""
             final_response = f"Task '{task}' completed with {len(agents)} agents."
             stage.result = final_response
             stage.status = PipelineStageStatus.COMPLETED

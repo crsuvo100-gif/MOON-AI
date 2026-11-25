@@ -456,7 +456,7 @@ def ensure_env_file(interactive: bool = True) -> None:
     else:
         answers = run_wizard()
     env.write_text(build_env(answers), encoding="utf-8")
-    ok(f".env created with local-first defaults")
+    ok(".env created with local-first defaults")
 
 
 # ---------------------------------------------------------------------------
@@ -515,13 +515,12 @@ def install_ollama() -> bool:
     sysname = platform.system()
     log(f"Ollama not found -- installing on {sysname} ...")
 
-    installed = False
     if sysname == "Linux":
-        installed = _install_ollama_linux()
+        _install_ollama_linux()
     elif sysname == "Darwin":
-        installed = _install_ollama_macos()
+        _install_ollama_macos()
     elif sysname == "Windows":
-        installed = _install_ollama_windows()
+        _install_ollama_windows()
     else:
         warn(f"Unsupported platform: {sysname}")
 
@@ -691,16 +690,16 @@ def install_service() -> None:
     units_to_write = {
         "moon-terminal.service": SYSTEMD_UNITS["moon-terminal.service"]
         .replace("%u", os.environ.get("USER", ""))
-        .replace("%s", MOON-AI_terminal_path)
+        .replace("%s", MOON_AI_terminal_path)
         .replace("%s/.venv/bin/python", python_path),
         "moon-monitor.service": SYSTEMD_UNITS["moon-monitor.service"]
         .replace("%u", os.environ.get("USER", ""))
-        .replace("%s", MOON-AI_terminal_path)
+        .replace("%s", MOON_AI_terminal_path)
         .replace("%s/.venv/bin/python", python_path),
         "moon-monitor.timer": SYSTEMD_UNITS["moon-monitor.timer"],
         "moon-hud.service": SYSTEMD_UNITS["moon-hud.service"]
         .replace("%u", os.environ.get("USER", ""))
-        .replace("%s", MOON-AI_terminal_path)
+        .replace("%s", MOON_AI_terminal_path)
         .replace("%s/.venv/bin/python", python_path),
     }
 
@@ -858,7 +857,7 @@ examples:
           "╚══════════════════════════════════════════════════════════════════╝\033[0m\n")
 
     log("=== MOON-AI ONE-CLICK INSTALLER (deep-audit verified) ===")
-    py = check_python()
+    check_python()
     vpy = make_venv()
     ensure_env_file(interactive=not args.yes)
 

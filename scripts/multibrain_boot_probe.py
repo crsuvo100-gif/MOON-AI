@@ -1,5 +1,7 @@
 """Boot probe: prove which multi-brain subsystems are ACTIVE (not None)."""
-import asyncio, sys, time
+import asyncio
+import sys
+import time
 
 async def main():
     from app.brain.orchestrator import Orchestrator
@@ -11,7 +13,9 @@ async def main():
         await o.setup()
     except Exception as e:
         print(f"SETUP FAILED: {type(e).__name__}: {e}")
-        import traceback; traceback.print_exc()
+        import traceback
+
+        traceback.print_exc()
         return 1
 
     checks = [
@@ -35,7 +39,8 @@ async def main():
     for label, attr in checks:
         v = getattr(o, attr, None)
         state = "ACTIVE" if v is not None else "None  "
-        if v is not None: active += 1
+        if v is not None:
+            active += 1
         print(f"  [{state}] {label:28s} {type(v).__name__ if v is not None else ''}")
     print(f"\n{active}/{len(checks)} subsystems ACTIVE")
     print(f"agents registered: {len(getattr(o,'_agents',{}) or {})}")

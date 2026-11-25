@@ -162,7 +162,7 @@ class QualityGate:
     def _check_correctness(self, output: str, task: str, context: str) -> QualityCheck:
         """Check factual correctness and logical consistency."""
         issues = []
-        suggestions = []
+        suggestions: list[str] = []
         score = 1.0
 
         # Check for common error patterns
@@ -216,7 +216,7 @@ class QualityGate:
     def _check_completeness(self, output: str, task: str) -> QualityCheck:
         """Check if the output fully addresses the task."""
         issues = []
-        suggestions = []
+        suggestions: list[str] = []
         score = 1.0
 
         # Check output length relative to task
@@ -259,7 +259,7 @@ class QualityGate:
     def _check_safety(self, output: str) -> QualityCheck:
         """Check for safety concerns."""
         issues = []
-        suggestions = []
+        suggestions: list[str] = []
         score = 1.0
 
         # Check for dangerous patterns
@@ -301,7 +301,7 @@ class QualityGate:
     def _check_presentation(self, output: str) -> QualityCheck:
         """Check output formatting and presentation."""
         issues = []
-        suggestions = []
+        suggestions: list[str] = []
         score = 1.0
 
         # Check length
@@ -341,7 +341,7 @@ class QualityGate:
     def _check_relevance(self, output: str, task: str) -> QualityCheck:
         """Check if output is relevant to the task."""
         issues = []
-        suggestions = []
+        suggestions: list[str] = []
         score = 1.0
 
         # Simple keyword overlap check

@@ -300,7 +300,7 @@ class ProfessionalAgentOrchestrator:
 
     def get_health(self) -> dict[str, Any]:
         """Get comprehensive health status."""
-        health = {
+        health: dict[str, Any] = {
             "initialized": self._initialized,
             "current_session": self._current_session.session_id if self._current_session else None,
             "subsystems": {

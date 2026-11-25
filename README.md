@@ -64,7 +64,7 @@ make serve          # interactive terminal REPL
 | Key | Default | Purpose |
 |-----|---------|---------|
 | `MODEL_BASE_URL` | `http://127.0.0.1:11434/v1` | OpenAI-compatible local endpoint |
-| `MODEL_NAME` | `qwen3:0.6b` | model id |
+| `MODEL_NAME` | `qwen2.5:1.5b` | model id |
 | `ENABLE_AUTO_LEARNING` | `true` | MOON learns from every interaction |
 | `ENABLE_AGENT_VALIDATION` | `true` | two-phase main-brain validation |
 | `GITHUB_REPO` | `https://github.com/crsuvo100-gif/MOON-AI` | connected repo for auto tool-pull |
@@ -87,7 +87,7 @@ wrappers only** — the real application is always launched through Python.
 ### Requirements
 | Requirement | Minimum | Recommended |
 |-------------|---------|-------------|
-| Python | 3.10 | 3.11+ (3.13 tested) |
+| Python | 3.10 | 3.11–3.14 (3.14 tested) |
 | OS | Linux, macOS, Windows | Linux (Debian/Ubuntu/Kali), macOS, Windows 10+ |
 | CPU arch | x86_64, arm64 | x86_64 or arm64 |
 | RAM | 4 GB | 8 GB+ |
@@ -96,16 +96,17 @@ wrappers only** — the real application is always launched through Python.
 | GPU | optional | optional (CPU works; GPU accelerates local models) |
 
 MOON uses `pathlib`, `platform`, and `sys` for portable paths/OS detection;
-there are **no hard-coded `/home/meow`, Kali, or Linux-only paths** in the core.
-The only OS-specific code is `app/capability/installer.py`, which is a
-**multi-platform package-manager abstraction** (apt/dnf/pacman/apk) — preserved
-exactly as designed.
+the core contains **no hard-coded `/home/meow`, Kali, or Linux-only paths**
+(override the project root with `MOON_PROJECT_ROOT` if needed). OS-specific
+behaviour is limited to a **multi-platform package-manager abstraction** in
+`app/capability/installer.py` (apt/dnf/pacman/apk) and the optional Linux
+`systemctl` auto-start wiring in `main.py`.
 
 ### Model dependencies
 MOON talks to an **OpenAI-compatible** endpoint. Options:
 - **Local** (default, CPU-friendly): [Ollama](https://ollama.com) serving
-  `qwen3:0.6b`, `qwen2.5:3b`, `qwen2.5-coder:1.5b`, etc. Start Ollama, then
-  `ollama pull qwen3:0.6b`.
+  `qwen2.5:1.5b` (the code default), `qwen2.5:3b`, `qwen2.5-coder:1.5b`, etc.
+  Start Ollama, then `ollama pull qwen2.5:1.5b`.
 - **Cloud**: set `OPENAI_API_KEY` / `OPENROUTER_API_KEY` / `HUGGINGFACE_API_KEY`
   in `.env` for the hosted fallback chain.
 

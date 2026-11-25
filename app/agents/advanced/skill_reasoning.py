@@ -285,7 +285,7 @@ class SkillReasoner:
         if self._skills:
             levels = [s.level for s in self._skills.values()]
             level_values = {SkillLevel.NOVICE: 1, SkillLevel.INTERMEDIATE: 2, SkillLevel.ADVANCED: 3, SkillLevel.EXPERT: 4}
-            avg_level = sum(level_values[l] for l in levels) / len(levels)
+            avg_level = sum(level_values[lvl] for lvl in levels) / len(levels)
             if avg_level >= 3.5:
                 assessment.overall_level = SkillLevel.EXPERT
             elif avg_level >= 2.5:

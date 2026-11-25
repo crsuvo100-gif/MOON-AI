@@ -96,7 +96,6 @@ async def _prefetch_models():
     import json
 
     from app.brain.agent_model_manager import AgentModelManager
-    from app.config.settings import get_settings
 
     settings = get_settings()
     mgr = AgentModelManager(
@@ -112,11 +111,9 @@ async def _prefetch_models():
 
 async def _run(task, agent):
     """Run a task through the full Orchestrator (advanced brain + agents + memory)."""
-    from app.brain.orchestrator import Orchestrator
     from app.config.settings import get_settings as _gs
     from app.models.task import Task
     import asyncio as _asyncio
-    import time as _time
 
     settings = _gs()
     orchestrator = Orchestrator(settings)
@@ -210,7 +207,6 @@ def _cmd_status() -> int:
 
 def _cmd_doctor() -> int:
     """Real health check (spec 10). Reports PASS / WARN / FAIL per subsystem."""
-    import importlib.util
     import platform
 
     checks: list[tuple[str, str, str]] = []
@@ -223,9 +219,16 @@ def _cmd_doctor() -> int:
     py_ok = sys.version_info >= (3, 10)
     add("Python version", py_ok, f"{platform.python_version()} (need >=3.10)")
 
-    # 2. Dependencies importable
+    # 2. Dependencies importable (each core dep checked individually so the
+    #    doctor reports the missing one instead of only the last import)
     try:
-        import fastapi, uvicorn, pydantic, pydantic_settings, openai, httpx  # noqa: F401
+        import fastapi  # noqa: F401
+        import uvicorn  # noqa: F401
+        import pydantic  # noqa: F401
+        import pydantic_settings  # noqa: F401
+        import openai  # noqa: F401
+        import httpx  # noqa: F401
+
         add("Core dependencies", True, "fastapi/uvicorn/pydantic/openai/httpx importable")
     except Exception as exc:  # noqa: BLE001
         add("Core dependencies", False, f"missing: {exc}")
@@ -412,9 +415,9 @@ def _cmd_setup() -> int:
     """
     import importlib.util
 
-    installer = Path("script.py")
-    if not installer.is_file():
-        print("script.py (installer) not found in project root")
+    installer = _resolve_installer("script.py")
+    if installer is None:
+        print("script.py (installer) not found (looked in root and scripts/)")
         return 2
     spec = importlib.util.spec_from_file_location(
         "moon_installer", str(installer.resolve()))
@@ -435,12 +438,15 @@ def _cmd_setup() -> int:
 def _cmd_uninstall() -> int:
     """Native MOON-AI uninstaller (safe by default -- removes auto-start wiring)."""
     import importlib.util
-    import os
 
+    script = _resolve_installer("uninstall_moon.py")
+    if script is None:
+        print("uninstall_moon.py not found (looked in root and scripts/)")
+        return 2
     spec = importlib.util.spec_from_file_location(
-        "uninstall_moon", str(Path("uninstall_moon.py").resolve()))
+        "uninstall_moon", str(script.resolve()))
     if spec is None or spec.loader is None:
-        print("uninstall_moon.py not found in project root")
+        print("uninstall_moon.py could not be loaded")
         return 2
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -455,9 +461,9 @@ def _cmd_install() -> int:
     """
     import importlib.util
 
-    installer = Path("script.py")
-    if not installer.is_file():
-        print("script.py (installer) not found in project root")
+    installer = _resolve_installer("script.py")
+    if installer is None:
+        print("script.py (installer) not found (looked in root and scripts/)")
         return 2
     spec = importlib.util.spec_from_file_location(
         "moon_installer", str(installer.resolve()))
@@ -503,19 +509,21 @@ def _cmd_build(args) -> int:
     if not project_dir.exists():
         project_dir.mkdir(parents=True, exist_ok=True)
 
-    out_dir = Path(args.out).resolve() if args.out else project_dir
-    lang = args.lang or build_mod.detect_language(str(project_dir))
+    out_dir = Path(args.out).resolve() if args.out else None
 
     # Expand short language aliases (py, js, rs) to canonical dict keys.
     # Canonical keys matching _COMMANDS in moon/build.py are:
     # python, node, rust, go, cpp, java, generic.
     _LANG_ALIASES = {"py": "python", "js": "node", "ts": "node", "rs": "rust"}
+    lang = args.lang
     if lang:
         lang = _LANG_ALIASES.get(lang, lang)
 
     result = build_mod.scaffold(
         project_dir=project_dir,
         lang=lang or None,
+        out_dir=out_dir,
+        force=bool(getattr(args, "force", False)),
     )
     print(f"[MOON-AI] built '{result.language}' project in {result.project}")
     print(f"[MOON-AI] generated {result.num_files} file(s)")
@@ -698,8 +706,10 @@ def main() -> int:
         raise SystemExit(_cmd_build(args))
 
     else:
-        # No subcommand -> show help
-        ap.print_help()
+        # No subcommand -> the terminal REPL is the documented default
+        # (`python -m moon` == `moon`), matching README and moon_terminal.
+        from app.terminal.repl import main as _repl_main
+        _repl_main()
         return 0
 
 

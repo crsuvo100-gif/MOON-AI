@@ -150,18 +150,14 @@ class ProfessionalAgentWorkflow:
 
         # Stage 3: Blackboard - post task
         try:
-            await self._blackboard.post(
-                agent_id=self._agent_id,
-                content=task,
-                content_type="task",
-                task_id=task_id,
-            )
+            await self._blackboard.write(task_id, task, agent_id=self._agent_id)
             stages_completed.append("blackboard")
         except Exception as exc:
             errors.append(f"blackboard: {exc}")
 
         # Stage 4: Lifecycle - transition to executing
         try:
+            assert self._lifecycle is not None
             await self._lifecycle.transition(AgentState.EXECUTING, reason="task_accepted")
             stages_completed.append("lifecycle_executing")
         except Exception as exc:
@@ -248,23 +244,29 @@ class ProfessionalAgentWorkflow:
         # Stage 11: State persistence
         if self._enable_state_persistence:
             try:
-                await self._state_manager.save_state(
+                from app.agents.advanced.state_manager import (
+                    AgentState as PersistedAgentState,
+                )
+
+                await self._state_manager.save_state(PersistedAgentState(
                     agent_id=self._agent_id,
                     task_id=task_id,
-                    state={
+                    state="completed" if success else "terminated",
+                    context={
                         "task": task,
                         "output": output[:1000],
                         "success": success,
                         "stages": stages_completed,
                         "errors": errors,
                     },
-                )
+                ))
                 stages_completed.append("state_persistence")
             except Exception as exc:
                 errors.append(f"state_persistence: {exc}")
 
         # Stage 12: Lifecycle - transition to completed
         try:
+            assert self._lifecycle is not None
             await self._lifecycle.transition(
                 AgentState.IDLE if success else AgentState.TERMINATED,
                 reason="task_completed" if success else "task_failed",
