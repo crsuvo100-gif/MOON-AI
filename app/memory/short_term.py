@@ -221,7 +221,7 @@ class ShortTermMemory:
             if len(indices) > 5:
                 # Keep most recent 5, merge rest into summary
                 to_merge = indices[:-5]
-                merged_content = " ".join(
+                " ".join(
                     self._items[i].content for i in to_merge if i < len(self._items)
                 )
                 # Remove merged items

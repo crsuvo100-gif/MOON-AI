@@ -1,6 +1,8 @@
 import unittest
 from pathlib import Path
-import os, sys, glob
+import os
+import sys
+import glob
 
 # Ensure hermes_tools package is discoverable – it lives in the Hermes cache directory.
 if "~/.hermes/cache/scratch" not in sys.path:

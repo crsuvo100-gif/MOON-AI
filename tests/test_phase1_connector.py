@@ -36,9 +36,7 @@ from app.connector.manifest import (  # noqa: E402
 )
 from app.connector.permission import (  # noqa: E402
     ConnectorPermissionManager,
-    EgressDecision,
     PolicyLevel,
-    PermissionManager,
 )
 from app.connector.universal_agent_connector import (  # noqa: E402
     AcpSubprocessConnector,

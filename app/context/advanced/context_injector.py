@@ -226,8 +226,8 @@ class ContextInjector:
             if content:
                 entry = {"content": content, "source": source}
                 if self._include_metadata:
-                    entry["relevance"] = self._get_relevance(item)
-                    entry["importance"] = self._get_importance(item)
+                    entry["relevance"] = self._get_relevance(item)  # type: ignore[assignment]
+                    entry["importance"] = self._get_importance(item)  # type: ignore[assignment]
                 data.append(entry)
         return json.dumps(data, indent=2)
 
@@ -242,7 +242,7 @@ class ContextInjector:
 
     def _get_content(self, item: Any) -> str:
         if isinstance(item, dict):
-            return item.get("content", item.get("chunk", ""))
+            return item.get("content", item.get("chunk", ""))  # type: ignore[return-value]
         return getattr(item, "content", "")
 
     def _get_source(self, item: Any) -> str:

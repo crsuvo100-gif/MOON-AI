@@ -109,11 +109,11 @@ class ResearchPipeline:
     def __post_init__(self) -> None:
         # A Citation built with an unparseable URL is not verified, even if the
         # client passed verified=True.
-        if self.verified and self.url:
+        if self.verified and self.url:  # type: ignore[attr-defined,has-type]
             try:
                 from urllib.parse import urlsplit
 
-                if not urlsplit(self.url).hostname:
+                if not urlsplit(self.url).hostname:  # type: ignore[attr-defined]
                     self.verified = False
             except ValueError:
                 self.verified = False

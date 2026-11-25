@@ -208,11 +208,11 @@ class MCPConnector:
         if hasattr(base_url, "kind") and hasattr(base_url, "transport"):
             self._record = base_url  # type: ignore[assignment]
             self._transport = str(self._record.transport or "").lower()
-            self._url = str(self._record.url or "").rstrip("/")
-            self._command = str(self._record.command or "")
-            self._args = list(self._record.args or [])
-            self._cwd = self._record.cwd
-            self._env = self._record.env
+            self._url = str(self._record.url or "").rstrip("/")  # type: ignore[union-attr]
+            self._command = str(self._record.command or "")  # type: ignore[union-attr]
+            self._args = list(self._record.args or [])  # type: ignore[union-attr]
+            self._cwd = self._record.cwd  # type: ignore[union-attr]
+            self._env = self._record.env  # type: ignore[union-attr]
         else:
             self._record = None  # type: ignore[assignment]
             self._url = str(base_url).rstrip("/")

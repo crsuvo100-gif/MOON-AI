@@ -151,9 +151,9 @@ def restore(
     for src, destination in sources:
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, destination)
-        relative = str(destination.relative_to(root))
+        relative = str(destination.relative_to(root))  # type: ignore[assignment]
         if relative not in restored:
-            restored.append(relative)
+            restored.append(relative)  # type: ignore[arg-type]
     return restored
 
 

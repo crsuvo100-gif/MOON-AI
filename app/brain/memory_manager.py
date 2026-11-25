@@ -103,7 +103,7 @@ class MemoryManager:
             self._stm.add(content)
         if self._ltm is not None and long_term:
             if hasattr(self._ltm, '_enhanced_entries'):
-                await self._ltm.store({"content": content, "tags": tags or []}, importance=importance)
+                await self._ltm.store({"content": content, "tags": tags or []}, importance=importance)  # type: ignore[call-arg]
             else:
                 await self._ltm.store({"content": content, "tags": tags or []})
         if self._graph is not None:
@@ -115,7 +115,7 @@ class MemoryManager:
         """Consolidate ``content`` into MOON-AI's durable brain."""
         if self._ltm is not None:
             if hasattr(self._ltm, '_enhanced_entries'):
-                await self._ltm.store({"content": content, "tags": tags or []}, importance=importance)
+                await self._ltm.store({"content": content, "tags": tags or []}, importance=importance)  # type: ignore[call-arg]
             else:
                 await self._ltm.store({"content": content, "tags": tags or []})
         else:

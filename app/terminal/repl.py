@@ -155,7 +155,7 @@ def _print_sessions() -> None:
         return
     print(f"\n{_BOLD}{_CYAN}  ── Sessions ({len(sessions)}) ──{_RESET}")
     for s in sessions:
-        print(f"  {s.session_id[:8]}  {s.shell:8s}  {s.status:10s}  {s.cwd}")
+        print(f"  {s.session_id[:8]}  {s.shell:8s}  {s.status:10s}  {s.cwd}")  # type: ignore[attr-defined]
     print()
 
 

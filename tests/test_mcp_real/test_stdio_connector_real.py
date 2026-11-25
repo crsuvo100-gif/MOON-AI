@@ -10,6 +10,8 @@ from pathlib import Path
 
 import pytest
 
+pytest.importorskip("mcp", reason="mcp package not installed")
+
 from app.connector.connectors import MCPConnector
 
 

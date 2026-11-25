@@ -16,7 +16,6 @@ from __future__ import annotations
 import os
 import sys
 import urllib.request
-import subprocess
 
 import pytest
 
@@ -53,14 +52,18 @@ def pytest_configure(config):
     if venv_site not in sys.path:
         sys.path.insert(0, venv_site)
 
-    for _dir in (
-        os.path.expanduser("~/.local/lib/python3.14/site-packages"),
-        "/usr/lib/python3/dist-packages",
-        "/usr/local/lib/python3.14/dist-packages",
-        "/usr/lib/python3.14/dist-packages",
-    ):
-        if _dir not in sys.path and os.path.isdir(_dir):
-            sys.path.append(_dir)
+    # On 3.13+ Pillow is not available from the base requirements; fall back to
+    # the distro copy. Older interpreters (CI Python 3.10) must NOT see these
+    # paths: distro python-multipart there requires enum.global_enum (3.11+).
+    if sys.version_info >= (3, 13):
+        for _dir in (
+            os.path.expanduser("~/.local/lib/python3.14/site-packages"),
+            "/usr/lib/python3/dist-packages",
+            "/usr/local/lib/python3.14/dist-packages",
+            "/usr/lib/python3.14/dist-packages",
+        ):
+            if _dir not in sys.path and os.path.isdir(_dir):
+                sys.path.append(_dir)
 
 
 # Session-wide reachability (computed once).

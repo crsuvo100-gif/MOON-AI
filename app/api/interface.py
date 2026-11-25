@@ -28,7 +28,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import tomllib
+try:
+    import tomllib
+except ImportError:  # Python 3.10
+    import tomli as tomllib  # type: ignore[no-redef]
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
@@ -128,7 +131,7 @@ def _build_capability_registry():
     # Models (real model manager)
     try:
         from app.brain.agent_model_manager import AgentModelManager
-        mgr = AgentModelManager(
+        AgentModelManager(
             base_url=get_settings().model_base_url,
             api_key=get_settings().model_api_key,
             default_model=get_settings().model_name,
@@ -294,7 +297,7 @@ def get_interface_router():
         if not _auth_ok(dict(request.headers)):
             return JSONResponse({"detail": "Unauthorized"}, status_code=401)
         try:
-            from app.terminal_interface import _diagnostics_snapshot
+            from app.terminal_interface import _diagnostics_snapshot  # type: ignore[attr-defined]
             return JSONResponse(_diagnostics_snapshot())
         except Exception:
             # Fallback: build diagnostics from real pieces so the endpoint never

@@ -137,7 +137,7 @@ class ProactiveSuggestions:
         current_task: str,
     ) -> list[Suggestion]:
         """Detect tasks that may be incomplete."""
-        suggestions = []
+        suggestions = []  # type: ignore[var-annotated]
         if not conversation:
             return suggestions
 
@@ -207,7 +207,7 @@ class ProactiveSuggestions:
 
     def _suggest_follow_ups(self, conversation: list[dict[str, Any]]) -> list[Suggestion]:
         """Suggest follow-up actions based on conversation."""
-        suggestions = []
+        suggestions = []  # type: ignore[var-annotated]
         if len(conversation) < 2:
             return suggestions
 
@@ -261,7 +261,7 @@ class ProactiveSuggestions:
 
         # Detect repeated actions
         if len(recent_actions) >= 3:
-            action_counts = defaultdict(int)
+            action_counts = defaultdict(int)  # type: ignore[var-annotated]
             for a in recent_actions:
                 action_counts[a] += 1
             for action, count in action_counts.items():

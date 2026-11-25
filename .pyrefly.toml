@@ -1,6 +1,6 @@
 # pyrefly config — MOON-AI project
-[pyrefly]
-# Root module name(s) — project packages
+# NOTE: .pyrefly.toml uses top-level keys (not a [pyrefly] table).
+# Project module name(s)
 module = "moon"
 
 # Source roots to type-check
@@ -24,3 +24,11 @@ exclude = [
     "**/moon_ai_agent.egg-info",
     "**/moon/libnode",
 ]
+
+python-version = "3.10.0"
+preset = "legacy"
+ignore-missing-imports = ["*"]
+
+# Pre-existing diagnostics are recorded in the baseline; CI fails on new ones.
+baseline = "pyrefly-baseline.json"
+baseline-matching-mode = "concise-description"

@@ -151,7 +151,7 @@ class MemoryCompactor:
         elif hasattr(stm, '_buf'):
             # Simple deque-based STM
             from collections import deque
-            new_buf = deque(maxlen=stm._buf.maxlen)
+            new_buf = deque(maxlen=stm._buf.maxlen)  # type: ignore[var-annotated]
             for item in keep_items:
                 new_buf.append(item)
             if summary:
@@ -195,7 +195,7 @@ class MemoryCompactor:
             if len(group) > 5:
                 # Keep the 3 most important, summarize the rest
                 group.sort(key=lambda e: getattr(e, 'importance', 0.5), reverse=True)
-                keep = group[:3]
+                group[:3]
                 old = group[3:]
 
                 summary = await self._summarize_items(

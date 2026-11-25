@@ -86,9 +86,9 @@ class DockerBackend:
                 "timed_out": False,
             }
 
-        cwd = request.cwd or Path.cwd()
+        request.cwd or Path.cwd()
         args = self._build_docker_args(request)
-        start_time = time.time()
+        time.time()
 
         try:
             if on_output:
@@ -110,7 +110,7 @@ class DockerBackend:
                         assert stdout is not None
                         for line in stdout:
                             stdout_parts.append(line)
-                            if on_output:
+                            if on_output:  # type: ignore[truthy-function]
                                 try:
                                     on_output(line)
                                 except Exception:
@@ -124,7 +124,7 @@ class DockerBackend:
                         assert stderr is not None
                         for line in stderr:
                             stderr_parts.append(line)
-                            if on_output:
+                            if on_output:  # type: ignore[truthy-function]
                                 try:
                                     on_output(line)
                                 except Exception:
@@ -156,7 +156,7 @@ class DockerBackend:
                 }
             else:
                 # Capture mode
-                proc = subprocess.run(
+                proc = subprocess.run(  # type: ignore[assignment]
                     args,
                     capture_output=True,
                     text=True,

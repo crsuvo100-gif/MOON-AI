@@ -49,7 +49,7 @@ class SelfEvolveTool(BaseTool):
             from app.brain.orchestrator import Orchestrator
             from app.config.settings import get_settings
             o = Orchestrator(get_settings())
-            await o._consolidator.consolidate(prompt=f"learned from {source}", response=text, success=True, agent="moon")
+            await o._consolidator.consolidate(prompt=f"learned from {source}", response=text, success=True, agent="moon")  # type: ignore[attr-defined]
             return f"[self_evolve] ingested {len(text)} chars from {source} into MOON-AI's brain."
         except Exception as exc:  # noqa: BLE001
             return f"[self_evolve] ingested but learn-step skipped: {exc}"

@@ -99,11 +99,10 @@ def main() -> int:
           "Orchestrator OK" if orch_ok else ("Orch type=%s" % type(orch).__name__ if orch else "n/a"))
 
     # ---- 5. Capability registry importable from the real source ----
-    reg = None
     reg_ok = False
     try:
         from app.capability.registry import CapabilityRegistry  # noqa: F401
-        reg = CapabilityRegistry()
+        CapabilityRegistry()
         reg_ok = True
     except Exception:  # noqa: BLE001
         reg_ok = False

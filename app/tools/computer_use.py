@@ -21,9 +21,7 @@ explicit operator confirmation or an allowlist.
 
 from __future__ import annotations
 
-import os
 import re
-import socket
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -270,10 +268,10 @@ class PlaywrightComputerUseAdapter(ComputerUseAdapter):
         async with async_playwright() as p:
             self._playwright = p
             self._browser = await p.chromium.launch(headless=self._headless, env=self._env)
-            self._page = await self._browser.new_context(
+            self._page = await self._browser.new_context(  # type: ignore[attr-defined]
                 service_workers="block", java_script_enabled=False
             )
-            self._page.on("console", lambda msg: logger.debug("chromium console %s", msg.text))
+            self._page.on("console", lambda msg: logger.debug("chromium console %s", msg.text))  # type: ignore[attr-defined]
         assert self._browser is not None and self._page is not None
 
     async def _ensure(self) -> None:
@@ -371,7 +369,7 @@ class PlaywrightComputerUseAdapter(ComputerUseAdapter):
     async def close(self) -> None:
         if getattr(self, "_playwright", None) is not None:
             try:
-                await self._browser.close()
+                await self._browser.close()  # type: ignore[attr-defined]
             except Exception:  # noqa: BLE001
                 pass
             self._browser = None
@@ -459,7 +457,7 @@ async def preflight_then_execute(
     inspect/validate -> preflight -> execute -> verify.
     """
     adapter = adapter or get_computer_use_adapter(permissions)
-    parsed = parse_target(target)
+    parse_target(target)
     preflight = await adapter.preflight_action(action, target, confirmed=confirmed)
     if not preflight.allowed:
         return preflight, ActionResult(success=False, action=action, target=target, error=preflight.reason), VerificationResult(verified=False, evidence=preflight.reason)

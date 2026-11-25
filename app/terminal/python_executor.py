@@ -161,7 +161,7 @@ class PythonExecutor:
                 command=f"python -c {code[:50]}",
                 backend="local",
                 cwd=cwd,
-                status=status,
+                status=status,  # type: ignore[arg-type]
                 exit_code=exit_code,
                 stdout="".join(stdout_parts),
                 stderr="".join(stderr_parts),

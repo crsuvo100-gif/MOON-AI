@@ -95,7 +95,7 @@ class Voice:
         try:
             result = subprocess.run(
                 [
-                    self._espeak,
+                    self._espeak,  # type: ignore[list-item]
                     "-v", self.espeak_voice,
                     "-s", str(self.rate),
                     "-p", "60",

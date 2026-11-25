@@ -93,9 +93,9 @@ class AgentLifecycle:
             if enable:
                 # re-register (idempotent) so it is live
                 class _M:  # minimal metadata shim
-                    name = rec.name
-                    description = rec.description
-                    required_tools = rec.required_tools.split("|") if rec.required_tools else []
+                    name = rec.name  # type: ignore[union-attr]
+                    description = rec.description  # type: ignore[union-attr]
+                    required_tools = rec.required_tools.split("|") if rec.required_tools else []  # type: ignore[union-attr]
                 ar.register_external_agent(_M())
             else:
                 ar.unregister_external_agent(rec.name)

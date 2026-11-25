@@ -296,9 +296,9 @@ class MemoryExporter:
         result = exporter()
         path = Path(filepath)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(result.content, encoding="utf-8")
-        logger.info("Exported %d memories to %s (%s)", result.memory_count, filepath, format)
-        return result
+        path.write_text(result.content, encoding="utf-8")  # type: ignore[attr-defined]
+        logger.info("Exported %d memories to %s (%s)", result.memory_count, filepath, format)  # type: ignore[attr-defined]
+        return result  # type: ignore[return-value]
 
     def stats(self) -> dict[str, Any]:
         """Return exporter statistics."""

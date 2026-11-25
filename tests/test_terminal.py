@@ -1,6 +1,5 @@
 """Tests for MOON-AI terminal system."""
 
-import time
 import pytest
 from pathlib import Path
 
@@ -13,7 +12,7 @@ from app.terminal import (
     history_manager,
     environment_manager,
 )
-from app.terminal.permission_engine import PermissionRequired, Denied
+from app.terminal.permission_engine import Denied
 
 
 class TestExecutionEngine:
@@ -364,7 +363,7 @@ class TestRecoveryEngine:
         assert failure_type == FailureType.COMMAND_NOT_FOUND
 
     def test_plan_recovery(self):
-        from app.terminal.recovery_engine import RecoveryEngine, FailureType, RecoveryAction
+        from app.terminal.recovery_engine import RecoveryEngine, FailureType
         engine = RecoveryEngine()
         req = ExecutionRequest(command="nonexistent", shell=False, cwd=None, env=None, backend="local", timeout=60, background=False, interactive=False, permission_mode="ask", verification=None)
         result = ExecutionResult(

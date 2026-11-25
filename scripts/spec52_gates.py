@@ -89,7 +89,7 @@ async def _runtime_gates() -> None:
 
     # GATE 4 — Agent base (common interface)
     try:
-        from app.agents import AgentResult, BaseAgent, OrchestratorAgent
+        from app.agents import BaseAgent
         base = BaseAgent()
         iface = [m for m in ("metadata", "capabilities", "permissions", "validate_input",
                              "plan", "execute", "verify", "reflect", "health", "shutdown")
@@ -113,7 +113,6 @@ async def _runtime_gates() -> None:
 
     # GATE 6 — agent brain routing (distinct brains per agent)
     try:
-        from app.brain.agent_model_manager import AgentModelManager
         m = o._agent_models
         per = {a: m._preferred(a) for a in ("coding", "math", "research", "writing")}
         distinct = len(set(per.values()))
@@ -127,7 +126,7 @@ async def _runtime_gates() -> None:
 
     # GATE 7 — agent communication
     try:
-        from app.runtime.messaging import MessageBus, MessageType, get_bus
+        from app.runtime.messaging import MessageType, get_bus
         bus = get_bus()
         bus.post(sender="gate", receiver="coding", payload={"ping": 1})
         got = bus.receive("coding", timeout=1.0)

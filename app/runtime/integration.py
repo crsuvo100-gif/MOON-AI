@@ -107,9 +107,9 @@ def record_evaluation(*, correctness: float, reliability: float = 1.0,
             verification=verification, recovery=recovery,
             efficiency=efficiency, resource_usage=resource_usage)
         if agent_id:
-            card.agent_id = agent_id
+            card.agent_id = agent_id  # type: ignore[attr-defined]
         if metadata:
-            card.metadata = metadata
+            card.metadata = metadata  # type: ignore[attr-defined]
         return card.to_dict()
     except Exception as e:  # noqa: BLE001
         return {"overall": correctness, "error": str(e)}

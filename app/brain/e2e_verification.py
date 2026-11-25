@@ -181,7 +181,7 @@ class E2EVerificationPipeline:
             try:
                 # Check if agent exists in orchestrator
                 if hasattr(orchestrator, "_agents") and agent_id in orchestrator._agents:
-                    agent = orchestrator._agents[agent_id]
+                    orchestrator._agents[agent_id]
                     stage.result = f"Agent {agent_id} ready"
                     stage.status = PipelineStageStatus.COMPLETED
                     evidence.append(f"Agent {agent_id} available")

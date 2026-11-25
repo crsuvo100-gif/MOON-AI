@@ -161,7 +161,7 @@ class AdaptivePrompts:
 
         # Apply expertise adjustments
         adj = self._expertise_adjustments[self._user_expertise]
-        temperature = max(0.0, min(1.0, weights["temperature"] + adj["temperature_offset"]))
+        temperature = max(0.0, min(1.0, weights["temperature"] + adj["temperature_offset"]))  # type: ignore[operator]
 
         # Determine if chain-of-thought is needed
         cot = complexity in (TaskComplexity.COMPLEX, TaskComplexity.EXPERT)
@@ -184,7 +184,7 @@ class AdaptivePrompts:
         config = PromptConfig(
             system_prompt=system,
             temperature=temperature,
-            max_tokens=weights["max_tokens"],
+            max_tokens=weights["max_tokens"],  # type: ignore[arg-type]
             top_p=weights["top_p"],
             chain_of_thought=cot,
             few_shot_examples=few_shots,

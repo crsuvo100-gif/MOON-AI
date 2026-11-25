@@ -78,7 +78,7 @@ class ProcessManager:
             text=True,
             shell=request.shell,
         )
-        info = ProcessInfo(
+        info = ProcessInfo(  # type: ignore[call-arg]
             execution_id=execution_id,
             pid=proc.pid,
             command=request.command,

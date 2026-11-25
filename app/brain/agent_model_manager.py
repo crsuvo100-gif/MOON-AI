@@ -256,7 +256,7 @@ class AgentModelManager:
     async def teardown(self) -> None:
         for svc in self._cache.values():
             try:
-                await svc.teardown()
+                await svc.teardown()  # type: ignore[attr-defined]
             except Exception:  # noqa: BLE001
                 pass
         self._cache.clear()

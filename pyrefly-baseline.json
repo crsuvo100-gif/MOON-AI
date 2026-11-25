@@ -1,0 +1,522 @@
+{
+  "errors": [
+    {
+      "column": 21,
+      "path": "app/agents/advanced/workflow.py",
+      "name": "unexpected-keyword",
+      "concise_description": "Unexpected keyword argument `agent_id` in function `app.agents.advanced.state_manager.AgentStateManager.save_state`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "app/agents/advanced/workflow.py",
+      "name": "unexpected-keyword",
+      "concise_description": "Unexpected keyword argument `task_id` in function `app.agents.advanced.state_manager.AgentStateManager.save_state`",
+      "severity": "error"
+    },
+    {
+      "column": 42,
+      "path": "app/brain/advanced/cognitive_loop.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `CompressedContext | str | Unknown` is not assignable to parameter `prompt` with type `str` in function `CognitiveLoop._reason`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "app/brain/advanced/cognitive_loop.py",
+      "name": "unsupported-operation",
+      "concise_description": "`+=` is not supported between `CompressedContext` and `str`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "app/brain/advanced/cognitive_loop.py",
+      "name": "unsupported-operation",
+      "concise_description": "`+=` is not supported between `CompressedContext` and `str`",
+      "severity": "error"
+    },
+    {
+      "column": 146,
+      "path": "app/brain/build_all.py",
+      "name": "bad-assignment",
+      "concise_description": "`list[tuple[str, list[str], (r: Unknown) -> Coroutine[Unknown, Unknown, bool], (r: Unknown) -> dict[str, Any]] | tuple[str, list[str], (r: Unknown) -> bool, (r: Unknown) -> dict[str, Any]]]` is not assignable to `list[tuple[str, list[str], (BuildReport) -> Awaitable[bool], (BuildReport) -> Awaitable[dict[str, Any]]]]`",
+      "severity": "error"
+    },
+    {
+      "column": 37,
+      "path": "app/brain/orchestrator.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `ChatMessage` is not assignable to parameter `object` with type `Message` in function `list.append`",
+      "severity": "error"
+    },
+    {
+      "column": 35,
+      "path": "app/connector/connectors.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `str` has no attribute `transport`",
+      "severity": "error"
+    },
+    {
+      "column": 34,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "invalid-inheritance",
+      "concise_description": "Invalid base class: `ConnectorPermissionManager | object`",
+      "severity": "error"
+    },
+    {
+      "column": 31,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `Client`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `Client`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 32,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `ClientSession`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `StdioServerTransport`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "app/connector/universal_agent_connector.py",
+      "name": "bad-return",
+      "concise_description": "Returned type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult | FoundationCallResult` is not assignable to declared return type `app.connector.connectors.CallResult | app.connector.universal_agent_connector.CallResult`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "app/memory/cloud_store.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `Pool`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "app/memory/cloud_store.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `create_pool`",
+      "severity": "error"
+    },
+    {
+      "column": 42,
+      "path": "app/memory/cloud_store.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `Connection`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "app/memory/cloud_store.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `Record`",
+      "severity": "error"
+    },
+    {
+      "column": 55,
+      "path": "app/services/llm_service.py",
+      "name": "bad-return",
+      "concise_description": "Function declared to return `str`, but one or more paths are missing an explicit `return`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "app/services/resume.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `int | str | Unknown` is not assignable to parameter `cur_task` with type `str` in function `build_status_markdown`",
+      "severity": "error"
+    },
+    {
+      "column": 15,
+      "path": "app/services/resume.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `int | str | Unknown` is not assignable to parameter `stage` with type `str` in function `build_status_markdown`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "app/services/resume.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `int | list[@_] | str | Unknown` is not assignable to parameter `completed` with type `list[str]` in function `build_status_markdown`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "app/services/resume.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `int | list[@_] | str | Unknown` is not assignable to parameter `pending` with type `list[str]` in function `build_status_markdown`",
+      "severity": "error"
+    },
+    {
+      "column": 35,
+      "path": "app/terminal_interface.py",
+      "name": "bad-assignment",
+      "concise_description": "`str` is not assignable to attribute `TERMINAL_TOKEN` with type `Literal['']`",
+      "severity": "error"
+    },
+    {
+      "column": 36,
+      "path": "app/voice.py",
+      "name": "no-matching-overload",
+      "concise_description": "No matching overload found for function `subprocess.run` called with arguments: (list[str | None], check=Literal[False], stderr=int, timeout=Literal[60])",
+      "severity": "error"
+    },
+    {
+      "column": 15,
+      "path": "main.py",
+      "name": "bad-return",
+      "concise_description": "Function declared to return `int`, but one or more paths are missing an explicit `return`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "moon/build.py",
+      "name": "no-matching-overload",
+      "concise_description": "No matching overload found for function `typing.MutableMapping.update` called with arguments: (dict[str, bool | str] | dict[str, str] | dict[Unknown, Unknown])",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "moon/build.py",
+      "name": "missing-argument",
+      "concise_description": "Missing argument `out_dir` in function `BuildResult.__init__`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "moon/build.py",
+      "name": "missing-argument",
+      "concise_description": "Missing argument `out_dir` in function `BuildResult.__init__`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "probe_tool_exec.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `run`",
+      "severity": "error"
+    },
+    {
+      "column": 31,
+      "path": "scripts/memory_acceptance.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `memory_id`",
+      "severity": "error"
+    },
+    {
+      "column": 37,
+      "path": "scripts/memory_acceptance.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `(list[Any] & Falsy) | Any` is not assignable to parameter `ok` with type `bool | None` in function `rec`",
+      "severity": "error"
+    },
+    {
+      "column": 37,
+      "path": "scripts/memory_acceptance.py",
+      "name": "unsupported-operation",
+      "concise_description": "`None` is not subscriptable",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "scripts/memory_acceptance.py",
+      "name": "bad-argument-type",
+      "concise_description": "Argument `Conflict | None` is not assignable to parameter `conflict` with type `Conflict` in function `app.memory.sync.ConflictEngine.resolve`",
+      "severity": "error"
+    },
+    {
+      "column": 16,
+      "path": "scripts/memory_acceptance.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `type`",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "scripts/memory_acceptance.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `type`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "scripts/moon_online/moon_sync.py",
+      "name": "not-a-type",
+      "concise_description": "Expected a type form, got instance of `(obj: object, /) -> TypeIs[(...) -> object]`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "scripts/moon_online/moon_sync.py",
+      "name": "not-a-type",
+      "concise_description": "Expected a type form, got instance of `(obj: object, /) -> TypeIs[(...) -> object]`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "scripts/spec52_gates.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `_preferred`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_cognitive_memory.py",
+      "name": "unsupported-operation",
+      "concise_description": "`None` is not subscriptable",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_cognitive_memory.py",
+      "name": "unsupported-operation",
+      "concise_description": "`None` is not subscriptable",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_cognitive_memory.py",
+      "name": "unsupported-operation",
+      "concise_description": "`None` is not subscriptable",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_cognitive_memory.py",
+      "name": "unsupported-operation",
+      "concise_description": "`None` is not subscriptable",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_memory_infrastructure.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `content`",
+      "severity": "error"
+    },
+    {
+      "column": 49,
+      "path": "tests/test_memory_infrastructure.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `content`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_memory_infrastructure.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `type`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_memory_infrastructure.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `type`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_memory_infrastructure.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `type`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_memory_infrastructure.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `type`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_multibrain_spec.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `model_id`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_multibrain_spec.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `model_id`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_multibrain_spec.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `model_id`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_multibrain_spec.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `model_id`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_multibrain_spec.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `model_id`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "tests/test_multibrain_spec.py",
+      "name": "missing-attribute",
+      "concise_description": "Object of class `NoneType` has no attribute `model_id`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "tests/test_synthesis_plugins_config_ratelimit.py",
+      "name": "bad-instantiation",
+      "concise_description": "Cannot instantiate `_Dummy` because the following members are abstract: `execute`",
+      "severity": "error"
+    }
+  ]
+}

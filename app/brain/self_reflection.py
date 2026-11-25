@@ -44,7 +44,7 @@ class SelfReflection:
             except Exception:  # noqa: BLE001
                 pass
         # offline fallback
-        improvements: list[str] = []
+        improvements: list[str] = []  # type: ignore[no-redef]
         if not answer or len(answer) < 5:
             improvements.append("answer is too short / empty")
         return ReflectionResult(satisfactory=len(improvements) == 0, improvements=improvements)

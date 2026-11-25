@@ -225,9 +225,9 @@ class VoiceEngine:
             return self._f5 is not False
         try:
             import f5_tts  # type: ignore  # noqa: F401
-            self._f5 = True
+            self._f5 = True  # type: ignore[assignment]
         except Exception:  # noqa: BLE001
-            self._f5 = False
+            self._f5 = False  # type: ignore[assignment]
         return bool(self._f5)
 
     def _kokoro_available(self) -> bool:
@@ -236,9 +236,9 @@ class VoiceEngine:
         try:
             import kokoro_onnx  # type: ignore  # noqa: F401
             # Model weights must be present (downloaded on first speak()).
-            self._kokoro = _KOKORO_MODEL.exists() and _KOKORO_VOICES.exists()
+            self._kokoro = _KOKORO_MODEL.exists() and _KOKORO_VOICES.exists()  # type: ignore[assignment]
         except Exception:  # noqa: BLE001
-            self._kokoro = False
+            self._kokoro = False  # type: ignore[assignment]
         return bool(self._kokoro)
 
     def _xtts_available(self) -> bool:
@@ -246,9 +246,9 @@ class VoiceEngine:
             return self._xtts is not False
         try:
             import TTS  # type: ignore  # noqa: F401
-            self._xtts = True
+            self._xtts = True  # type: ignore[assignment]
         except Exception:  # noqa: BLE001
-            self._xtts = False
+            self._xtts = False  # type: ignore[assignment]
         return bool(self._xtts)
 
     # -- voice selection ----------------------------------------------------
@@ -320,36 +320,6 @@ class VoiceEngine:
         # --- fallback: English espeak (writes something rather than nothing) ---
         logger.warning("no TTS backend for language '%s'; falling back to English", lang)
         return await self._espeak_speak(text, "en")
-
-    # -- backends ------------------------------------------------------------
-    def clone_voice(self, name: str, sample_b64: str, transcript: str = "") -> str:
-        """Store a user's voice sample and register it as a clone.
-
-        F5-TTS / XTTS use the sample as the speaker embedding for zero-shot
-        cloning. `transcript` is the text spoken in the reference sample
-        (improves F5-TTS clone fidelity; optional -- F5 tolerates an empty
-        transcript, XTTS does not require it).
-        """
-        if not name:
-            return "clone requires a name."
-        try:
-            raw = base64.b64decode(sample_b64)
-        except Exception:
-            return "Invalid audio sample (expected base64 WAV)."
-        path = self.voices_dir / f"{name}.wav"
-        path.write_bytes(raw)
-        self._cloned[name] = str(path)
-        # Persist the optional transcript so F5-TTS cloning is high-fidelity.
-        if transcript:
-            (self.voices_dir / f"{name}.txt").write_text(transcript, encoding="utf-8")
-        self._save_registry()
-        if self._f5_available() or self._xtts_available():
-            engine = "F5-TTS" if self._f5_available() else "XTTS-v2"
-            return (f"Cloned voice '{name}' from your sample using {engine}. "
-                    f"Moon can now speak using your voice (set 'voice set {name}').")
-        return (f"Stored voice sample for '{name}'. Cloning activates with a "
-                f"cloning engine installed (pip install f5-tts on Python 3.13+, "
-                f"or TTS on <3.12); sample saved at {path}.")
 
     # -- backends ------------------------------------------------------------
     def clone_voice(self, name: str, sample_b64: str, transcript: str = "") -> str:

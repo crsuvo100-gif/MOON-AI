@@ -50,8 +50,8 @@ class TelegramBot:
             from app.brain.orchestrator import Orchestrator
             from app.config.env_guard import decontaminate_pythonpath
             decontaminate_pythonpath()
-            self.orchestrator = Orchestrator(get_settings())
-            await self.orchestrator.setup()
+            self.orchestrator = Orchestrator(get_settings())  # type: ignore[assignment]
+            await self.orchestrator.setup()  # type: ignore[attr-defined]
         if self._bot is None:
             try:
                 from telegram import Bot
@@ -82,7 +82,7 @@ class TelegramBot:
         self._last_chat = chat_id
         from app.models.task import Task
         task = Task.create(text, agent_name="auto")
-        result = await self.orchestrator.run_task(task, on_event=self._on_event)
+        result = await self.orchestrator.run_task(task, on_event=self._on_event)  # type: ignore[attr-defined]
         answer = result.result or "(no response)"
         await self.reply(chat_id, answer)
 

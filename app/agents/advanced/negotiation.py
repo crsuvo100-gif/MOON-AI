@@ -203,7 +203,6 @@ class AgentNegotiation:
         """Run auction protocol."""
         negotiation_rounds: list[NegotiationRound] = []
         best_bid: dict[str, Any] | None = None
-        best_agent: str | None = None
 
         for round_num in range(1, rounds + 1):
             nr = NegotiationRound(round_number=round_num, phase=NegotiationPhase.BARGAINING)
@@ -220,7 +219,6 @@ class AgentNegotiation:
                     bid = self._parse_bid(response)
                     if bid and (best_bid is None or bid.get("bid_amount", 0) > best_bid.get("bid_amount", 0)):
                         best_bid = bid
-                        best_agent = agent_id
                     offer = NegotiationOffer(
                         offer_id=str(uuid.uuid4())[:8],
                         agent_id=agent_id,

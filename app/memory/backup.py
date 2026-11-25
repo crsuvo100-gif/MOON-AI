@@ -54,7 +54,7 @@ def _atomic_text_output(path: Path, *, overwrite: bool) -> Iterator[TextIO]:
             delete=False,
         ) as handle:
             temporary = Path(handle.name)
-            yield handle
+            yield handle  # type: ignore[misc]
             handle.flush()
             os.fsync(handle.fileno())
         if overwrite:

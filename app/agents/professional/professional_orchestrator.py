@@ -315,11 +315,11 @@ class ProfessionalAgentOrchestrator:
         }
 
         if self._self_healing:
-            health["subsystems"]["self_healing"] = self._self_healing.get_metrics()
+            health["subsystems"]["self_healing"] = self._self_healing.get_metrics()  # type: ignore[index]
         if self._proactive:
-            health["subsystems"]["proactive_suggestions"] = self._proactive.get_metrics()
+            health["subsystems"]["proactive_suggestions"] = self._proactive.get_metrics()  # type: ignore[index]
         if self._consensus:
-            health["subsystems"]["multi_model_consensus"] = self._consensus.get_metrics()
+            health["subsystems"]["multi_model_consensus"] = self._consensus.get_metrics()  # type: ignore[index]
 
         return health
 

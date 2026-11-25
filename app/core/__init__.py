@@ -13,6 +13,6 @@ from app.config import settings
 try:
     from app.runtime import integration  # type: ignore
 except Exception:  # noqa: BLE001
-    integration = None
+    integration = None  # type: ignore[assignment]
 
 __all__ = ["Orchestrator", "integration", "settings"]

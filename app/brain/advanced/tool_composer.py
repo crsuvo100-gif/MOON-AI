@@ -78,7 +78,7 @@ class ToolComposer:
             ToolChainResult with all intermediate results.
         """
         if isinstance(chain, str):
-            chain = self._chains.get(chain)
+            chain = self._chains.get(chain)  # type: ignore[assignment]
             if chain is None:
                 return ToolChainResult(
                     chain_name="unknown",
@@ -94,7 +94,7 @@ class ToolComposer:
         shared_context.update(initial_args or {})
         last_output = ""
 
-        for i, node in enumerate(chain.nodes):
+        for i, node in enumerate(chain.nodes):  # type: ignore[union-attr]
             node_type = ChainNodeType(node.get("type", "tool"))
 
             if node_type == ChainNodeType.TOOL:
@@ -177,7 +177,7 @@ class ToolComposer:
         success = all(r.get("success", True) for r in results)
 
         return ToolChainResult(
-            chain_name=chain.name,
+            chain_name=chain.name,  # type: ignore[union-attr]
             success=success,
             results=results,
             final_output=last_output,

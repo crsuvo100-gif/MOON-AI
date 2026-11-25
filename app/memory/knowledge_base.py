@@ -12,7 +12,7 @@ from app.config.logging import get_logger
 from app.utils.text import chunk_text
 
 if TYPE_CHECKING:
-    from app.memory.vector_db import VectorStore
+    from app.memory.vector_db import VectorStore  # type: ignore[attr-defined]
     from app.services.embedding_service import EmbeddingService
 
 logger = get_logger(__name__)
