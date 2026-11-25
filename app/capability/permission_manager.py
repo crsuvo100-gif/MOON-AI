@@ -75,11 +75,13 @@ class PermissionManager:
     def is_granted(self, requested: tuple[str, ...], granted: tuple[str, ...]) -> bool:
         granted_set = set(granted)
         for perm in requested:
-            if perm in granted_set:
-                continue
             lvl = self.level_for(perm)
+            # NEVER-level scopes are refused even if a caller claims to grant
+            # them: no agent may escalate past an absolute security boundary.
             if lvl == PolicyLevel.NEVER:
                 return False
+            if perm in granted_set:
+                continue
             if lvl == PolicyLevel.CONFIRMATION:
                 if self._confirm is None:
                     # No operator available -> do not assume consent.
