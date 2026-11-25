@@ -43,3 +43,12 @@ Acceptance bar: launch-ready system with `make test` / `make build` passing
    - Full suite: `.venv/bin/python -m pytest tests/ -q --timeout=90 -p no:cacheprovider` → exit 0 (938 passed, 1 skipped).
    - Committed 2 test patches (tests/conftest.py, tests/test_research_pipeline.py) + regenerated acceptance_report.json; pushed to origin main.
 2. [DONE] Post-build user-facing confirmation: confirmed build project mode live at 127.0.0.1:8777 with the 3 entry points and unlock phrase.
+
+## Hermes Rule implementation (this session)
+
+- [IN_PROGRESS] Hermes Rule: durable task recording + rule recall, additive only.
+  - New: `app/runtime/hermes_rule.py` (canonical rule, recall, task trace, memory indexing).
+  - Extended: `app/runtime/integration.py`, `app/brain/orchestrator.py`, `app/terminal/repl.py`.
+  - New tests: `tests/unit/test_hermes_rule.py`; docs: `docs/HERMES_RULE.md`.
+  - Acceptance: pytest green, doctor WARN-only, live task trace verified, rule recall verified.
+  - Status will be flipped to DONE only after verification results are recorded below.

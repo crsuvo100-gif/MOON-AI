@@ -621,6 +621,7 @@ def _assemble_graph(r: BuildReport) -> dict[str, Any]:
 def _assemble_maintenance(r: BuildReport) -> dict[str, Any]:
     from app.memory.enhanced_long_term import EnhancedLongTermMemory
     from app.memory.enhanced_short_term import EnhancedShortTermMemory
+    from app.memory.memory_graph import MemoryGraph
     from app.memory.memory_maintenance import MemoryMaintenance
     from app.memory.memory_stats import MemoryStatsCollector
 

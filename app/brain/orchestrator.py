@@ -56,8 +56,10 @@ from app.runtime.integration import (
     analyze_task,
     choose_model,
     emit,
+    ensure_hermes_rule_memory,
     gate_action,
     route_agent,
+    trace_hermes_task,
 )
 from app.services.embedding_service import EmbeddingService
 from app.services.llm_service import ChatMessage, CompletionResult, LLMService
@@ -352,6 +354,16 @@ class Orchestrator:
             self._context_engine = None
             self._sync_engine = None
             self._memory_health = None
+
+        # --- Hermes Rule: index the canonical rule into EXISTING stores -----
+        # Additive and best effort: a failure here never blocks setup or
+        # changes the behavior of any existing memory subsystem.
+        try:
+            _rule_index = await ensure_hermes_rule_memory(
+                kb, getattr(self, "_cognitive_memory", None))
+            logger.info("Hermes Rule indexed: %s", _rule_index)
+        except Exception as exc:  # noqa: BLE001
+            logger.info("Hermes Rule indexing skipped: %s", exc)
 
         # --- Advanced agent system (pipeline, coordination, learning) --
         try:
@@ -1236,6 +1248,7 @@ class Orchestrator:
         task.agent_name = agent
         logger.info("intent='%s' (conf=%.2f) -> agent='%s'", intent, conf, agent)
 
+    @trace_hermes_task
     async def run_task(self, task: Task, on_event=None) -> Task:
         if self._llm is None or self._tools is None or self._context is None:
             raise RuntimeError("Orchestrator.setup() must be called first")

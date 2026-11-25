@@ -97,6 +97,8 @@ class ExecutionEngine:
         })
 
         # ── Permission handling ──
+        from .permission_engine import PermissionEngine  # local: avoids import cycle
+
         sm.transition_to(ExecutionState.WAITING_PERMISSION, "checking permissions")
         try:
             self.permission_engine.check(req, risk_level)

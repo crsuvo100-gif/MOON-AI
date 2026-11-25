@@ -41,7 +41,7 @@
   "files.associations": {
     "*.py": "python"
   },
-  "terminal.integrated.defaultProfile.linux": "zsh",
+  "terminal.integrated.defaultProfile.linux": "Persistent Session",
   "telemetry.enableTelemetry": false,
   "telemetry.enableCrashReporter": false,
   "workbench.colorTheme": "Dark Modern"

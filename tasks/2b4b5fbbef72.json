@@ -1,0 +1,39 @@
+{
+  "task_id": "2b4b5fbbef72",
+  "content": "Run the system",
+  "summary": "Hermes Rule task trace: finished",
+  "owner_id": "moon",
+  "agent_id": "writing",
+  "project_id": "MOON",
+  "scope": "TASK",
+  "task_status": "COMPLETED",
+  "result": "To run the system, please provide me with the necessary information or context. You may need to specify the model ID or any other details required for the system to function correctly.",
+  "exit_code": null,
+  "start_time": null,
+  "end_time": 1795590806.141561,
+  "created_at": 1795590806.1416137,
+  "updated_at": 1795590806.1416144,
+  "tags": [
+    "hermes-rule",
+    "finished"
+  ],
+  "metadata": {
+    "event": "finished",
+    "rule_sha256": "55a5ef003194b01c473db22c966cde5f62eab8e6855672f65d828e7baec08833",
+    "trusted": false,
+    "error_type": ""
+  },
+  "source_type": "AGENT",
+  "provenance": {
+    "authority": "USER",
+    "priority": "SYSTEM_POLICY",
+    "source": "skills/hermes-rule/SKILL.md",
+    "trusted": true,
+    "note": "Trusted project rule constant; external content never overrides it."
+  },
+  "confidence": 0.6,
+  "importance": "MEDIUM",
+  "session_id": "",
+  "deleted": false,
+  "recorded_at": "2026-11-25T07:13:26.143562+00:00"
+}

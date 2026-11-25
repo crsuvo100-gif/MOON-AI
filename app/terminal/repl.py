@@ -16,6 +16,8 @@ Special commands:
     /sessions      List active sessions
     /processes     List background processes
     /history       Show execution history
+    /rule [query]  Recall the Hermes Rule (optional query)
+    /tasks [n]     List durable Hermes Rule task records
     /clear         Clear the screen
     /brain         Show brain info (model, agents, tools)
     /exec <cmd>    Execute a shell command directly
@@ -93,6 +95,8 @@ def _print_help() -> None:
     /sessions      List active sessions
     /processes     List background processes
     /history       Show execution history
+    /rule [query]  Recall the Hermes Rule (optional query)
+    /tasks [n]     List durable Hermes Rule task records
     /clear         Clear the screen
     /brain         Show brain info (model, agents, tools)
     /exec <cmd>    Execute a shell command directly
@@ -365,6 +369,29 @@ class MoonTerminalREPL:
         elif command == "/history":
             count = int(arg) if arg.isdigit() else 10
             _print_history(count)
+        elif command == "/rule":
+            try:
+                from app.runtime.integration import hermes_rule as _recall_rule
+                recalled = _recall_rule(arg)
+                print(f"\n{_BOLD}  Hermes Rule{_RESET}  sha256={recalled.get('sha256', '')[:12]}")
+                for section in recalled.get("sections", []):
+                    print(f"\n{_GREEN}  {section['title']}{_RESET}")
+                    print(f"  {section['text']}")
+            except Exception as exc:  # noqa: BLE001
+                print(f"{_RED}  Rule recall unavailable: {type(exc).__name__}{_RESET}")
+        elif command == "/tasks":
+            try:
+                from app.runtime.integration import hermes_tasks as _list_tasks
+                count = int(arg) if arg.isdigit() else 10
+                rows = _list_tasks(limit=count)
+                print(f"\n{_BOLD}  Durable Hermes Rule task records ({len(rows)}){_RESET}")
+                for row in rows:
+                    print(
+                        f"  {row['task_id']}  {row['status']:<10}  "
+                        f"{row['agent_id'] or '-'}  {row['content'][:80]}"
+                    )
+            except Exception as exc:  # noqa: BLE001
+                print(f"{_RED}  Task ledger unavailable: {type(exc).__name__}{_RESET}")
         elif command == "/clear":
             os.system("clear" if os.name != "nt" else "cls")
         elif command == "/brain":

@@ -12,6 +12,7 @@ Spec 88 boundaries are respected explicitly:
 
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
@@ -19,6 +20,8 @@ from typing import TYPE_CHECKING, Any
 
 from app.memory.factory import memory_store_factory
 from app.memory.record import Scope
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from app.memory.store import MemoryStore

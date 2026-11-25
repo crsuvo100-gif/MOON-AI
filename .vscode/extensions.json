@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "formulahendry.acp-client",
+    "omercnet.vscode-acp",
     "github.vscode-pull-request-github",
     "rangav.vscode-thunder-client",
     "eamodio.gitlens",
@@ -8,21 +9,11 @@
     "ms-python.vscode-pylance",
     "ms-python.black-formatter",
     "ms-python.debugpy",
-    "jagreehal.rundebug",
-    "omercnet.vscode-acp",
-    "github.copilot",
-    "github.copilot-chat",
-    "github.vscode-github-actions",
-    "charliermarsh.ruff",
     "ms-python.mypy-type-checker",
-    "redhat.vscode-yaml"
+    "charliermarsh.ruff",
+    "tamastro.pylance-extended"
   ],
   "unwantedRecommendations": [
     "ms-vscode.aspnetcore-bundle"
-  ],
-  "properties": {
-    "github.copilot.enabled": true,
-    "github.copilot.chat.enabled": true,
-    "github.copilot.integrations": ["vscode", "vscode-tests"]
-  }
+  ]
 }

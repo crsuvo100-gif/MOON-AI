@@ -26,6 +26,16 @@ from app.runtime.agent_router import AgentRouter
 from app.runtime.autonomy import Autonomy
 from app.runtime.evaluation import EvaluationEngine
 from app.runtime.event_bus import bus as _bus
+from app.runtime.hermes_rule import (
+    HERMES_RULE_SHA256,
+    configure_task_store,
+    ensure_hermes_rule_memory,
+    hermes_task_stats,
+    list_hermes_tasks,
+    recall_hermes_rule,
+    rule_document,
+    trace_hermes_task,
+)
 from app.runtime.model_router import ModelRouter
 from app.runtime.task_analyzer import GoalSpec, TaskAnalyzer
 
@@ -128,17 +138,56 @@ def router_explain(spec: GoalSpec) -> dict[str, Any]:
         return {}
 
 
+# --- Hermes Rule: rule recall + durable task recording (additive re-export) --
+# The implementations live in app/runtime/hermes_rule.py. Re-exported here so
+# existing callers of integration.py get the capability without new imports.
+
+def hermes_rule(query: str = "") -> dict[str, Any]:
+    """Recall the canonical Hermes Rule and relevant sections (query is data)."""
+    try:
+        return recall_hermes_rule(query)
+    except Exception as exc:  # noqa: BLE001
+        return {"error": f"rule recall degraded: {type(exc).__name__}", "rule": ""}
+
+
+def hermes_tasks(*, status: str | None = None, limit: int = 50) -> list[dict[str, Any]]:
+    """List durable Hermes Rule task records."""
+    from app.memory.task_record import TaskStatus
+
+    parsed = TaskStatus(status.upper()) if status else None
+    try:
+        return list_hermes_tasks(status=parsed, limit=limit)
+    except Exception:  # noqa: BLE001
+        return []
+
+
+def hermes_rule_status() -> dict[str, Any]:
+    try:
+        return {"sha256": HERMES_RULE_SHA256, **hermes_task_stats()}
+    except Exception:  # noqa: BLE001
+        return {"sha256": HERMES_RULE_SHA256, "error": "stats degraded"}
+
+
 __all__ = [
     "GoalSpec",
+    "HERMES_RULE_SHA256",
     "analyze_task",
     "autonomy_level",
     "choose_model",
+    "configure_task_store",
     "emit",
+    "ensure_hermes_rule_memory",
     "evaluation_summary",
     "gate_action",
+    "hermes_rule",
+    "hermes_rule_status",
+    "hermes_tasks",
+    "list_hermes_tasks",
     "record_evaluation",
     "record_outcome",
     "route_agent",
     "router_explain",
+    "rule_document",
     "set_autonomy",
+    "trace_hermes_task",
 ]
