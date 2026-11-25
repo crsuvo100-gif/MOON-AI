@@ -46,9 +46,20 @@ Acceptance bar: launch-ready system with `make test` / `make build` passing
 
 ## Hermes Rule implementation (this session)
 
-- [IN_PROGRESS] Hermes Rule: durable task recording + rule recall, additive only.
+- [DONE] Hermes Rule: durable task recording + rule recall, additive only.
   - New: `app/runtime/hermes_rule.py` (canonical rule, recall, task trace, memory indexing).
   - Extended: `app/runtime/integration.py`, `app/brain/orchestrator.py`, `app/terminal/repl.py`.
   - New tests: `tests/unit/test_hermes_rule.py`; docs: `docs/HERMES_RULE.md`.
-  - Acceptance: pytest green, doctor WARN-only, live task trace verified, rule recall verified.
-  - Status will be flipped to DONE only after verification results are recorded below.
+  - Verified: 7/7 rule tests pass; canonical recall sha256 `55a5ef003194b01c...` is injection-resistant;
+    live task trace persisted and rehydrated; memory indexing degrades safely when unconfigured.
+
+## Final audit + build verification (this session)
+
+- [DONE] Deep audit of the entire MOON folder/project. Full findings in `docs/AUDIT_REPORT.md`.
+- [DONE] Fixed 9 latent `F821` undefined-name defects and a duplicate `verify` subparser in `moon/build.py`.
+- [DONE] Restored VS Code recommendations to 12; `scripts/live_smoke_pipeline.py` reports 21/21 PASS.
+- [DONE] `compileall` exit 0; full pytest suite exit 0 (1023 tests, 0 failures); rule tests 7/7.
+- [DONE] Wheel built/installed: `moon_ai_agent-0.1.0-py3-none-any.whl`,
+  sha256 `7ac1df21602479fa6f51fc080065b524bd5d400131fecdd0a032f45b44eea786`.
+- [DONE] `moon doctor`: WARN only (2 warnings, 0 failed), 41 agents, 40 tools, Ollama reachable.
+- [DONE] Final state committed and pushed to the `MOON-AI` GitHub repository.
