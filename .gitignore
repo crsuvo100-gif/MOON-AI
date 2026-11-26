@@ -87,3 +87,10 @@ deep_check_probe.py
 tmp_deep_verify.py
 tmp_deep_verify2.py
 agent-edit
+# Moon_Twin — Git ignore patterns
+# Virtual envs
+# Secrets / local config
+# SQLite memory (runtime)
+moon_memory_*.db
+# IDE / editor
+.idea/

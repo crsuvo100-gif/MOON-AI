@@ -40,3 +40,7 @@ pytest-asyncio>=0.23
 #   kokoro-onnx -> offline female voice engine
 #   langdetect -> multilingual TTS language auto-detect
 #   torch/torchaudio -> F5-TTS voice cloning (optional)
+starlette>=0.27
+uvicorn[standard]>=0.27
+websockets>=10.0
+openai>=1.0
