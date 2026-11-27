@@ -1,0 +1,1374 @@
+{
+  "bomFormat": "custom-moon-sbom",
+  "version": 1,
+  "generated_at": "2026-11-25T09:56:43Z",
+  "environment": {
+    "python": "3.14.10",
+    "platform": "Linux-7.2.15+kali-amd64-x86_64-with-glibc2.43"
+  },
+  "project": {
+    "name": "moon-ai-agent",
+    "root": "/home/meow/Projects/MOON"
+  },
+  "requirements_sha256": "04ad93c20cbd3cc8a2288a5470c5489374f2ab77575250d387e83cfed0af5ab2",
+  "components": [
+    {
+      "name": "annotated-doc",
+      "version": "0.0.5",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "antlr4-python3-runtime",
+      "version": "4.9.3",
+      "license": "BSD",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "anyio",
+      "version": "4.16.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "ast_serialize",
+      "version": "0.13.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "asyncpg",
+      "version": "0.32.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "attrs",
+      "version": "26.1.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "audioop-lts",
+      "version": "0.2.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "babel",
+      "version": "2.18.0",
+      "license": "BSD-3-Clause",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "beautifulsoup4",
+      "version": "4.15.0",
+      "license": "MIT License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "bidict",
+      "version": "0.24.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "blinker",
+      "version": "1.9.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "boto3",
+      "version": "1.44.4",
+      "license": "Apache-2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "botocore",
+      "version": "1.44.4",
+      "license": "Apache-2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "brotli",
+      "version": "1.2.1",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "certifi",
+      "version": "2026.10.23",
+      "license": "MPL-2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.5.2",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "click",
+      "version": "8.5.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "cloudpickle",
+      "version": "3.1.2",
+      "license": "BSD-3-Clause",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "colorlog",
+      "version": "6.12.0",
+      "license": "MIT License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "contourpy",
+      "version": "1.4.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "coverage",
+      "version": "7.17.3",
+      "license": "Apache-2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "cryptography",
+      "version": "50.0.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "csvw",
+      "version": "4.2.0",
+      "license": "Apache 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "cuda-bindings",
+      "version": "13.5.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "cuda-pathfinder",
+      "version": "1.9.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "cuda-toolkit",
+      "version": "13.2.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "cwevals",
+      "version": "0.0.1b1",
+      "license": "Apache-2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "cycler",
+      "version": "0.12.1",
+      "license": "Copyright (c) 2015, matplotlib project",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "datasets",
+      "version": "5.2.0",
+      "license": "Apache 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "decorator",
+      "version": "5.3.1",
+      "license": "BSD-2-Clause",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "dill",
+      "version": "0.4.1",
+      "license": "BSD-3-Clause",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "distro",
+      "version": "1.9.0",
+      "license": "Apache License, Version 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "dlinfo",
+      "version": "2.0.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "einops",
+      "version": "0.8.2",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "einx",
+      "version": "0.4.3",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "espeakng-loader",
+      "version": "0.2.4",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "fastapi",
+      "version": "0.162.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "filelock",
+      "version": "3.32.7",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "Flask",
+      "version": "3.1.3",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "Flask-SocketIO",
+      "version": "5.7.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "flatbuffers",
+      "version": "25.12.19",
+      "license": "Apache 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "fonttools",
+      "version": "4.68.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "frozendict",
+      "version": "2.5.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "fsspec",
+      "version": "2026.9.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "google-api-core",
+      "version": "2.44.0",
+      "license": "Apache 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "google-auth",
+      "version": "2.62.2",
+      "license": "Apache 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "google-crc32c",
+      "version": "1.9.0",
+      "license": "Apache-2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "google-resumable-media",
+      "version": "2.11.0",
+      "license": "Apache 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "googleapis-common-protos",
+      "version": "1.76.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "gradio",
+      "version": "6.32.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "gradio_client",
+      "version": "2.7.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "greenlet",
+      "version": "3.5.6",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "groovy",
+      "version": "0.1.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "hf-gradio",
+      "version": "0.4.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "hf-xet",
+      "version": "1.8.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "httpcore2",
+      "version": "2.16.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "httptools",
+      "version": "0.9.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1",
+      "license": "BSD-3-Clause",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "httpx2",
+      "version": "2.16.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "huggingface_hub",
+      "version": "1.33.0",
+      "license": "Apache-2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "hydra-core",
+      "version": "1.3.8",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "idna",
+      "version": "3.20",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "iniconfig",
+      "version": "2.3.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "isodate",
+      "version": "0.7.2",
+      "license": "Copyright (c) 2021, Hugo van Kemenade and contributors",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "itsdangerous",
+      "version": "2.2.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "Jinja2",
+      "version": "3.1.6",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "jiter",
+      "version": "0.18.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "jmespath",
+      "version": "1.1.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "joblib",
+      "version": "1.6.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "jsonschema",
+      "version": "4.26.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "kiwisolver",
+      "version": "1.5.1",
+      "license": "=========================",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "langdetect",
+      "version": "1.0.9",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "language-tags",
+      "version": "1.3.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "lazy-loader",
+      "version": "0.6",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "librosa",
+      "version": "1.0.1",
+      "license": "ISC",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "librt",
+      "version": "0.16.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "linkify-it-py",
+      "version": "2.2.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "llvmlite",
+      "version": "0.50.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "loguru",
+      "version": "0.8.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "markdown-it-py",
+      "version": "4.2.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "MarkupSafe",
+      "version": "3.0.4",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "matplotlib",
+      "version": "3.11.2",
+      "license": "License agreement for matplotlib versions 1.3.0 and later",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "mdit-py-plugins",
+      "version": "0.7.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "mdurl",
+      "version": "0.1.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "moon-ai-agent",
+      "version": "0.1.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "moon-ai-agent",
+      "version": "0.1.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "mpmath",
+      "version": "1.3.0",
+      "license": "BSD",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "msgpack",
+      "version": "1.2.4",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "multiprocess",
+      "version": "0.70.19",
+      "license": "BSD-3-Clause",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "mypy",
+      "version": "2.4.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "mypy_extensions",
+      "version": "1.2.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "narwhals",
+      "version": "2.28.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "networkx",
+      "version": "3.7",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "numba",
+      "version": "0.68.1",
+      "license": "BSD",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "numpy",
+      "version": "2.5.4",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-cublas",
+      "version": "13.4.1.3",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-cuda-cccl",
+      "version": "13.3.5.0.6",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-cuda-cupti",
+      "version": "13.2.86",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-cuda-nvrtc",
+      "version": "13.2.86",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-cuda-runtime",
+      "version": "13.2.86",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-cudnn-cu13",
+      "version": "9.26.0.51",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-cufft",
+      "version": "12.2.0.57",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-cufile",
+      "version": "1.17.1.22",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-cusolver",
+      "version": "12.2.0.11",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-cusparse",
+      "version": "12.7.10.12",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-cusparselt-cu13",
+      "version": "0.8.1",
+      "license": "NVIDIA Proprietary Software",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-nccl-cu13",
+      "version": "2.30.7",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-nvjitlink",
+      "version": "13.5.37",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-nvshmem-cu13",
+      "version": "3.7.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "nvidia-nvtx",
+      "version": "13.2.86",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "omegaconf",
+      "version": "2.3.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "onnxruntime",
+      "version": "1.32.0",
+      "license": "MIT License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "openai",
+      "version": "3.44.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "opentelemetry-api",
+      "version": "1.45.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "opentelemetry-exporter-http-transport",
+      "version": "0.66b2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "opentelemetry-exporter-otlp-common",
+      "version": "0.66b2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "opentelemetry-exporter-otlp-proto-common",
+      "version": "1.45.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "opentelemetry-exporter-otlp-proto-http",
+      "version": "1.45.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "opentelemetry-proto",
+      "version": "1.45.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "opentelemetry-sdk",
+      "version": "1.45.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "opentelemetry-semantic-conventions",
+      "version": "0.66b2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "orjson",
+      "version": "3.13.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "packaging",
+      "version": "26.3",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pandas",
+      "version": "3.1.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pathspec",
+      "version": "1.1.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pillow",
+      "version": "13.0.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pip",
+      "version": "26.3",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "platformdirs",
+      "version": "4.14.5",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "playwright",
+      "version": "1.65.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pluggy",
+      "version": "1.7.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pooch",
+      "version": "1.9.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "proto-plus",
+      "version": "1.29.0",
+      "license": "Apache 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "protobuf",
+      "version": "7.36.2",
+      "license": "3-Clause BSD License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "psutil",
+      "version": "7.2.2",
+      "license": "BSD-3-Clause",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pyarrow",
+      "version": "26.0.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pyasn1",
+      "version": "0.6.5",
+      "license": "BSD-2-Clause",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pyasn1_modules",
+      "version": "0.4.2",
+      "license": "BSD",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "PyAudio",
+      "version": "0.2.14",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pycparser",
+      "version": "3.12",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pydantic",
+      "version": "2.14.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pydantic-settings",
+      "version": "2.16.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.50.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pydub",
+      "version": "0.25.1",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "Pygments",
+      "version": "2.21.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pyparsing",
+      "version": "3.3.3",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pypdf",
+      "version": "7.1.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pypinyin",
+      "version": "0.55.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pytesseract",
+      "version": "0.3.13",
+      "license": "Apache License 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pytest",
+      "version": "9.2.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pytest-asyncio",
+      "version": "1.4.1.post1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pytest-cov",
+      "version": "7.1.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pytest-timeout",
+      "version": "2.4.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "license": "Dual License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "python-dotenv",
+      "version": "1.2.4",
+      "license": "BSD-3-Clause",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "python-engineio",
+      "version": "4.15.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.34",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "python-socketio",
+      "version": "5.18.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "python-telegram-bot",
+      "version": "22.8",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "pytz",
+      "version": "2026.6",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "rdflib",
+      "version": "7.6.0",
+      "license": "BSD-3-Clause",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "referencing",
+      "version": "0.37.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "regex",
+      "version": "2026.11.15",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "requests",
+      "version": "2.34.2",
+      "license": "Apache-2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "rfc3986",
+      "version": "1.5.0",
+      "license": "Apache 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "rich",
+      "version": "13.9.4",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "rjieba",
+      "version": "0.2.2",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "rpds-py",
+      "version": "2026.9.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "ruff",
+      "version": "0.17.5",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "s3transfer",
+      "version": "0.19.3",
+      "license": "Apache License 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "safehttpx",
+      "version": "0.1.7",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "safetensors",
+      "version": "0.8.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "scikit-learn",
+      "version": "1.9.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "scipy",
+      "version": "1.18.1",
+      "license": "Copyright (c) 2001-2002 Enthought, Inc. 2003, SciPy Developers.",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "segments",
+      "version": "2.4.0",
+      "license": "Apache 2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "semantic-version",
+      "version": "2.10.0",
+      "license": "BSD",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "setuptools",
+      "version": "84.2.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "shellingham",
+      "version": "1.5.4",
+      "license": "ISC License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "simple-websocket",
+      "version": "1.1.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "six",
+      "version": "1.17.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "sniffio",
+      "version": "1.3.1",
+      "license": "MIT OR Apache-2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "soundfile",
+      "version": "0.14.0",
+      "license": "BSD 3-Clause License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "soupsieve",
+      "version": "4.1.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "soxr",
+      "version": "1.1.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "srt",
+      "version": "3.5.3",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "starlette",
+      "version": "1.10.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "sympy",
+      "version": "1.14.0",
+      "license": "BSD",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "tenacity",
+      "version": "9.2.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "termcolor",
+      "version": "3.3.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "textual",
+      "version": "6.2.1",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "threadpoolctl",
+      "version": "3.8.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "tokenizers",
+      "version": "0.23.3",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "tomli",
+      "version": "2.5.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "tomlkit",
+      "version": "0.14.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "torch",
+      "version": "2.15.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "torch-einops-utils",
+      "version": "0.2.7",
+      "license": "MIT License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "torchaudio",
+      "version": "2.11.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "torchcodec",
+      "version": "0.17.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "torchdiffeq",
+      "version": "0.2.5",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "tqdm",
+      "version": "4.70.1",
+      "license": "MPL-2.0 AND MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "transformers",
+      "version": "5.23.0",
+      "license": "Apache 2.0 License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "transformers-stream-generator",
+      "version": "0.0.5",
+      "license": "MIT License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "triton",
+      "version": "3.9.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "truststore",
+      "version": "0.10.5",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "typer",
+      "version": "0.29.1",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "tzdata",
+      "version": "2026.6",
+      "license": "Apache-2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "Unidecode",
+      "version": "1.4.0",
+      "license": "GPL",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "uritemplate",
+      "version": "4.2.0",
+      "license": "BSD 3-Clause OR Apache-2.0",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "urllib3",
+      "version": "2.8.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "uvloop",
+      "version": "0.23.0",
+      "license": "MIT License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "vosk",
+      "version": "0.3.45",
+      "license": "UNKNOWN",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "wandb",
+      "version": "0.31.0",
+      "license": "MIT License",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "watchfiles",
+      "version": "1.3.0",
+      "license": "MIT",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "websockets",
+      "version": "17.4",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "Werkzeug",
+      "version": "3.1.9",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "wheel",
+      "version": "0.48.0",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "wsproto",
+      "version": "1.3.2",
+      "license": "unknown",
+      "source": "installed-distribution"
+    },
+    {
+      "name": "xxhash",
+      "version": "4.1.0",
+      "license": "BSD-2-Clause",
+      "source": "installed-distribution"
+    }
+  ],
+  "component_count": 226,
+  "note": "Installed-distribution metadata; hashes and licences are reported as-found, not reviewed."
+}

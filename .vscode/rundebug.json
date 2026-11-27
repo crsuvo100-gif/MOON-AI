@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "configurations": [
+    {
+      "name": "moon",
+      "file": ".vscode/launch.json",
+      "mode": "run",
+      "id": "654e750a-0315-44fb-bada-f1aff83db8b6"
+    }
+  ]
+}

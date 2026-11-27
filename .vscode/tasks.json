@@ -5,7 +5,10 @@
       "label": "MOON: Build",
       "type": "shell",
       "command": "make build",
-      "group": { "kind": "build", "isDefault": true },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
       "problemMatcher": [],
       "detail": "Build MOON-AI package in a fresh virtualenv"
     },
@@ -13,7 +16,10 @@
       "label": "MOON: Run",
       "type": "shell",
       "command": "make run",
-      "group": { "kind": "build", "isDefault": true },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
       "problemMatcher": [],
       "detail": "Start MOON-AI agent in terminal mode"
     },
@@ -78,7 +84,10 @@
       "command": "cd \"${workspaceFolder}\" && hermes \"Explain the architecture of this project\"",
       "args": [],
       "group": "none",
-      "detail": "Ask hermes AI to explain the project architecture"
+      "detail": "Ask hermes AI to explain the project architecture",
+      "problemMatcher": [
+        "$eslint-compact"
+      ]
     },
     {
       "label": "MCP: Start server",

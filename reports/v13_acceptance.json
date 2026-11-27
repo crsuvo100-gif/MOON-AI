@@ -1,0 +1,131 @@
+{
+  "generated_at": "2026-11-25T09:56:43Z",
+  "duration_s": 0.671,
+  "capabilities": [
+    "v13.feature_flags",
+    "v13.memory_governance",
+    "v13.semantic_retrieval",
+    "v13.cost_aware_routing",
+    "v13.observability",
+    "v13.security_scorecard",
+    "v13.sbom",
+    "v13.deployment_assessment"
+  ],
+  "functional_checks": {
+    "checked_at": "2026-11-25T09:56:43Z",
+    "results": {
+      "v13.feature_flags": {
+        "status": "pass",
+        "detail": "functional self-check executed"
+      },
+      "v13.memory_governance": {
+        "status": "pass",
+        "detail": "functional self-check executed"
+      },
+      "v13.semantic_retrieval": {
+        "status": "pass",
+        "detail": "functional self-check executed"
+      },
+      "v13.cost_aware_routing": {
+        "status": "pass",
+        "detail": "functional self-check executed"
+      },
+      "v13.observability": {
+        "status": "pass",
+        "detail": "functional self-check executed"
+      },
+      "v13.security_scorecard": {
+        "status": "pass",
+        "detail": "functional self-check executed"
+      },
+      "v13.sbom": {
+        "status": "pass",
+        "detail": "functional self-check executed"
+      },
+      "v13.deployment_assessment": {
+        "status": "pass",
+        "detail": "functional self-check executed"
+      }
+    },
+    "passed": 8,
+    "failed": 0
+  },
+  "feature_flag_rollback": "pass",
+  "memory_correction_and_retrieval": "pass",
+  "trace_redaction": "pass",
+  "security_scorecard": {
+    "score": 80.0,
+    "passed": 4,
+    "failed": 0,
+    "unverified": 1,
+    "checks": [
+      {
+        "id": "patch_status",
+        "description": "Known vulnerabilities patched",
+        "verdict": "unverified",
+        "evidence": "no patch report present"
+      },
+      {
+        "id": "secret_guard",
+        "description": "Secret configuration template exists",
+        "verdict": "pass",
+        "evidence": ".env.example present with placeholder keys (no values read)"
+      },
+      {
+        "id": "permission_engine",
+        "description": "Terminal permission engine present",
+        "verdict": "pass",
+        "evidence": "static markers: PermissionEngine, PermissionRequired, action: ask, action: deny"
+      },
+      {
+        "id": "audit_logging",
+        "description": "Redacted structured audit trail available",
+        "verdict": "pass",
+        "evidence": "trace emits events with recursive redaction"
+      },
+      {
+        "id": "backups",
+        "description": "Backup/restore tooling present",
+        "verdict": "pass",
+        "evidence": "app/runtime/backup.py implements backup and restore"
+      }
+    ]
+  },
+  "sbom_component_count": 226,
+  "sbom_path": "/home/meow/Projects/MOON/reports/sbom.json",
+  "deployment": {
+    "checked_at": "2026-11-25T09:56:43Z",
+    "checks": [
+      {
+        "target": "local",
+        "status": "partial",
+        "evidence": "python=3.14.10 venv=True tests=not_run"
+      },
+      {
+        "target": "container",
+        "status": "partial",
+        "evidence": "container tooling present; image build not executed"
+      },
+      {
+        "target": "vm_linux",
+        "status": "verified",
+        "evidence": "running on Linux: 7.2.15+kali-amd64"
+      },
+      {
+        "target": "macos",
+        "status": "not_available",
+        "evidence": "host platform=Linux"
+      },
+      {
+        "target": "cloud_vps",
+        "status": "blocked",
+        "evidence": "no cloud credentials or deployment target configured"
+      }
+    ],
+    "verified": [
+      "vm_linux"
+    ],
+    "note": "Target availability is evidence-based; no remote deployment is claimed."
+  },
+  "notes": "SBOM reflects installed distributions; deployment status is evidence-based."
+}
