@@ -59,6 +59,41 @@
       "detail": "Install base and optional dependencies"
     },
     {
+      "label": "MOON: Arrange folders",
+      "type": "shell",
+      "command": "make arrange",
+      "group": "none",
+      "detail": "Ensure every project folder exists (non-destructive)"
+    },
+    {
+      "label": "MOON: Compile all",
+      "type": "shell",
+      "command": "make compile",
+      "group": "build",
+      "detail": "Byte-compile every Python source in the project"
+    },
+    {
+      "label": "MOON: Agents (one by one)",
+      "type": "shell",
+      "command": "make agents",
+      "group": "build",
+      "detail": "Run agent-build, agent-edit, agent-rum, agent-run, agent-verify in order"
+    },
+    {
+      "label": "MOON: Full pipeline",
+      "type": "shell",
+      "command": "make pipeline",
+      "group": "build",
+      "detail": "install -> build -> arrange -> compile -> verify-full"
+    },
+    {
+      "label": "MOON: Release (pipeline + serve)",
+      "type": "shell",
+      "command": "make release",
+      "group": "none",
+      "detail": "Run the full pipeline and then serve the project"
+    },
+    {
       "label": "hermes: Run AI task",
       "type": "shell",
       "command": "cd \"${workspaceFolder}\" && hermes -q \"$0\"",

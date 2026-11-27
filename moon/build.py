@@ -380,13 +380,21 @@ def _confirm_overwrite(project: Path) -> bool:
 
 def _makefile(lang: str) -> str:
     template = '''# MOON-AI Build — auto-generated for [LANG].
-# Targets: run test build serve clean install verify
+# Targets: run test build serve clean install install-optional verify live
+#           bootstrap editor-tools arrange compile tree agents agent-* verify-full pipeline release
 PY := env -u PYTHONPATH .venv/bin/python
+CODE := code
 
-.PHONY: help run test build serve clean install verify live
+.PHONY: help run test build serve clean install install-optional verify live \\
+        bootstrap editor-tools arrange compile tree agents agent-build agent-edit agent-rum agent-run agent-verify verify-full pipeline release
 
 help:
-\t@echo "Targets: run test build serve clean install verify live"
+\t@echo "Sequence: make install -> make build -> make arrange -> make compile -> make verify -> make serve"
+\t@echo "Agents one by one: make agents | Full pipeline: make pipeline | Everything: make release"
+
+bootstrap:
+\t@if [ ! -x .venv/bin/python ]; then python3 -m venv .venv; fi
+\t$(PY) -m pip --version
 
 run:
 \t$(PY) main.py run
@@ -413,6 +421,50 @@ verify:
 
 live:
 \t$(PY) scripts/live_smoke_pipeline.py
+
+install-optional:
+\t-$(PY) -m pip install -r requirements-optional.txt
+
+editor-tools:
+\t@command -v $(CODE) >/dev/null 2>&1 || echo "[MOON] 'code' CLI not found; install VS Code or add it to PATH"
+
+arrange:
+\t@mkdir -p app/agents app/professional app/advanced app/specialist scripts tests tools reports verify web docs
+\t@echo "[MOON] folder layout verified (additive)"
+
+compile:
+\t$(PY) -m compileall -q app agent moon scripts terminal tools plugins 2>/dev/null || true
+\t$(PY) -m py_compile main.py moon_terminal.py
+
+tree:
+\t@find . -maxdepth 2 -type d -not -path './.git*' -not -path './.venv*' | sort
+
+agents:
+\t$(PY) scripts/moon_agents.py
+
+agent-build:
+\t$(PY) scripts/moon_agents.py --role agent-build
+
+agent-edit:
+\t$(PY) scripts/moon_agents.py --role agent-edit
+
+agent-rum:
+\t$(PY) scripts/moon_agents.py --role agent-rum
+
+agent-run:
+\t$(PY) scripts/moon_agents.py --role agent-run
+
+agent-verify:
+\t$(PY) scripts/moon_agents.py --role agent-verify
+
+verify-full:
+\t$(PY) -m pytest tests -q
+\t$(PY) scripts/live_smoke_pipeline.py
+
+pipeline: install build arrange compile verify-full
+
+release: pipeline
+\t@echo "[MOON] Release ready. Start with: make serve"
 '''
     return template.replace("LANG", lang)
 

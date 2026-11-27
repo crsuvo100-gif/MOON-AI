@@ -95,13 +95,19 @@ def self_check(tmp_path: Any) -> dict[str, Any]:
     import tempfile
     from pathlib import Path
     results = {}
+    # Each invocation gets its own scratch root. Some probes append to files
+    # (e.g. trace.jsonl), so reusing a caller-supplied tmp_path across two
+    # self_check calls must not make the second call fail on accumulated state.
+    run_root = None
+    if tmp_path is not None:
+        run_root = Path(tempfile.mkdtemp(prefix="selfcheck-", dir=str(tmp_path)))
     for name, fn in _CHECKS:
         try:
-            if tmp_path is None:
+            if run_root is None:
                 with tempfile.TemporaryDirectory() as d:
                     fn(Path(d))
             else:
-                fn(Path(tmp_path) / name.replace(".", "_"))
+                fn(run_root / name.replace(".", "_"))
             results[name] = {"status": "pass", "detail": "functional self-check executed"}
         except Exception as exc:  # noqa: BLE001 - report, never hide
             results[name] = {"status": "fail", "detail": f"{type(exc).__name__}: {exc}"}
