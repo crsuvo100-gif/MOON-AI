@@ -16,12 +16,19 @@
 #   make release       pipeline -> serve
 # ---------------------------------------------------------------------------
 PY := env -u PYTHONPATH .venv/bin/python
-CODE := code
+CODE ?= code-oss
+EXT_DIR := $(HOME)/.vscode-oss/extensions
+RECOMMENDED_EXTENSIONS := ms-python.python ms-python.vscode-pylance \
+  charliermarsh.ruff ms-python.black-formatter ms-python.mypy-type-checker \
+  ms-python.debugpy ms-toolsai.jupyter github.copilot github.copilot-chat \
+  eamodio.gitlens musistudio.claude-code automaitiq.hermes-agent \
+  github.vscode-pull-request-github formulahendry.acp-client \
+  omercnet.vscode-acp rangav.vscode-thunder-client tamastro.pylance-extended
 
 .PHONY: help run test build serve clean install install-optional verify live \
         bootstrap editor-tools install-ollama arrange compile tree \
         agents agent-build agent-edit agent-rum agent-run agent-verify \
-        verify-full pipeline release serve-web
+        editor-open verify-full pipeline release serve-web
 
 help:
 	@echo "MOON-AI targets (original): run test build serve clean install install-optional verify live"
@@ -77,19 +84,16 @@ editor-tools:
 	-$(PY) -m pip install --upgrade pip wheel setuptools
 	-$(PY) -m pip install ruff mypy black pylint
 	@if command -v $(CODE) >/dev/null 2>&1; then \
-	  echo "[editor] installing recommended VS Code extensions"; \
-	  $(CODE) --install-extension ms-python.python \
-	          --install-extension ms-python.vscode-pylance \
-	          --install-extension charliermarsh.ruff \
-	          --install-extension ms-python.black-formatter \
-	          --install-extension ms-python.mypy-type-checker \
-	          --install-extension ms-python.debugpy \
-	          --install-extension eamodio.gitlens \
-	          --install-extension github.vscode-pull-request-github \
-	          --install-extension formulahendry.acp-client \
-	          --install-extension omercnet.vscode-acp \
-	          --install-extension rangav.vscode-thunder-client \
-	          --install-extension tamastro.pylance-extended >/dev/null 2>&1 || true; \
+	  for ext in $(RECOMMENDED_EXTENSIONS); do \
+	    if find "$(EXT_DIR)" -maxdepth 1 -type d -name "$$ext-*" 2>/dev/null | grep -q .; then \
+	      echo "[editor-tools] present: $$ext"; \
+	    else \
+	      echo "[editor-tools] installing: $$ext"; \
+	      timeout -k 2 10 $(CODE) --no-sandbox --disable-gpu --enable-unsafe-swiftshader \
+	        --disable-updates --install-extension "$$ext" --force >/dev/null 2>&1 \
+	        || echo "[editor-tools] WARN: $$ext unavailable (offline/marketplace)"; \
+	    fi; \
+	  done; \
 	else echo "[editor] VS Code CLI not found; skipped extension install"; fi
 
 # Optional heavyweight extras (voice cloning / torch / telegram / browser).
@@ -147,8 +151,9 @@ verify-full: compile
 agents:
 	$(PY) scripts/moon_agents.py
 
-agent-build:
-	$(MAKE) build
+agent-build: install
+	@$(MAKE) --no-print-directory build
+	@$(MAKE) --no-print-directory editor-open
 
 agent-edit:
 	$(MAKE) arrange
@@ -161,6 +166,17 @@ agent-run:
 
 agent-verify:
 	$(MAKE) verify
+
+# Open the consolidated project in the code editor (headless-safe via Xvfb).
+editor-open:
+	@if [ -z "$$DISPLAY" ]; then \
+	  if ! pgrep -x Xvfb >/dev/null 2>&1; then \
+	    Xvfb :99 -screen 0 1280x1024x24 >/dev/null 2>&1 & \
+	  fi; \
+	  export DISPLAY=:99; \
+	fi; \
+	$(CODE) "$(CURDIR)/moon.code-workspace" --no-sandbox --disable-gpu --enable-unsafe-swiftshader >/dev/null 2>&1 & \
+	echo "[editor] opened $(CURDIR)/moon.code-workspace in code editor"
 
 # --- ordered end-to-end pipeline --------------------------------------------
 pipeline:
