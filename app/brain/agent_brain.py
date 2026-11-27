@@ -209,7 +209,7 @@ class AgentBrain:
                 return mm.group(1).strip().strip("*").strip()
         if "incorrect" in low or "wrong" in low:
             # take the last non-empty line as the likely correction
-            lines = [l.strip("* ").strip() for l in raw.splitlines() if l.strip()]
+            lines = [line.strip("* ").strip() for line in raw.splitlines() if line.strip()]
             for ln in reversed(lines):
                 if ln and ln not in ("the original calculation is incorrect",):
                     return ln

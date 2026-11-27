@@ -283,8 +283,6 @@ CONNECTED_APPS_BUILD_SETTINGS = {
     # --- Slack / Discord build (webhook-based, no long-lived bot needed).
     "SLACK_WEBHOOK_URL": "[REDACTED]",
     "DISCORD_WEBHOOK_URL": "[REDACTED]",
-    "SLACK_ENCRYPTION_KEY": "[REDACTED]",
-    "DISCORD_ENCRYPTION_KEY": "[REDACTED]",
 }
 
 # ---------------------------------------------------------------------------

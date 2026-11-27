@@ -1,0 +1,62 @@
+{
+  "project_root": "/home/meow/Projects/MOON",
+  "git_branch": "feat/repl-version-command",
+  "git_status": " M .vscode/settings.json\n",
+  "git_log": "d07e9d6 ci: restore clean index, add verify/ scaffold, rebuild + verify exit 0\na795e3c ci: fix gateway check_connection (mcp connect first) + functional wiring + deploy scaffold\n163c1f9 ci: install ruff/mypy/pytest in MOON CI runner; exclude broken libnode symlink from pyrefly\n310289a feat: add /version REPL command to show MOON version\naa412bf build: add MOON-RELEASE.md release notes artifact for task log\n",
+  "main_py": {
+    "exists": true,
+    "size": 24470
+  },
+  "venv": {
+    "exists": true,
+    "bin": true
+  },
+  "gitignore": {
+    "exists": true
+  },
+  "makefile": {
+    "exists": true,
+    "targets": [
+      "run",
+      "test",
+      "build",
+      "serve",
+      "clean",
+      "install",
+      "verify",
+      "live"
+    ]
+  },
+  "pyproject": {
+    "exists": true,
+    "name": "moon-ai-agent",
+    "version": "0.1.0"
+  },
+  "app_modules": 5,
+  "tests": 45,
+  "scripts": 20,
+  "skills": 1,
+  "tools": 0,
+  "connections_registry": {
+    "entries": 3
+  },
+  "data_files": [
+    "executions.db",
+    "README.md",
+    "agents"
+  ],
+  "moon_dir": [
+    "knowledge_graph.json",
+    "sessions"
+  ],
+  "env_example": {
+    "exists": true,
+    "size": 4048
+  },
+  "vscode_settings_modified": false,
+  "code_oss": {
+    "installed": true,
+    "version": "1.101.1+ds+really1.99.3-0kali1",
+    "method": "apt"
+  }
+}

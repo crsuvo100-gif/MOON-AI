@@ -10,6 +10,6 @@ from __future__ import annotations
 try:
     from app.brain.planner import Planner  # type: ignore
 except Exception:  # noqa: BLE001
-    Planner = None  # pragma: no cover - optional in this layout
+    Planner = None  # type: ignore[assignment,misc]  # pragma: no cover
 
 __all__ = ["Planner"]

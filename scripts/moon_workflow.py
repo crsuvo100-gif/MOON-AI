@@ -110,10 +110,10 @@ def run_workflow(args: list[str]) -> int:
     # ------------------------------------------------------------------
     # Save-first: snapshot the source folder state before the task runs
     # ------------------------------------------------------------------
-    before = subprocess.run(
+    subprocess.run(
         ["git", "-C", str(MOON_SRC), "status", "--porcelain=v1"],
         capture_output=True, text=True,
-    ).stdout
+    )
 
     no_prompt = os.environ.get("MOON_NO_PROMPT", "").lower() in ("1", "true", "yes")
 
@@ -139,7 +139,7 @@ def run_workflow(args: list[str]) -> int:
     log.append(f"changed_files: {len(after.splitlines())}")
     if after:
         log.append("changed_files (porcelain):")
-        log.extend("  " + l for l in after.splitlines())
+        log.extend("  " + line for line in after.splitlines())
     log.append(f"started_at   : {time.strftime('%Y-%m-%d %H:%M:%S')}")
     log.append(f"completed_at : {time.strftime('%Y-%m-%d %H:%M:%S')}")
     record = "\n".join(log)
@@ -150,7 +150,7 @@ def run_workflow(args: list[str]) -> int:
         print(f"\nMOON_WORKFLOW: COMMAND FAILED (exit {res.returncode}).")
         log.append(f"Log saved: {LOG_DIR / ('workflow_' + time.strftime('%Y%m%d-%H%M%S') + '.log')}")
     else:
-        print(f"\nMOON_WORKFLOW: OK (exit 0).")
+        print("\nMOON_WORKFLOW: OK (exit 0).")
 
     # ------------------------------------------------------------------
     # After the task is fully completed: ask the user about GitHub push

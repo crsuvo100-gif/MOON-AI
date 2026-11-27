@@ -109,14 +109,14 @@ class SessionContinuity:
                 return session
 
         # Try loading from disk
-        session = await self._load_session(session_id)
-        if session:
-            session.status = SessionStatus.ACTIVE
-            session.last_active = time.time()
-            self._sessions[session_id] = session
+        loaded = await self._load_session(session_id)
+        if loaded:
+            loaded.status = SessionStatus.ACTIVE
+            loaded.last_active = time.time()
+            self._sessions[session_id] = loaded
             self._metrics["sessions_resumed"] += 1
             logger.info("Resumed session %s", session_id)
-            return session
+            return loaded
 
         logger.warning("Session not found: %s", session_id)
         return None

@@ -19,12 +19,10 @@ table.
 
 from __future__ import annotations
 
-import difflib
 import logging
 import time
 import uuid
-from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from app.runtime.autonomy import Autonomy

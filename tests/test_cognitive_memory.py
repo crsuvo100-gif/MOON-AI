@@ -6,7 +6,6 @@ retrieval, isolation, shared memory, commands, cache.
 
 from __future__ import annotations
 
-import os
 import time
 
 import pytest
@@ -15,10 +14,7 @@ from app.memory.candidate import (
     CandidatePipeline,
     MemoryPolicyEngine,
     classify,
-    detect_candidate,
-    find_duplicate,
     score_importance,
-    similarity,
 )
 from app.memory.cognitive import CognitiveMemoryManager
 from app.memory.commands import is_memory_command, parse_memory_command
@@ -33,7 +29,6 @@ from app.memory.record import (
 from app.memory.retrieval import (
     HybridRetriever,
     RetrievalCache,
-    keyword_score,
     recency_score,
     rewrite_query,
     scope_score,
@@ -281,10 +276,10 @@ def test_device_id_is_stable(tmp_path) -> None:
     """spec 35: device identity persists across instances."""
     from app.memory.store import LocalMemoryStore as L
     m1 = CognitiveMemoryManager(store=L(tmp_path / "a.db"))
-    d1 = m1.device_id
     m2 = CognitiveMemoryManager(store=L(tmp_path / "b.db"))
     assert m2.device_id  # non-empty; may differ per path but must be stable
-    m1.close(); m2.close()
+    m1.close()
+    m2.close()
 
 
 # ---------------------------------------------------------------- spec 43/45

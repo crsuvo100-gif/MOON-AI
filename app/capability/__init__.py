@@ -24,6 +24,7 @@ from app.capability.dependency_analyzer import analyze_path, analyze_text
 from app.capability.github_retriever import GitHubRetriever
 from app.capability.installer import InstallationManager
 from app.capability.manager import CapabilityManager
+from app.capability.marketplace import CapabilityMarketplace, MarketplaceEntry
 from app.capability.permission_manager import PermissionManager, PolicyLevel
 from app.capability.registry import CapabilityRecord, CapabilityRegistry
 from app.capability.sandbox import SandboxExecutor
@@ -34,10 +35,12 @@ from app.capability.verification import VerificationEngine
 __all__ = [
     "CapabilityManager",
     "CapabilityManagerTool",
+    "CapabilityMarketplace",
     "CapabilityRecord",
     "CapabilityRegistry",
     "GitHubRetriever",
     "InstallationManager",
+    "MarketplaceEntry",
     "PermissionManager",
     "PolicyLevel",
     "SandboxExecutor",

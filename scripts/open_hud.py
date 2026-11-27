@@ -75,24 +75,21 @@ def _window_open() -> bool:
     probe against the browser's window list when available.
     """
     try:
-        import ctypes
-
         # Windows: EnumWindows + GetTitleText
         if sys.platform == "win32":
-            from ctypes import POINTER, byref, windll, wintypes
+            from ctypes import windll, wintypes
 
-            class NMSERVER(wintypes.MSGHROUP): ...
-            HWND = wintypes.HWND
-            BOOL = wintypes.BOOL
+            found = False
 
-            def enum_cb(hwnd, lparam):
+            def enum_cb(hwnd, _lparam):
+                nonlocal found
                 try:
                     length = wintypes.MAX_PATH
                     title = wintypes.WCHAR(length)
                     windll.user32.GetWindowTextW(hwnd, title, length)
                     name = title.value
                     if HUD_URL in name:
-                        lparam[0] = True
+                        found = True
                         return False
                 except Exception:
                     pass
@@ -100,8 +97,8 @@ def _window_open() -> bool:
 
             EnumWindows = windll.user32.EnumWindows
             EnumWindowsProc = wintypes.WNDENUMPROC
-            EnumWindows(EnumWindowsProc(enum_cb), ctypes.byref(NMSERVER()))
-            return lparam[0] if lparam else False
+            EnumWindows(EnumWindowsProc(enum_cb), None)
+            return found
     except Exception:
         pass
     # macOS / Linux: no reliable cross-platform API; assume open if we opened.

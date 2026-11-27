@@ -7,6 +7,7 @@ with bounded iterations, structured reasoning traces, and graceful termination.
 from __future__ import annotations
 
 import asyncio
+import json
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from enum import Enum
@@ -212,7 +213,6 @@ class ReActLoop:
                     tool_name = action_str[:action_str.index("(")].strip()
                     args_str = action_str[action_str.index("(") + 1:-1]
                     try:
-                        import json
                         args = json.loads(args_str) if args_str.strip() else {}
                     except (json.JSONDecodeError, ValueError):
                         args = {"raw": args_str}

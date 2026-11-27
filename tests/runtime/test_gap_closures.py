@@ -8,7 +8,6 @@ from app.memory.vector_store import (
     InMemoryVectorStore, PostgresVectorStore, get_vector_store, set_vector_store,
 )
 from app.agent_factory.store import AgentStore
-from app.agent_factory.models import AgentFactoryRecord, AgentMetadata, RiskLevel
 
 
 def test_self_improvement_proposal_gated():

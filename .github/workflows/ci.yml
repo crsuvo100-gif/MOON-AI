@@ -18,9 +18,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip wheel
           pip install -e .
-          pip install ruff mypy pytest
+          # Pin the quality-gate tools so a green run is reproducible
+          # (ruff's default rule set and mypy's checks change between releases).
+          pip install ruff==0.17.3 mypy==2.4.0 pytest==9.1.1
       - name: Lint (ruff)
-        run: ruff check app scripts tests
+        run: ruff check app scripts tests main.py cli.py moon_terminal.py moon/
       - name: Typecheck (mypy)
         run: mypy app
       - name: Test

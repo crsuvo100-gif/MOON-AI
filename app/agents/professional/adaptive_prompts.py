@@ -67,13 +67,13 @@ class AdaptivePrompts:
         self._templates: dict[str, PromptTemplate] = {}
         self._performance_history: dict[str, list[float]] = {}
         self._user_expertise: UserExpertise = UserExpertise.INTERMEDIATE
-        self._complexity_weights = {
+        self._complexity_weights: dict[TaskComplexity, dict[str, Any]] = {
             TaskComplexity.SIMPLE: {"temperature": 0.3, "max_tokens": 1024, "top_p": 0.8},
             TaskComplexity.MODERATE: {"temperature": 0.5, "max_tokens": 2048, "top_p": 0.9},
             TaskComplexity.COMPLEX: {"temperature": 0.7, "max_tokens": 4096, "top_p": 0.95},
             TaskComplexity.EXPERT: {"temperature": 0.8, "max_tokens": 8192, "top_p": 0.98},
         }
-        self._expertise_adjustments = {
+        self._expertise_adjustments: dict[UserExpertise, dict[str, Any]] = {
             UserExpertise.NOVICE: {"temperature_offset": -0.1, "explanation_level": "detailed"},
             UserExpertise.INTERMEDIATE: {"temperature_offset": 0.0, "explanation_level": "standard"},
             UserExpertise.ADVANCED: {"temperature_offset": 0.1, "explanation_level": "concise"},

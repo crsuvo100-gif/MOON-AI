@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from app.memory.task_record import TaskRecord, TaskStatus
+from app.memory.task_record import TaskRecord
 
 
 def _detect_project_root() -> Path:

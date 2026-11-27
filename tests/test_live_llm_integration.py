@@ -20,7 +20,6 @@ import pytest
 
 from app.brain.agent_brain import AgentBrain
 from app.agents.communication_protocol import (
-    AgentCommunicationBus,
     AgentMessage,
     MessageType,
     get_bus,
@@ -29,13 +28,10 @@ from app.agents.communication_protocol import (
 from app.brain.advanced_conflict import (
     AdvancedConflictResolver,
     ConflictResolutionStrategy,
-    ConflictSeverity,
 )
 from app.brain.aggregator import (
     AgentEnvelope,
-    AggregatedResult,
     ConflictKind,
-    ConflictResolver,
     ResultAggregator,
 )
 from app.agents.registry import get_registry

@@ -225,7 +225,9 @@ class Voice:
             pa.terminate()
             pa = None
             with wave.open(rec, "wb") as wf:
-                wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(16000)
+                wf.setnchannels(1)
+                wf.setsampwidth(2)
+                wf.setframerate(16000)
                 wf.writeframes(b"".join(frames))
             recog = vosk.KaldiRecognizer(vosk.Model(self._vosk_model), 16000)
             with wave.open(rec, "rb") as wf:

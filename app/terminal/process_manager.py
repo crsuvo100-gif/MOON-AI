@@ -86,6 +86,9 @@ class ProcessManager:
             backend=getattr(request, 'backend', 'local'),
             status='running',
             start_time=datetime.utcnow(),
+            duration=None,
+            stdout=None,
+            stderr=None,
         )
         self._registry[execution_id] = {'proc': proc, 'info': info}
         return execution_id

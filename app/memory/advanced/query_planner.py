@@ -131,7 +131,6 @@ class QueryPlanner:
             QueryPlan with sub-queries and execution strategy.
         """
         self._plan_count += 1
-        query_lower = query.lower()
 
         # Split into sub-queries based on conjunctions and question structure
         sub_queries = self._decompose_query(query)

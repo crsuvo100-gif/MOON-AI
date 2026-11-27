@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from app.memory.store import MemoryStore
 
+logger = logging.getLogger(__name__)
+
 
 # --------------------------------------------------------------------------
 # spec 4: memory types

@@ -224,7 +224,7 @@ class ContextInjector:
             content = self._get_content(item)
             source = self._get_source(item)
             if content:
-                entry = {"content": content, "source": source}
+                entry: dict[str, Any] = {"content": content, "source": source}
                 if self._include_metadata:
                     entry["relevance"] = self._get_relevance(item)
                     entry["importance"] = self._get_importance(item)
@@ -242,7 +242,7 @@ class ContextInjector:
 
     def _get_content(self, item: Any) -> str:
         if isinstance(item, dict):
-            return item.get("content", item.get("chunk", ""))
+            return str(item.get("content", item.get("chunk", "")))
         return getattr(item, "content", "")
 
     def _get_source(self, item: Any) -> str:

@@ -260,7 +260,7 @@ class AgentFactory:
     # ------------------------------------------------------------------
     def status(self) -> dict[str, Any]:
         recs = self.store.all()
-        by_stage = {}
+        by_stage: dict[str, int] = {}
         for r in recs:
             by_stage[r.stage] = by_stage.get(r.stage, 0) + 1
         return {
@@ -283,6 +283,7 @@ class AgentFactory:
         import re
         import shutil
         m = re.match(r"^(\d+)\.(\d+)\.(\d+)$", rec.version or "1.0.0")
+        assert m is not None
         major, minor, patch = (int(x) for x in m.groups())
         new_version = f"{major}.{minor + 1}.{patch}"
         src = Path(rec.module_path)

@@ -8,9 +8,7 @@ monkeypatched CLI runner: no network, no money, no fabrication.
 from __future__ import annotations
 
 import asyncio
-from types import SimpleNamespace
 
-import pytest
 
 from app.tools.huggingface_deploy import HuggingFaceDeployTool
 

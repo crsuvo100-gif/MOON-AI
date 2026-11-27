@@ -90,15 +90,18 @@ class AgentLifecycle:
             rec = self.store.get(agent_id)
             if rec is None:
                 return
+            rec_name = rec.name
+            rec_description = rec.description
+            rec_tools = rec.required_tools.split("|") if rec.required_tools else []
             if enable:
                 # re-register (idempotent) so it is live
                 class _M:  # minimal metadata shim
-                    name = rec.name
-                    description = rec.description
-                    required_tools = rec.required_tools.split("|") if rec.required_tools else []
+                    name = rec_name
+                    description = rec_description
+                    required_tools = rec_tools
                 ar.register_external_agent(_M())
             else:
-                ar.unregister_external_agent(rec.name)
+                ar.unregister_external_agent(rec_name)
         except Exception as exc:  # noqa: BLE001
             logger.warning("runtime sync skipped: %s", exc)
 

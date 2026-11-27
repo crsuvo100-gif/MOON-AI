@@ -73,7 +73,7 @@ class HuggingFaceDeployTool(BaseTool):
         # `hf api` returns JSON lines / array depending on flags; parse defensively.
         candidates: list[dict] = []
         try:
-            data = json.loads(out) if out.strip().startswith("[") else [json.loads(l) for l in out.splitlines() if l.strip()]
+            data = json.loads(out) if out.strip().startswith("[") else [json.loads(line) for line in out.splitlines() if line.strip()]
         except Exception:
             return [{"error": "could not parse hf api output", "raw": out[:500]}]
         for m in data:

@@ -77,19 +77,22 @@ def test_factory_reuses_existing():
 def test_lifecycle_rollback():
     from app.agent_factory.models import AgentFactoryRecord
     import time
-    NOW = lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    def NOW():
+        return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     s = AgentStore()
     # ensure an agent exists with two versions
     aid = "rollback_demo"
     base = AgentFactoryRecord(agent_id=aid, name=aid, version="1.0.0", status="active",
                               stage="approved", risk_level="low", description="d",
                               created_at=NOW(), updated_at=NOW())
-    s.upsert_agent(base); s.add_version(aid, "1.0.0", base.module_path, "v1")
+    s.upsert_agent(base)
+    s.add_version(aid, "1.0.0", base.module_path, "v1")
     v2 = AgentFactoryRecord(agent_id=aid, name=aid, version="1.1.0", status="active",
                             stage="approved", risk_level="low", description="d",
                             module_path=base.module_path, created_at=NOW(),
                             updated_at=NOW(), previous_version="1.0.0", notes="v2")
-    s.upsert_agent(v2); s.add_version(aid, "1.1.0", base.module_path, "v2")
+    s.upsert_agent(v2)
+    s.add_version(aid, "1.1.0", base.module_path, "v2")
     rb = AgentLifecycle().rollback(aid)
     assert rb.success is True
     assert s.get(aid).version == "1.0.0"

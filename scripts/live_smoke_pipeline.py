@@ -42,7 +42,7 @@ def check(name: str, ok: bool, detail: str = "") -> None:
 
 
 def run(cmd: list[str]) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, capture_output=True, text=True)
+    return subprocess.run(cmd, capture_output=True, text=True, cwd=str(ROOT))
 
 
 def main() -> int:
@@ -66,7 +66,13 @@ def main() -> int:
     check("`moon doctor` exit 0", r.returncode == 0,
           (r.stdout or r.stderr).strip().replace("\n", " | ")[:160])
 
-    # ---- 3. Built artifact exists (what `make build` produced) ----
+    # ---- 3. Built artifact exists (build it on demand on a fresh tree) ----
+    # A clean clone has no build/ or dist/; build the local wheel here so this
+    # end-to-end verification is self-contained (`make verify` from scratch).
+    bl = ROOT / "build" / "lib"
+    if not bl.is_dir():
+        run([str(VENV_PY), "-m", "pip", "wheel", "--no-deps",
+             "-w", str(ROOT / "dist"), str(ROOT)])
     bl = ROOT / "build" / "lib"
     check("build/lib artifact present",
           bl.is_dir(),
@@ -99,11 +105,10 @@ def main() -> int:
           "Orchestrator OK" if orch_ok else ("Orch type=%s" % type(orch).__name__ if orch else "n/a"))
 
     # ---- 5. Capability registry importable from the real source ----
-    reg = None
     reg_ok = False
     try:
         from app.capability.registry import CapabilityRegistry  # noqa: F401
-        reg = CapabilityRegistry()
+        CapabilityRegistry()
         reg_ok = True
     except Exception:  # noqa: BLE001
         reg_ok = False

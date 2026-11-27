@@ -15,7 +15,7 @@ from pathlib import Path
 # Configuration constants
 MAX_BUFFER_SIZE = 5 * 1024 * 1024  # 5 MiB per execution buffer
 MAX_LOG_FILES = 5  # keep up to 5 rotated logs per execution / stream
-BASE_LOG_DIR = Path(os.getenv('HOME')) / '.hermes' / 'cache' / 'scratch' / 'output_logs'
+BASE_LOG_DIR = Path(os.getenv('HOME') or '~').expanduser() / '.hermes' / 'cache' / 'scratch' / 'output_logs'
 BASE_LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 class OutputEngine:

@@ -1,21 +1,25 @@
-"""MOON-AI top-level command-line entry point for ``python -m MOON-AI``.
+"""MOON-AI top-level command-line entry point for ``python -m moon``.
 
 MOON-AI is a single-package project (all logic lives under ``app``); this
 package supplies the documented top-level entry points:
 
-- ``python -m MOON-AI``               -> MOON-AI Terminal REPL (default)
-- ``python -m MOON-AI terminal``      -> MOON-AI Terminal REPL (explicit)
-- ``python -m MOON-AI run <task>``    -> CLI single-task runner
-- ``python -m MOON-AI models``        -> pre-pull per-agent models
-- ``python -m MOON-AI doctor|status|...`` -> CLI subcommands
+- ``python -m moon``                  -> MOON-AI Terminal REPL (default)
+- ``python -m moon terminal``         -> MOON-AI Terminal REPL (explicit)
+- ``python -m moon run <task>``       -> CLI single-task runner
+- ``python -m moon models``           -> pre-pull per-agent models
+- ``python -m moon doctor|status|...``-> CLI subcommands
 
-Real CLI dispatch lives in ``main.py``.  This module reproduces the
-subparser construction and the dispatch from ``main.main()`` (lines
-~442-525) so that the README-documented ``python -m MOON-AI`` conventions
-behave identically to ``moon`` / ``moon-terminal``, without modifying
-``main.py`` or the installed console scripts.  The terminal REPL is the
-default when no subcommand is given, matching the documented behaviour.
+The real CLI lives in ``main.py`` (the ``moon`` / ``moon-terminal`` console
+scripts point at ``main:main``).  This module used to re-implement the parser
+and dispatch, which drifted from ``main.py`` (e.g. ``integrations`` / ``work``
+were missing, and a few flags diverged).  It now delegates to the single source
+of truth so every documented entry point behaves identically:
+
+    python -m moon  ==  moon  ==  python main.py  ==  python -m moon_terminal
 """
+
+from __future__ import annotations
+
 import os
 import sys
 
@@ -203,12 +207,23 @@ def _cmd_build(args) -> int:
 
 
 def main(argv=None) -> int:
-    parser = _build_parser()
-    args = parser.parse_args(argv)
-    # README documents `python -m MOON-AI` (no args) as the default terminal.
-    if args.cmd in (None, "terminal"):
-        return _run_terminal()
-    return _dispatch(args)
+    """Run the canonical MOON-AI CLI from ``main.py``.
+
+    ``argv`` is optional for tests/programmatic use; when omitted the real
+    process arguments are used (exactly like the console script).
+    """
+    # Imported lazily so the env guard above always runs first.
+    from main import main as _canonical_main  # noqa: PLC0415
+
+    if argv is None:
+        return _canonical_main()
+
+    old_argv = sys.argv
+    sys.argv = [old_argv[0] if old_argv else "moon", *list(argv)]
+    try:
+        return _canonical_main()
+    finally:
+        sys.argv = old_argv
 
 
 def _main() -> None:

@@ -1,0 +1,39 @@
+{
+  "task_id": "6ba62f58c4a0",
+  "content": "What is 6 multiplied by 7? Reply with only the number.",
+  "summary": "Hermes Rule task trace: started",
+  "owner_id": "moon",
+  "agent_id": "auto",
+  "project_id": "MOON",
+  "scope": "TASK",
+  "task_status": "RUNNING",
+  "result": "",
+  "exit_code": null,
+  "start_time": 1795595263.1348186,
+  "end_time": null,
+  "created_at": 1795595263.1383765,
+  "updated_at": 1795595263.1383793,
+  "tags": [
+    "hermes-rule",
+    "started"
+  ],
+  "metadata": {
+    "event": "started",
+    "rule_sha256": "55a5ef003194b01c473db22c966cde5f62eab8e6855672f65d828e7baec08833",
+    "trusted": false,
+    "error_type": ""
+  },
+  "source_type": "AGENT",
+  "provenance": {
+    "authority": "USER",
+    "priority": "SYSTEM_POLICY",
+    "source": "skills/hermes-rule/SKILL.md",
+    "trusted": true,
+    "note": "Trusted project rule constant; external content never overrides it."
+  },
+  "confidence": 0.6,
+  "importance": "MEDIUM",
+  "session_id": "",
+  "deleted": false,
+  "recorded_at": "2026-11-25T08:27:43.170571+00:00"
+}
